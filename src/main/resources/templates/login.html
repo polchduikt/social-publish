@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="auth-page login-page">
+<main class="auth-shell">
+    <section class="auth-visual">
+        <span class="brand-chip">
+            <span class="brand-dot"></span>
+            Social Publish
+        </span>
+        <h2 class="visual-title">Welcome back to your publishing control room.</h2>
+        <p class="visual-text">
+            Schedule posts, monitor engagement, and keep every campaign in sync from one focused workspace.
+        </p>
+        <div class="visual-pills">
+            <span>Campaign Calendar</span>
+            <span>Engagement Tracking</span>
+            <span>Google OAuth</span>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <h1 class="auth-heading">Sign in</h1>
+        <p class="auth-subtitle">Use your account to continue to Social Publish.</p>
+
+        <div class="status-stack">
+            <th:block th:if="${error}">
+                <div th:replace="~{fragments/auth/login-error :: loginError('Invalid email or password.')}"></div>
+            </th:block>
+            <th:block th:if="${oauth2Error == 'account_exists'}">
+                <div th:replace="~{fragments/auth/login-error :: loginError('This email is already registered with password login. Please sign in using email and password.')}"></div>
+            </th:block>
+            <th:block th:if="${oauth2Error == 'email_not_verified'}">
+                <div th:replace="~{fragments/auth/login-error :: loginError('Google account email is not verified. Please verify it in Google account settings.')}"></div>
+            </th:block>
+            <th:block th:if="${oauth2Error != null and oauth2Error != 'account_exists' and oauth2Error != 'email_not_verified'}">
+                <div th:replace="~{fragments/auth/login-error :: loginError('Google login failed. Please try again.')}"></div>
+            </th:block>
+            <div th:if="${logout}" class="status success">You have been logged out.</div>
+            <div th:if="${registered}" class="status success">Account created. Please login.</div>
+        </div>
+
+        <form class="auth-form" method="post" action="/login">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+            <div class="social-auth">
+                <a class="btn-link btn-secondary" href="/oauth2/authorization/google">Google Login</a>
+            </div>
+
+            <div class="divider">Continue with email</div>
+
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required autofocus>
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" required>
+            </div>
+
+            <div class="cta-row">
+                <button type="submit">Login</button>
+                <a class="btn-link btn-secondary" href="/register">Create account</a>
+            </div>
+        </form>
+    </section>
+</main>
+</body>
+</html>

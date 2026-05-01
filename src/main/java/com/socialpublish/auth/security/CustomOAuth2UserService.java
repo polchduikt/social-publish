@@ -3,6 +3,8 @@ package com.socialpublish.auth.security;
 import com.socialpublish.auth.entity.AuthProvider;
 import com.socialpublish.auth.entity.Role;
 import com.socialpublish.auth.entity.User;
+import com.socialpublish.auth.exception.OAuth2AccountConflictException;
+import com.socialpublish.auth.exception.OAuth2EmailNotVerifiedException;
 import com.socialpublish.auth.repository.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -37,6 +39,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     "Google account did not provide email"
             );
         }
+        Boolean emailVerified = readBoolean(attributes, "email_verified");
+        if (Boolean.FALSE.equals(emailVerified)) {
+            throw new OAuth2EmailNotVerifiedException("Google account email is not verified");
+        }
 
         String normalizedEmail = email.trim().toLowerCase();
         String name = readString(attributes, "name");
@@ -44,10 +50,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         userRepository.findByEmailIgnoreCase(normalizedEmail).ifPresentOrElse(existingUser -> {
             if (existingUser.getProvider() == AuthProvider.LOCAL) {
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error("invalid_request"),
-                        "This email is already registered with password login"
-                );
+                throw new OAuth2AccountConflictException("This email is already registered with password login");
             }
 
             boolean changed = false;
@@ -79,5 +82,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private String readString(Map<String, Object> attributes, String key) {
         Object value = attributes.get(key);
         return value instanceof String text ? text : null;
+    }
+
+    private Boolean readBoolean(Map<String, Object> attributes, String key) {
+        Object value = attributes.get(key);
+        return value instanceof Boolean bool ? bool : null;
     }
 }

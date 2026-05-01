@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Publish</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="home-page">
+<div class="container">
+    <div class="card">
+        <h1>Social Publish</h1>
+
+        <div th:if="${user != null}">
+            <p class="status success">You are logged in.</p>
+            <p><strong>Name:</strong> <span th:text="${user.fullName}"></span></p>
+            <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+            <p><strong>Role:</strong> <span th:text="${user.role}"></span></p>
+            <div class="actions">
+                <form method="post" action="/logout">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+        <div th:if="${user == null}">
+            <p class="status">You are not logged in.</p>
+            <div class="actions">
+                <a class="btn-link" href="/login">Login</a>
+                <a class="btn-link btn-secondary" href="/register">Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
