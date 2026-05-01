@@ -1,0 +1,35 @@
+package com.socialpublish.dashboard.controller;
+
+import com.socialpublish.auth.dto.CurrentUserView;
+import com.socialpublish.common.web.CurrentUser;
+import com.socialpublish.dashboard.dto.DashboardView;
+import com.socialpublish.dashboard.service.DashboardService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+public class HomeController {
+
+    private final DashboardService dashboardService;
+
+    public HomeController(DashboardService dashboardService) {
+        this.dashboardService = dashboardService;
+    }
+
+    @GetMapping("/")
+    public String root(
+            @CurrentUser CurrentUserView currentUser,
+            @RequestParam(name = "message", required = false) String message,
+            @RequestParam(name = "error", required = false) String error,
+            Model model
+    ) {
+        DashboardView dashboard = dashboardService.buildDashboard(currentUser.id());
+        model.addAttribute("user", currentUser);
+        model.addAttribute("dashboard", dashboard);
+        model.addAttribute("message", message);
+        model.addAttribute("error", error);
+        return "home";
+    }
+}

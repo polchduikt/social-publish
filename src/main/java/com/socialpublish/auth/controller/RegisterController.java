@@ -4,6 +4,7 @@ import com.socialpublish.auth.dto.RegisterRequest;
 import com.socialpublish.auth.service.AuthService;
 import com.socialpublish.auth.service.AuthenticatedUserService;
 import com.socialpublish.common.web.HtmxSupport;
+import com.socialpublish.common.web.ValidationUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -39,7 +40,7 @@ public class RegisterController {
             @RequestParam(name = "error", required = false) String error,
             Model model
     ) {
-        if (authenticatedUserService.resolveForView(authentication).isPresent()) {
+        if (authenticatedUserService.resolveCurrentUser(authentication).isPresent()) {
             return "redirect:/";
         }
         model.addAttribute("error", error != null);
@@ -58,7 +59,7 @@ public class RegisterController {
         boolean isHtmxRequest = htmxSupport.isHtmxRequest(request);
 
         if (bindingResult.hasErrors()) {
-            return registerValidationError(isHtmxRequest, model, firstValidationMessage(bindingResult));
+            return registerValidationError(isHtmxRequest, model, ValidationUtils.firstFieldError(bindingResult));
         }
 
         try {
@@ -75,13 +76,6 @@ public class RegisterController {
             model.addAttribute("errorMessage", ex.getMessage());
             return "fragments/auth/register-status";
         }
-    }
-
-    private String firstValidationMessage(BindingResult bindingResult) {
-        if (bindingResult.getFieldError() != null) {
-            return bindingResult.getFieldError().getDefaultMessage();
-        }
-        return "Validation failed";
     }
 
     private String registerValidationError(boolean isHtmxRequest, Model model, String message) {

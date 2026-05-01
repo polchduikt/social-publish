@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Preview</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="editor-page">
+<main class="editor-wrap preview-wrap">
+    <header class="editor-head">
+        <a th:href="${from}" class="action-link">&larr; Back</a>
+        <h1>Post Preview</h1>
+        <p>Review how the post looks before publishing.</p>
+    </header>
+
+    <article class="preview-card">
+        <div class="preview-top">
+            <span class="status-badge"
+                  th:classappend="${#strings.toLowerCase(post.status.name())}"
+                  th:text="${post.status}">DRAFT</span>
+            <span th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">-</span>
+        </div>
+        <h2 th:text="${post.title}">Post title</h2>
+        <p class="preview-content" th:text="${post.content}">Post body</p>
+
+        <div class="preview-meta">
+            <p><strong>Scheduled:</strong> <span th:text="${post.scheduledAt != null ? #temporals.format(post.scheduledAt, 'yyyy-MM-dd HH:mm') : '-'}">-</span></p>
+            <p><strong>Published:</strong> <span th:text="${post.publishedAt != null ? #temporals.format(post.publishedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</span></p>
+            <p><strong>Failed reason:</strong> <span th:text="${post.failedReason != null ? post.failedReason : '-'}">-</span></p>
+        </div>
+
+        <div class="actions">
+            <a class="btn-link" th:href="@{|/posts/${post.id}/edit|}">Edit Post</a>
+            <a class="btn-link btn-secondary" th:href="${from}">Back to Dashboard</a>
+        </div>
+    </article>
+</main>
+</body>
+</html>

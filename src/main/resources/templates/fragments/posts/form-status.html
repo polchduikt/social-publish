@@ -1,0 +1,5 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="status">
+    <div class="status-stack" th:if="${errorMessage != null}">
+        <div class="status error" th:text="${errorMessage}">Validation failed</div>
+    </div>
+</th:block>

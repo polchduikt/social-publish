@@ -3,6 +3,7 @@ package com.socialpublish.auth.service;
 import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.repository.UserRepository;
+import com.socialpublish.auth.security.AppUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -32,8 +33,8 @@ public class AuthenticatedUserService {
         }
 
         Object principal = authentication.getPrincipal();
-        if (principal instanceof User user) {
-            return Optional.of(user);
+        if (principal instanceof AppUserDetails appUserDetails) {
+            return Optional.of(appUserDetails.getUser());
         }
 
         if (principal instanceof OAuth2User oAuth2User) {

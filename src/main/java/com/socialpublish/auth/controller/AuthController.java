@@ -25,7 +25,7 @@ public class AuthController {
             @RequestParam(name = "registered", required = false) String registered,
             Model model
     ) {
-        if (authenticatedUserService.resolveForView(authentication).isPresent()) {
+        if (authenticatedUserService.resolveCurrentUser(authentication).isPresent()) {
             return "redirect:/";
         }
         model.addAttribute("error", error != null);

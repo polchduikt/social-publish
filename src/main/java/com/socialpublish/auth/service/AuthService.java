@@ -25,12 +25,14 @@ public class AuthService {
 
     @Transactional
     public User register(RegisterRequest request) {
-        if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new IllegalArgumentException("User with this email already exists");
         }
 
         User user = new User();
-        user.setEmail(request.getEmail().trim().toLowerCase());
+        user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName().trim());
         user.setProvider(AuthProvider.LOCAL);
