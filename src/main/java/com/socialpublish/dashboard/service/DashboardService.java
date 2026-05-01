@@ -60,8 +60,11 @@ public class DashboardService {
                 total,
                 counts.get(PostStatus.DRAFT),
                 counts.get(PostStatus.SCHEDULED),
+                counts.get(PostStatus.PUBLISHING),
                 published,
+                counts.get(PostStatus.RETRYING),
                 failed,
+                counts.get(PostStatus.CANCELLED),
                 successRate
         );
     }

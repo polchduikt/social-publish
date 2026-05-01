@@ -55,6 +55,12 @@ public class Post {
     @Column(length = 500)
     private String failedReason;
 
+    @Column(nullable = false)
+    private int retryCount;
+
+    @Column(nullable = false)
+    private int maxRetries = 3;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

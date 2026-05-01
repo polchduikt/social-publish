@@ -40,7 +40,7 @@ public class PostController {
     public String createPage(@CurrentUser CurrentUserView currentUser, Model model) {
         model.addAttribute("mode", "create");
         model.addAttribute("postRequest", new PostUpsertRequest());
-        model.addAttribute("statuses", PostStatus.values());
+        model.addAttribute("statuses", PostStatus.userSettable());
         return "posts/form";
     }
 
@@ -158,7 +158,7 @@ public class PostController {
         if (postId != null) {
             model.addAttribute("postId", postId);
         }
-        model.addAttribute("statuses", PostStatus.values());
+        model.addAttribute("statuses", PostStatus.userSettable());
         return "posts/form";
     }
 }

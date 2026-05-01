@@ -15,6 +15,7 @@ public record PostView(
         LocalDateTime scheduledAt,
         LocalDateTime publishedAt,
         String failedReason,
+        int retryCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -32,6 +33,7 @@ public record PostView(
                 post.getScheduledAt() == null ? null : post.getScheduledAt().atZone(zoneId).toLocalDateTime(),
                 post.getPublishedAt() == null ? null : post.getPublishedAt().atZone(zoneId).toLocalDateTime(),
                 post.getFailedReason(),
+                post.getRetryCount(),
                 post.getCreatedAt().atZone(zoneId).toLocalDateTime(),
                 post.getUpdatedAt().atZone(zoneId).toLocalDateTime()
         );
