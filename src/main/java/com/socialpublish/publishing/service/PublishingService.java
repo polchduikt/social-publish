@@ -1,5 +1,6 @@
 package com.socialpublish.publishing.service;
 
+import com.socialpublish.integrations.telegram.service.TelegramPublisherService;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
@@ -20,15 +21,18 @@ public class PublishingService {
     private final PostRepository postRepository;
     private final PostStatusMachine statusMachine;
     private final PublishingProducer publishingProducer;
+    private final TelegramPublisherService telegramPublisherService;
 
     public PublishingService(
             PostRepository postRepository,
             PostStatusMachine statusMachine,
-            PublishingProducer publishingProducer
+            PublishingProducer publishingProducer,
+            TelegramPublisherService telegramPublisherService
     ) {
         this.postRepository = postRepository;
         this.statusMachine = statusMachine;
         this.publishingProducer = publishingProducer;
+        this.telegramPublisherService = telegramPublisherService;
     }
 
     @Transactional
@@ -58,7 +62,7 @@ public class PublishingService {
     }
 
     private void doPublish(Post post) {
-        log.info("Publishing post {} (stub): {}", post.getId(), post.getTitle());
+        telegramPublisherService.publish(post);
     }
 
     private void markPublished(Post post) {

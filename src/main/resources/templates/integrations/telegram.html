@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Integration</title>
+    <link rel="stylesheet" href="/css/app.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="dashboard-page">
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-mark">S</div>
+            <div>
+                <h1>SocialAuto</h1>
+                <p>Automation Hub</p>
+            </div>
+        </div>
+
+        <a class="primary-action" href="/posts/new">+ Schedule Post</a>
+
+        <nav class="sidebar-nav">
+            <a href="/">Dashboard</a>
+            <a href="/posts/new">Post Creator</a>
+            <a class="active" href="/settings/telegram">Integrations</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="/settings/telegram">Settings</a>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-top">
+            <h2>Telegram Integration</h2>
+            <div class="top-actions">
+                <form method="post" action="/logout">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="btn-link btn-secondary" type="submit">Logout</button>
+                </form>
+                <div class="profile-chip" th:text="${user.fullName}">Profile</div>
+            </div>
+        </header>
+
+        <div class="status-stack" th:if="${param.message != null or param.error != null}">
+            <div class="status success" th:if="${param.message != null}" th:text="${param.message[0]}"></div>
+            <div class="status error" th:if="${param.error != null}" th:text="${param.error[0]}"></div>
+        </div>
+
+        <div class="integration-layout">
+            <!-- Hero -->
+            <section class="integration-hero">
+                <div class="integration-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="integration-hero-text">
+                    <h3>Connect your Telegram Bot</h3>
+                    <p>Automatically publish your scheduled posts to any Telegram channel, group, or chat.</p>
+                </div>
+                <div class="integration-status-pill" th:classappend="${telegramSettings.configured() and telegramSettings.enabled() ? 'connected' : 'disconnected'}">
+                    <span class="status-dot"></span>
+                    <span th:text="${telegramSettings.configured() and telegramSettings.enabled() ? 'Connected' : 'Not connected'}">Status</span>
+                </div>
+            </section>
+
+            <div class="integration-grid">
+                <!-- Setup Card -->
+                <section class="panel integration-card">
+                    <div class="card-header">
+                        <h3>Bot Configuration</h3>
+                        <span class="step-badge">Step 1</span>
+                    </div>
+
+                    <div class="setup-steps">
+                        <div class="setup-step">
+                            <span class="step-num">1</span>
+                            <div>
+                                <strong>Create a bot</strong>
+                                <p>Open <a href="https://t.me/BotFather" target="_blank" class="inline-link">@BotFather</a> in Telegram and send <code>/newbot</code></p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">2</span>
+                            <div>
+                                <strong>Copy Bot Token</strong>
+                                <p>BotFather will give you a token like <code>123456:ABC-DEF...</code></p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">3</span>
+                            <div>
+                                <strong>Get Chat ID</strong>
+                                <p>Add bot to your channel/group. Use <a href="https://t.me/userinfobot" target="_blank" class="inline-link">@userinfobot</a> or <a href="https://t.me/getmyid_bot" target="_blank" class="inline-link">@getmyid_bot</a></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/settings/telegram}" method="post"
+                          hx-post="/settings/telegram" hx-target="#form-status" hx-swap="innerHTML"
+                          class="integration-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                        <div class="field">
+                            <label for="botToken">Bot Token</label>
+                            <input type="password" id="botToken" name="botToken"
+                                   th:placeholder="${telegramSettings.configured() ? telegramSettings.botToken() : '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'}"
+                                   required autocomplete="off" />
+                        </div>
+
+                        <div class="field">
+                            <label for="chatId">Chat ID</label>
+                            <input type="text" id="chatId" name="chatId"
+                                   th:value="${telegramSettings.configured() ? telegramSettings.chatId() : ''}"
+                                   placeholder="-1001234567890"
+                                   required />
+                        </div>
+
+                        <div class="field checkbox-field">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="enabled" value="true"
+                                       th:checked="${!telegramSettings.configured() or telegramSettings.enabled()}" />
+                                <span>Enable integration</span>
+                            </label>
+                        </div>
+
+                        <div id="form-status"></div>
+
+                        <div class="cta-row">
+                            <button type="submit">Save Configuration</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Test & Status Card -->
+                <section class="panel integration-card">
+                    <div class="card-header">
+                        <h3>Test Connection</h3>
+                        <span class="step-badge">Step 2</span>
+                    </div>
+
+                    <div th:if="${telegramSettings.configured()}" class="connection-info">
+                        <div class="info-row">
+                            <span class="info-label">Bot Token</span>
+                            <code class="info-value" th:text="${telegramSettings.botToken()}">***</code>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Chat ID</span>
+                            <code class="info-value" th:text="${telegramSettings.chatId()}">-</code>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="status-badge" th:classappend="${telegramSettings.enabled() ? 'published' : 'failed'}"
+                                  th:text="${telegramSettings.enabled() ? 'ACTIVE' : 'DISABLED'}">Status</span>
+                        </div>
+                    </div>
+
+                    <div th:unless="${telegramSettings.configured()}" class="empty-state">
+                        <div class="empty-icon">⚡</div>
+                        <p>Configure your bot first to send a test message</p>
+                    </div>
+
+                    <div th:if="${telegramSettings.configured() and telegramSettings.enabled()}">
+                        <div class="divider">Test Message</div>
+
+                        <form th:action="@{/settings/telegram/test}" method="post"
+                              hx-post="/settings/telegram/test" hx-target="#test-status" hx-swap="innerHTML">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                            <div class="field">
+                                <label for="testMessage">Message</label>
+                                <textarea id="testMessage" name="testMessage" rows="3"
+                                          placeholder="Hello from SocialAuto! 🚀">Hello from SocialAuto! 🚀
+
+This is a test message to verify your Telegram bot is working correctly.</textarea>
+                            </div>
+
+                            <div id="test-status"></div>
+
+                            <button type="submit" class="btn-test">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                                </svg>
+                                Send Test Message
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
