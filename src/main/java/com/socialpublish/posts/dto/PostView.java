@@ -5,7 +5,10 @@ import com.socialpublish.posts.entity.PostStatus;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public record PostView(
         UUID id,
@@ -17,7 +20,8 @@ public record PostView(
         String failedReason,
         int retryCount,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        String platforms
 ) {
 
     private static final int EXCERPT_MAX_LENGTH = 88;
@@ -35,7 +39,8 @@ public record PostView(
                 post.getFailedReason(),
                 post.getRetryCount(),
                 post.getCreatedAt().atZone(zoneId).toLocalDateTime(),
-                post.getUpdatedAt().atZone(zoneId).toLocalDateTime()
+                post.getUpdatedAt().atZone(zoneId).toLocalDateTime(),
+                post.getPlatforms() == null ? "" : post.getPlatforms()
         );
     }
 
@@ -47,5 +52,18 @@ public record PostView(
             return content;
         }
         return content.substring(0, EXCERPT_TRIM_LENGTH) + "...";
+    }
+
+    public List<String> platformList() {
+        if (platforms == null || platforms.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(platforms.split("[,;\\s]+"))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(value -> value.replaceAll("[^a-zA-Z_]", ""))
+                .map(String::toUpperCase)
+                .filter(value -> !value.isBlank())
+                .collect(Collectors.toList());
     }
 }

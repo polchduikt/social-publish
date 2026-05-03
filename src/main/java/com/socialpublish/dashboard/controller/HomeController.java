@@ -19,7 +19,15 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public String root(
+    public String landing(@CurrentUser CurrentUserView currentUser, Model model) {
+        if (currentUser != null) {
+            model.addAttribute("user", currentUser);
+        }
+        return "pages/public/landing";
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard(
             @CurrentUser CurrentUserView currentUser,
             @RequestParam(name = "message", required = false) String message,
             @RequestParam(name = "error", required = false) String error,
@@ -30,6 +38,6 @@ public class HomeController {
         model.addAttribute("dashboard", dashboard);
         model.addAttribute("message", message);
         model.addAttribute("error", error);
-        return "home";
+        return "pages/dashboard/home";
     }
 }

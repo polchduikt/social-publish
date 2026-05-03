@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Queue — Social Publish</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/queue.css">
+    <link rel="stylesheet" href="/css/toasts.css">
+    <link rel="stylesheet" href="/css/dark.css">
+</head>
+<body class="dashboard-page" th:attr="data-user-id=${user.id}">
+<div class="app-layout">
+    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+
+    <div class="dashboard-shell">
+        <div th:replace="~{fragments/layout/sidebar :: sidebar('queue')}"></div>
+
+        <main class="dashboard-main">
+
+
+        <div class="queue-filters">
+            <a href="/queue" class="filter-pill" th:classappend="${activeFilter == null} ? 'active'">All</a>
+            <a th:each="s : ${statuses}" th:href="@{/queue(status=${s})}"
+               class="filter-pill"
+               th:classappend="${activeFilter != null and activeFilter.name() == s.name()} ? 'active'"
+               th:text="${s}">STATUS</a>
+        </div>
+
+
+        <section class="panel">
+            <div class="posts-table-wrap">
+                <table class="posts-table queue-table">
+                    <thead>
+                    <tr>
+                        <th>Post Preview</th>
+                        <th>Platforms</th>
+                        <th>Scheduled For</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="post : ${posts}" th:attr="data-post-id=${post.id}">
+                        <td class="queue-preview-cell">
+                            <strong th:text="${post.title}">Title</strong>
+                            <p th:text="${post.excerpt()}">Excerpt</p>
+                        </td>
+                        <td>
+                            <div class="queue-platform-list">
+                            <th:block th:each="p : ${post.platformList()}">
+                                <span th:if="${p == 'TELEGRAM'}" class="queue-platform-chip">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                                    Telegram
+                                </span>
+                                <span th:if="${p == 'DISCORD'}" class="queue-platform-chip">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="text-discord"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+                                    Discord
+                                </span>
+                                <span th:if="${p != 'TELEGRAM' and p != 'DISCORD'}" class="queue-platform-chip" th:text="${p}">
+                                    Platform
+                                </span>
+                            </th:block>
+                            </div>
+                            <span th:if="${#lists.isEmpty(post.platformList())}" class="queue-platform-chip" style="color: #94a3b8;">
+                                Unspecified
+                            </span>
+                        </td>
+                        <td class="queue-date-cell">
+                            <span th:if="${post.scheduledAt != null}">
+                                <strong th:text="${#temporals.format(post.scheduledAt, 'MMM dd, yyyy')}">Oct 24, 2023</strong>
+                                <span class="queue-time" th:text="${#temporals.format(post.scheduledAt, 'HH:mm')}">09:00</span>
+                            </span>
+                            <span th:if="${post.scheduledAt == null}" class="queue-time">—</span>
+                        </td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="${#strings.toLowerCase(post.status.name())}"
+                                  th:text="${post.status}">DRAFT</span>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a th:href="@{|/posts/${post.id}/edit|}" class="action-link">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </a>
+                                <form th:action="@{|/posts/${post.id}/delete|}" method="post" class="m-0">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button type="submit" class="action-link danger-link">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                    </button>
+                                </form>
+                                <a th:if="${post.status.name() == 'FAILED'}"
+                                   th:href="@{|/posts/${post.id}/edit|}"
+                                   class="action-link retry-link">↻ Retry</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(posts)}">
+                        <td colspan="5" class="empty-row">No posts in queue. Create your first scheduled post.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="queue-footer" th:if="${!#lists.isEmpty(posts)}">
+                <span class="queue-count" th:text="'Showing ' + ${#lists.size(posts)} + ' entries'">Showing 0 entries</span>
+            </div>
+        </section>
+    </main>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>

@@ -26,12 +26,12 @@ public class AuthController {
             Model model
     ) {
         if (authenticatedUserService.resolveCurrentUser(authentication).isPresent()) {
-            return "redirect:/";
+            return "redirect:/dashboard";
         }
         model.addAttribute("error", error != null);
         model.addAttribute("oauth2Error", oauth2Error);
         model.addAttribute("logout", logout != null);
         model.addAttribute("registered", registered != null);
-        return "login";
+        return "pages/auth/login";
     }
 }

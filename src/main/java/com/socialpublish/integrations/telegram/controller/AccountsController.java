@@ -11,6 +11,9 @@ import com.socialpublish.integrations.telegram.dto.TelegramSettingsView;
 import com.socialpublish.integrations.telegram.entity.TelegramSettingsEntity;
 import com.socialpublish.integrations.telegram.repository.TelegramSettingsRepository;
 import com.socialpublish.integrations.telegram.service.TelegramClientService;
+import com.socialpublish.integrations.discord.dto.DiscordSettingsRequest;
+import com.socialpublish.integrations.discord.dto.DiscordSettingsView;
+import com.socialpublish.integrations.discord.repository.DiscordSettingsRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -20,44 +23,51 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@RequestMapping("/settings/telegram")
-public class TelegramSettingsController {
+public class AccountsController {
 
     private final TelegramSettingsRepository settingsRepository;
+    private final DiscordSettingsRepository discordSettingsRepository;
     private final UserRepository userRepository;
     private final TelegramClientService telegramClient;
     private final HtmxSupport htmxSupport;
 
-    public TelegramSettingsController(
+    public AccountsController(
             TelegramSettingsRepository settingsRepository,
+            DiscordSettingsRepository discordSettingsRepository,
             UserRepository userRepository,
             TelegramClientService telegramClient,
             HtmxSupport htmxSupport
     ) {
         this.settingsRepository = settingsRepository;
+        this.discordSettingsRepository = discordSettingsRepository;
         this.userRepository = userRepository;
         this.telegramClient = telegramClient;
         this.htmxSupport = htmxSupport;
     }
 
-    @GetMapping
-    public String settingsPage(@CurrentUser CurrentUserView currentUser, Model model) {
-        TelegramSettingsView view = settingsRepository.findByUserId(currentUser.id())
+    @GetMapping("/accounts")
+    public String accountsPage(@CurrentUser CurrentUserView currentUser, Model model) {
+        TelegramSettingsView telegram = settingsRepository.findByUserId(currentUser.id())
                 .map(TelegramSettingsView::from)
                 .orElse(TelegramSettingsView.empty());
 
+        DiscordSettingsView discord = discordSettingsRepository.findByUserId(currentUser.id())
+                .map(DiscordSettingsView::from)
+                .orElse(DiscordSettingsView.empty());
+
         model.addAttribute("user", currentUser);
-        model.addAttribute("telegramSettings", view);
+        model.addAttribute("telegramSettings", telegram);
         model.addAttribute("settingsRequest", new TelegramSettingsRequest());
-        return "integrations/telegram";
+        model.addAttribute("discordSettings", discord);
+        model.addAttribute("discordSettingsRequest", new DiscordSettingsRequest());
+        return "pages/accounts/accounts";
     }
 
-    @PostMapping
-    public String saveSettings(
+    @PostMapping("/accounts/telegram")
+    public String saveTelegram(
             @CurrentUser CurrentUserView currentUser,
             @Valid @ModelAttribute("settingsRequest") TelegramSettingsRequest request,
             BindingResult bindingResult,
@@ -69,10 +79,8 @@ public class TelegramSettingsController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errorMessage", ValidationUtils.firstFieldError(bindingResult));
-            if (isHtmx) {
-                return "fragments/integrations/telegram-status";
-            }
-            return "redirect:/settings/telegram?error=Validation+failed";
+            if (isHtmx) return "fragments/integrations/telegram-status";
+            return "redirect:/accounts?error=Validation+failed";
         }
 
         try {
@@ -90,25 +98,22 @@ public class TelegramSettingsController {
             settingsRepository.save(settings);
 
             if (isHtmx) {
-                htmxSupport.redirectTo(httpResponse, "/settings/telegram?message=Settings+saved+successfully");
+                htmxSupport.redirectTo(httpResponse, "/accounts?message=Telegram+connected+successfully");
                 return "fragments/integrations/telegram-status";
             }
-            return "redirect:/settings/telegram?message=Settings+saved+successfully";
+            return "redirect:/accounts?message=Telegram+connected+successfully";
         } catch (Exception ex) {
             model.addAttribute("errorMessage", "Failed to save settings");
-            if (isHtmx) {
-                return "fragments/integrations/telegram-status";
-            }
-            return "redirect:/settings/telegram?error=Save+failed";
+            if (isHtmx) return "fragments/integrations/telegram-status";
+            return "redirect:/accounts?error=Save+failed";
         }
     }
 
-    @PostMapping("/test")
-    public String sendTestMessage(
+    @PostMapping("/accounts/telegram/test")
+    public String testTelegram(
             @CurrentUser CurrentUserView currentUser,
-            @RequestParam(name = "testMessage", defaultValue = "Hello from SocialAuto! 🚀") String testMessage,
+            @RequestParam(name = "testMessage", defaultValue = "Hello from Social Publish!") String testMessage,
             HttpServletRequest httpRequest,
-            HttpServletResponse httpResponse,
             Model model
     ) {
         boolean isHtmx = htmxSupport.isHtmxRequest(httpRequest);
@@ -116,25 +121,19 @@ public class TelegramSettingsController {
         TelegramSettingsEntity settings = settingsRepository.findByUserId(currentUser.id()).orElse(null);
         if (settings == null || !settings.isEnabled()) {
             model.addAttribute("errorMessage", "Telegram is not configured or disabled");
-            if (isHtmx) {
-                return "fragments/integrations/telegram-status";
-            }
-            return "redirect:/settings/telegram?error=Not+configured";
+            if (isHtmx) return "fragments/integrations/telegram-status";
+            return "redirect:/accounts?error=Not+configured";
         }
 
         try {
             telegramClient.sendMessage(settings.getBotToken(), settings.getChatId(), testMessage);
-            model.addAttribute("successMessage", "✅ Test message sent successfully!");
-            if (isHtmx) {
-                return "fragments/integrations/telegram-status";
-            }
-            return "redirect:/settings/telegram?message=Test+message+sent";
+            model.addAttribute("successMessage", "Test message sent successfully!");
+            if (isHtmx) return "fragments/integrations/telegram-status";
+            return "redirect:/accounts?message=Test+message+sent";
         } catch (Exception ex) {
-            model.addAttribute("errorMessage", "❌ Failed: " + ex.getMessage());
-            if (isHtmx) {
-                return "fragments/integrations/telegram-status";
-            }
-            return "redirect:/settings/telegram?error=Test+failed";
+            model.addAttribute("errorMessage", "Failed: " + ex.getMessage());
+            if (isHtmx) return "fragments/integrations/telegram-status";
+            return "redirect:/accounts?error=Test+failed";
         }
     }
 }

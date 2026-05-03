@@ -1,0 +1,95 @@
+.queue-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.filter-pill {
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.filter-pill:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.filter-pill.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.queue-table .queue-preview-cell strong {
+    display: block;
+    font-size: 14px;
+}
+
+.queue-table .queue-preview-cell p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.queue-date-cell {
+    white-space: nowrap;
+}
+
+.queue-date-cell strong {
+    display: block;
+    font-size: 13px;
+}
+
+.queue-time {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.queue-footer {
+    padding: 12px 0 0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 8px;
+}
+
+.queue-count {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.retry-link {
+    color: #2563eb !important;
+}
+
+
+
+.queue-platform-chip {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    gap: 4px;
+    line-height: 1;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(148, 163, 184, 0.18);
+}
+.queue-platform-chip svg.text-primary {
+    color: #2563eb;
+}
+
+.queue-platform-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+

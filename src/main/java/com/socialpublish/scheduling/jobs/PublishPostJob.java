@@ -1,5 +1,7 @@
 package com.socialpublish.scheduling.jobs;
 
+import com.socialpublish.notifications.dto.PostNotification;
+import com.socialpublish.notifications.service.NotificationService;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
@@ -12,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.UUID;
 
 public class PublishPostJob implements Job {
@@ -27,6 +28,9 @@ public class PublishPostJob implements Job {
 
     @Autowired
     private PublishingProducer publishingProducer;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -51,7 +55,17 @@ public class PublishPostJob implements Job {
         post.setRetryCount(0);
         postRepository.save(post);
 
-        publishingProducer.sendPublishRequest(postId);
-        log.info("Post {} transitioned to PUBLISHING and sent to RabbitMQ", postId);
+        notificationService.sendPostUpdate(post.getOwner().getId(),
+                PostNotification.publishing(postId, post.getTitle()));
+
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        publishingProducer.sendPublishRequest(postId);
+                        log.info("Post {} transitioned to PUBLISHING and sent to RabbitMQ", postId);
+                    }
+                }
+        );
     }
 }

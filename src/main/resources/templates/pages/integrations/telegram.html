@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Integration</title>
-    <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/integrations.css">
+    <link rel="stylesheet" href="/css/dark.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body class="dashboard-page">
@@ -21,7 +24,7 @@
         <a class="primary-action" href="/posts/new">+ Schedule Post</a>
 
         <nav class="sidebar-nav">
-            <a href="/">Dashboard</a>
+            <a href="/dashboard">Dashboard</a>
             <a href="/posts/new">Post Creator</a>
             <a class="active" href="/settings/telegram">Integrations</a>
         </nav>
@@ -158,7 +161,7 @@
                     </div>
 
                     <div th:unless="${telegramSettings.configured()}" class="empty-state">
-                        <div class="empty-icon">⚡</div>
+                        <div class="empty-icon"></div>
                         <p>Configure your bot first to send a test message</p>
                     </div>
 
@@ -172,7 +175,7 @@
                             <div class="field">
                                 <label for="testMessage">Message</label>
                                 <textarea id="testMessage" name="testMessage" rows="3"
-                                          placeholder="Hello from SocialAuto! 🚀">Hello from SocialAuto! 🚀
+                                          placeholder="Hello from SocialAuto!">Hello from SocialAuto!
 
 This is a test message to verify your Telegram bot is working correctly.</textarea>
                             </div>

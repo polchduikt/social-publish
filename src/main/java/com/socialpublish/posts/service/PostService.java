@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -56,6 +58,9 @@ public class PostService {
                         : post.getScheduledAt().atZone(ZoneId.systemDefault()).toLocalDateTime()
         );
         request.setFailedReason(post.getFailedReason());
+        if (post.getPlatforms() != null && !post.getPlatforms().isBlank()) {
+            request.setPlatforms(Arrays.asList(post.getPlatforms().split(",")));
+        }
         return request;
     }
 
@@ -113,6 +118,8 @@ public class PostService {
         String content = request.getContent() == null ? "" : request.getContent().trim();
         post.setTitle(title);
         post.setContent(content);
+        List<String> platforms = request.getPlatforms();
+        post.setPlatforms(platforms == null || platforms.isEmpty() ? "" : String.join(",", platforms));
     }
 
     private void applyUserTransition(Post post, PostStatus target, PostUpsertRequest request) {
@@ -138,6 +145,9 @@ public class PostService {
     private void applyScheduledFields(Post post, PostUpsertRequest request) {
         if (request.getScheduledAt() == null) {
             throw new PostValidationException("Scheduled date is required for SCHEDULED posts");
+        }
+        if (post.getPlatforms() == null || post.getPlatforms().isBlank()) {
+            throw new PostValidationException("Select at least one platform for SCHEDULED posts");
         }
         post.setScheduledAt(request.getScheduledAt().atZone(ZoneId.systemDefault()).toInstant());
         post.setPublishedAt(null);

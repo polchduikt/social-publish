@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,4 +32,6 @@ public class PostUpsertRequest {
 
     @Size(max = 500, message = "Failure reason must be at most 500 characters")
     private String failedReason;
+
+    private List<String> platforms = new ArrayList<>();
 }

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Publish — The Ultimate Automation Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="/css/landing.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <nav class="navbar">
+            <a href="/" class="brand">
+                <div class="brand-mark">SP</div>
+                <div class="brand-text">Social Publish</div>
+            </a>
+            
+            <div class="nav-links" th:if="${user == null}">
+                <a href="/login" class="nav-item">Sign In</a>
+                <a href="/dashboard" class="btn-primary">Get Started</a>
+            </div>
+            <div class="nav-links" th:unless="${user == null}">
+                <a href="/dashboard" class="btn-primary">Go to Dashboard</a>
+            </div>
+        </nav>
+
+        <main class="hero">
+            <h1>Automate your social presence effortlessly</h1>
+            <p>Draft, schedule, and publish content across multiple platforms from a single, beautifully designed dashboard. Never miss a post again.</p>
+            
+            <div class="hero-cta" th:if="${user == null}">
+                <a href="/dashboard" class="btn-large">
+                    Start for free
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <a href="/login" class="btn-outline">Sign In</a>
+            </div>
+            <div class="hero-cta" th:unless="${user == null}">
+                <a href="/dashboard" class="btn-large">
+                    Open Dashboard
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <div class="hero-visual">
+                <div class="browser-mockup">
+                    <div class="browser-header">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <div class="browser-body">
+                        <div class="ui-element sidebar">
+                            <div class="ui-line shorter ui-line-mb-32"></div>
+                            <div class="ui-line"></div>
+                            <div class="ui-line short"></div>
+                            <div class="ui-line short"></div>
+                            <div class="ui-line"></div>
+                            <div class="ui-line short"></div>
+                        </div>
+                        <div class="ui-element">
+                            <div class="dashboard-grid">
+                                <div class="dashboard-card">
+                                    <div class="ui-line shortest"></div>
+                                    <div class="ui-line ui-line-24"></div>
+                                </div>
+                                <div class="dashboard-card">
+                                    <div class="ui-line shortest"></div>
+                                    <div class="ui-line ui-line-24"></div>
+                                </div>
+                                <div class="dashboard-card">
+                                    <div class="ui-line shortest"></div>
+                                    <div class="ui-line ui-line-24"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="ui-line ui-line-120"></div>
+                            
+                            <div class="flex-gap-16-mt-24">
+                                <div class="ui-line short ui-line-60"></div>
+                                <div class="ui-line ui-line-60"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why choose Social Publish?</h2>
+                <p>We built the ultimate tool to save you time and maximize your online reach without the clutter of traditional tools.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h3>Smart Scheduling</h3>
+                    <p>Plan your content calendar weeks in advance. Our resilient queueing system ensures your posts go live exactly when you want them to, down to the minute.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    </div>
+                    <h3>Multiple Platforms</h3>
+                    <p>Write once, publish everywhere. Seamlessly connect your Telegram, Discord, and Instagram accounts to reach all your audiences simultaneously without context switching.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </div>
+                    <h3>Live Updates</h3>
+                    <p>Get real-time feedback on your posting pipeline. Watch statuses update instantly over WebSockets without ever refreshing the page. Always stay in the loop.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>How it works</h2>
+                <p>Three simple steps to automate your social media pipeline.</p>
+            </div>
+
+            <div class="step-row">
+                <div class="step-content">
+                    <h3>1. Create your content</h3>
+                    <p>Use our beautifully designed, distraction-free editor. Add emojis, format your text, and preview how it will look on different platforms before you publish.</p>
+                </div>
+                <div class="step-visual">
+                    <div class="abstract-form">
+                        <div class="ui-line shorter mb-24"></div>
+                        <div class="ui-line ui-line-100"></div>
+                        <div class="ui-line shortest ui-line-primary"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-content">
+                    <h3>2. Schedule accurately</h3>
+                    <p>Select your desired date and time using our 24-hour localized time picker. Whether it's tomorrow morning or next month, we've got you covered.</p>
+                </div>
+                <div class="step-visual">
+                    <div class="pulse-circle">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-row">
+                <div class="step-content">
+                    <h3>3. Relax and let us handle the rest</h3>
+                    <p>Our resilient backend takes over. If a network error occurs while posting to Telegram or Discord, our intelligent retry system ensures your post will eventually go through.</p>
+                </div>
+                <div class="step-visual">
+                    <div class="abstract-form flex-col-center">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span class="text-success-bold">PUBLISHED</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Social Publish. All rights reserved. The ultimate automation hub.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
+

@@ -1,6 +1,9 @@
 package com.socialpublish.publishing.service;
 
 import com.socialpublish.integrations.telegram.service.TelegramPublisherService;
+import com.socialpublish.integrations.discord.service.DiscordPublisherService;
+import com.socialpublish.notifications.dto.PostNotification;
+import com.socialpublish.notifications.service.NotificationService;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
@@ -22,17 +25,23 @@ public class PublishingService {
     private final PostStatusMachine statusMachine;
     private final PublishingProducer publishingProducer;
     private final TelegramPublisherService telegramPublisherService;
+    private final DiscordPublisherService discordPublisherService;
+    private final NotificationService notificationService;
 
     public PublishingService(
             PostRepository postRepository,
             PostStatusMachine statusMachine,
             PublishingProducer publishingProducer,
-            TelegramPublisherService telegramPublisherService
+            TelegramPublisherService telegramPublisherService,
+            DiscordPublisherService discordPublisherService,
+            NotificationService notificationService
     ) {
         this.postRepository = postRepository;
         this.statusMachine = statusMachine;
         this.publishingProducer = publishingProducer;
         this.telegramPublisherService = telegramPublisherService;
+        this.discordPublisherService = discordPublisherService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -48,13 +57,19 @@ public class PublishingService {
             return;
         }
 
+        UUID userId = post.getOwner().getId();
+
         if (post.getStatus() == PostStatus.RETRYING) {
             statusMachine.transition(post, PostStatus.PUBLISHING);
+            notificationService.sendPostUpdate(userId,
+                    PostNotification.publishing(postId, post.getTitle()));
         }
 
         try {
             doPublish(post);
             markPublished(post);
+            notificationService.sendPostUpdate(userId,
+                    PostNotification.published(postId, post.getTitle()));
         } catch (Exception ex) {
             log.error("Publishing failed for post {}: {}", postId, ex.getMessage());
             handleFailure(post, ex.getMessage(), attempt);
@@ -62,7 +77,38 @@ public class PublishingService {
     }
 
     private void doPublish(Post post) {
-        telegramPublisherService.publish(post);
+        String platforms = post.getPlatforms();
+        if (platforms == null || platforms.isBlank()) {
+            throw new RuntimeException("No platforms selected for publishing");
+        }
+
+        boolean anyPublished = false;
+        StringBuilder errors = new StringBuilder();
+
+        if (platforms.contains("TELEGRAM")) {
+            try {
+                telegramPublisherService.publish(post);
+                anyPublished = true;
+            } catch (Exception ex) {
+                log.warn("Telegram publishing failed for post {}: {}", post.getId(), ex.getMessage());
+                errors.append("Telegram: ").append(ex.getMessage());
+            }
+        }
+
+        if (platforms.contains("DISCORD")) {
+            try {
+                discordPublisherService.publish(post);
+                anyPublished = true;
+            } catch (Exception ex) {
+                log.warn("Discord publishing failed for post {}: {}", post.getId(), ex.getMessage());
+                if (!errors.isEmpty()) errors.append("; ");
+                errors.append("Discord: ").append(ex.getMessage());
+            }
+        }
+
+        if (!anyPublished) {
+            throw new RuntimeException(errors.toString());
+        }
     }
 
     private void markPublished(Post post) {
@@ -74,19 +120,25 @@ public class PublishingService {
     }
 
     private void handleFailure(Post post, String reason, int attempt) {
+        UUID userId = post.getOwner().getId();
+
         if (attempt < post.getMaxRetries()) {
             statusMachine.transition(post, PostStatus.RETRYING);
             post.setRetryCount(attempt);
             post.setFailedReason(reason);
             postRepository.save(post);
             publishingProducer.sendRetryRequest(post.getId(), attempt + 1);
-            log.info("Post {} queued for retry (attempt {}/{})", post.getId(), attempt + 1, post.getMaxRetries());
+
+            notificationService.sendPostUpdate(userId,
+                    PostNotification.retrying(post.getId(), post.getTitle(), attempt, post.getMaxRetries()));
         } else {
             statusMachine.transition(post, PostStatus.FAILED);
             post.setRetryCount(attempt);
             post.setFailedReason(reason);
             postRepository.save(post);
-            log.warn("Post {} failed permanently after {} attempts", post.getId(), attempt);
+
+            notificationService.sendPostUpdate(userId,
+                    PostNotification.failed(post.getId(), post.getTitle(), reason));
         }
     }
 }

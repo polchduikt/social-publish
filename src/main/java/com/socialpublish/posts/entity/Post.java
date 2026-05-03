@@ -65,6 +65,9 @@ public class Post {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(length = 200)
+    private String platforms = "";
+
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;

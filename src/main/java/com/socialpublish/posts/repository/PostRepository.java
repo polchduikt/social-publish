@@ -18,4 +18,6 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     long countByOwnerId(UUID ownerId);
 
     long countByOwnerIdAndStatus(UUID ownerId, PostStatus status);
+
+    List<Post> findByOwnerIdAndStatusOrderByUpdatedAtDesc(UUID ownerId, PostStatus status);
 }

@@ -5,6 +5,8 @@ import com.socialpublish.posts.exception.PostValidationException;
 import com.socialpublish.posts.exception.UnauthorizedPostAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.ui.Model;
 import org.springframework.validation.FieldError;
@@ -29,23 +31,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public String handleIllegalArgument(IllegalArgumentException ex, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("error", ex.getMessage());
-        return "redirect:/";
+        return "redirect:/dashboard";
     }
 
     @ExceptionHandler(PostNotFoundException.class)
     public String handlePostNotFound() {
-        return "redirect:/?error=Post+not+found";
+        return "redirect:/dashboard?error=Post+not+found";
     }
 
     @ExceptionHandler(PostValidationException.class)
     public String handlePostValidation(PostValidationException ex, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("error", ex.getMessage());
-        return "redirect:/";
+        return "redirect:/dashboard";
     }
 
     @ExceptionHandler(UnauthorizedPostAccessException.class)
     public String handlePostAccess() {
-        return "redirect:/?error=Access+denied";
+        return "redirect:/dashboard?error=Access+denied";
     }
 
     @ExceptionHandler({BadCredentialsException.class, OAuth2AuthenticationException.class})
@@ -60,13 +62,17 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .orElse("Validation failed");
         redirectAttributes.addFlashAttribute("error", message);
-        return "redirect:/";
+        return "redirect:/dashboard";
+    }
+    @ExceptionHandler({AccessDeniedException.class, AuthenticationException.class})
+    public void handleSecurityExceptions(RuntimeException ex) {
+        throw ex;
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleUnexpected(Exception ex, Model model) {
         model.addAttribute("error", "Unexpected server error");
-        return "error";
+        return "pages/error/error";
     }
 }

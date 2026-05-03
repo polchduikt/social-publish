@@ -41,11 +41,11 @@ public class RegisterController {
             Model model
     ) {
         if (authenticatedUserService.resolveCurrentUser(authentication).isPresent()) {
-            return "redirect:/";
+            return "redirect:/dashboard";
         }
         model.addAttribute("error", error != null);
         model.addAttribute("registerRequest", new RegisterRequest());
-        return "register";
+        return "pages/auth/register";
     }
 
     @PostMapping("/register")

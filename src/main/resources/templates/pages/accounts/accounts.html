@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connected Accounts — Social Publish</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/accounts.css">
+    <link rel="stylesheet" href="/css/integrations.css">
+    <link rel="stylesheet" href="/css/toasts.css">
+    <link rel="stylesheet" href="/css/dark.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="dashboard-page" th:attr="data-user-id=${user.id}">
+<div class="app-layout">
+    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+
+    <div class="dashboard-shell">
+        <div th:replace="~{fragments/layout/sidebar :: sidebar('accounts')}"></div>
+
+        <main class="dashboard-main">
+
+        <div class="status-stack" th:if="${param.message != null or param.error != null}">
+            <div class="status success" th:if="${param.message != null}" th:text="${param.message[0]}"></div>
+            <div class="status error" th:if="${param.error != null}" th:text="${param.error[0]}"></div>
+        </div>
+
+
+        <div class="accounts-grid">
+
+            <div class="account-card" th:classappend="${telegramSettings.configured() and telegramSettings.enabled() ? 'account-connected' : ''}">
+                <div class="account-card-header">
+                    <div class="account-icon telegram-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                    </div>
+                    <div class="account-info">
+                        <strong th:text="${telegramSettings.configured() ? telegramSettings.chatId() : 'Telegram'}">Telegram</strong>
+                        <span>Telegram</span>
+                    </div>
+                    <div class="account-status-dot" th:classappend="${telegramSettings.configured() and telegramSettings.enabled() ? 'online' : 'offline'}">
+                        <span class="dot"></span>
+                        <span th:text="${telegramSettings.configured() and telegramSettings.enabled() ? 'Online' : 'Disconnected'}">Status</span>
+                    </div>
+                </div>
+                <div class="account-card-body">
+                    <p th:if="${telegramSettings.configured()}">Bot: <code th:text="${telegramSettings.botToken()}">***</code></p>
+                    <p th:unless="${telegramSettings.configured()}">Connect your Telegram bot to start publishing.</p>
+                </div>
+                <div class="account-card-footer">
+                    <a href="#telegram-setup" class="action-link" onclick="document.getElementById('telegram-setup').scrollIntoView({behavior:'smooth'})">Manage →</a>
+                </div>
+            </div>
+
+
+            <div class="account-card" th:classappend="${discordSettings.configured() and discordSettings.enabled() ? 'account-connected' : ''}">
+                <div class="account-card-header">
+                    <div class="account-icon discord-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+                    </div>
+                    <div class="account-info">
+                        <strong th:text="${discordSettings.configured() ? 'Discord Webhook' : 'Discord'}">Discord</strong>
+                        <span>Discord</span>
+                    </div>
+                    <div class="account-status-dot" th:classappend="${discordSettings.configured() and discordSettings.enabled() ? 'online' : 'offline'}">
+                        <span class="dot"></span>
+                        <span th:text="${discordSettings.configured() and discordSettings.enabled() ? 'Online' : 'Disconnected'}">Status</span>
+                    </div>
+                </div>
+                <div class="account-card-body">
+                    <p th:if="${discordSettings.configured()}">Webhook: <code th:text="${discordSettings.webhookUrl()}">***</code></p>
+                    <p th:unless="${discordSettings.configured()}">Connect your Discord webhook to start publishing.</p>
+                </div>
+                <div class="account-card-footer">
+                    <a href="#discord-setup" class="action-link" onclick="document.getElementById('discord-setup').scrollIntoView({behavior:'smooth'})">Manage →</a>
+                </div>
+            </div>
+
+
+            <div class="account-card account-disabled">
+                <div class="account-card-header">
+                    <div class="account-icon instagram-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
+                    </div>
+                    <div class="account-info">
+                        <strong>Instagram</strong>
+                        <span>Instagram</span>
+                    </div>
+                    <div class="account-status-dot offline">
+                        <span class="dot"></span>
+                        <span>Coming Soon</span>
+                    </div>
+                </div>
+                <div class="account-card-body"><p>Instagram Graph API integration — coming soon.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled">Manage →</span></div>
+            </div>
+        </div>
+
+
+        <section id="telegram-setup" class="panel mt-20">
+            <div class="card-header">
+                <h3>Telegram Bot Configuration</h3>
+                <span class="step-badge" th:text="${telegramSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
+            </div>
+
+            <div class="integration-grid">
+                <div>
+                    <div class="setup-steps">
+                        <div class="setup-step">
+                            <span class="step-num">1</span>
+                            <div>
+                                <strong>Create a bot</strong>
+                                <p>Open <a href="https://t.me/BotFather" target="_blank" class="inline-link">@BotFather</a> → send <code>/newbot</code></p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">2</span>
+                            <div>
+                                <strong>Copy Bot Token</strong>
+                                <p>BotFather gives you a token like <code>123456:ABC-DEF...</code></p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">3</span>
+                            <div>
+                                <strong>Get Chat ID & start the bot</strong>
+                                <p>Send <code>/start</code> to your bot. Use <a href="https://t.me/getmyid_bot" target="_blank" class="inline-link">@getmyid_bot</a> for Chat ID.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/accounts/telegram}" method="post"
+                          hx-post="/accounts/telegram" hx-target="#tg-status" hx-swap="innerHTML"
+                          class="integration-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <div class="field">
+                            <label for="botToken">Bot Token</label>
+                            <input type="password" id="botToken" name="botToken" required autocomplete="off"
+                                   th:placeholder="${telegramSettings.configured() ? telegramSettings.botToken() : '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'}"/>
+                        </div>
+                        <div class="field">
+                            <label for="chatId">Chat ID</label>
+                            <input type="text" id="chatId" name="chatId" required
+                                   th:value="${telegramSettings.configured() ? telegramSettings.chatId() : ''}"
+                                   placeholder="-1001234567890"/>
+                        </div>
+                        <div class="field checkbox-field">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="enabled" value="true"
+                                       th:checked="${!telegramSettings.configured() or telegramSettings.enabled()}" />
+                                <span>Enable integration</span>
+                            </label>
+                        </div>
+                        <div id="tg-status"></div>
+                        <button type="submit">Save Configuration</button>
+                    </form>
+                </div>
+
+                <div th:if="${telegramSettings.configured() and telegramSettings.enabled()}">
+                    <h4 class="mb-12">Send Test Message</h4>
+                    <form th:action="@{/accounts/telegram/test}" method="post"
+                          hx-post="/accounts/telegram/test" hx-target="#test-status" hx-swap="innerHTML">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <div class="field">
+                            <textarea id="testMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
+                        </div>
+                        <div id="test-status"></div>
+                        <button type="submit" class="btn-test">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            Send Test
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="discord-setup" class="panel mt-20">
+            <div class="card-header">
+                <h3>Discord Webhook Configuration</h3>
+                <span class="step-badge" th:text="${discordSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
+            </div>
+
+            <div class="integration-grid">
+                <div>
+                    <div class="setup-steps">
+                        <div class="setup-step">
+                            <span class="step-num">1</span>
+                            <div>
+                                <strong>Open Server Settings</strong>
+                                <p>Go to your Discord server → Server Settings → Integrations</p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">2</span>
+                            <div>
+                                <strong>Create Webhook</strong>
+                                <p>Click "Webhooks" → "New Webhook". Choose the channel for posts.</p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">3</span>
+                            <div>
+                                <strong>Copy Webhook URL</strong>
+                                <p>Click "Copy Webhook URL" and paste it below.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/accounts/discord}" method="post"
+                          hx-post="/accounts/discord" hx-target="#discord-status" hx-swap="innerHTML"
+                          class="integration-form">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <div class="field">
+                            <label for="webhookUrl">Webhook URL</label>
+                            <input type="url" id="webhookUrl" name="webhookUrl" required autocomplete="off"
+                                   th:placeholder="${discordSettings.configured() ? discordSettings.webhookUrl() : 'https://discord.com/api/webhooks/...'}"/>
+                        </div>
+                        <div class="field checkbox-field">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="enabled" value="true"
+                                       th:checked="${!discordSettings.configured() or discordSettings.enabled()}" />
+                                <span>Enable integration</span>
+                            </label>
+                        </div>
+                        <div id="discord-status"></div>
+                        <button type="submit">Save Configuration</button>
+                    </form>
+                </div>
+
+                <div th:if="${discordSettings.configured() and discordSettings.enabled()}">
+                    <h4 class="mb-12">Send Test Message</h4>
+                    <form th:action="@{/accounts/discord/test}" method="post"
+                          hx-post="/accounts/discord/test" hx-target="#discord-test-status" hx-swap="innerHTML">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <div class="field">
+                            <textarea id="discordTestMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
+                        </div>
+                        <div id="discord-test-status"></div>
+                        <button type="submit" class="btn-test">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            Send Test
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+        </main>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>
