@@ -7,64 +7,28 @@ import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
 import com.socialpublish.integrations.telegram.dto.TelegramSettingsRequest;
-import com.socialpublish.integrations.telegram.dto.TelegramSettingsView;
 import com.socialpublish.integrations.telegram.entity.TelegramSettingsEntity;
 import com.socialpublish.integrations.telegram.repository.TelegramSettingsRepository;
 import com.socialpublish.integrations.telegram.service.TelegramClientService;
-import com.socialpublish.integrations.discord.dto.DiscordSettingsRequest;
-import com.socialpublish.integrations.discord.dto.DiscordSettingsView;
-import com.socialpublish.integrations.discord.repository.DiscordSettingsRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 public class AccountsController {
 
     private final TelegramSettingsRepository settingsRepository;
-    private final DiscordSettingsRepository discordSettingsRepository;
     private final UserRepository userRepository;
     private final TelegramClientService telegramClient;
     private final HtmxSupport htmxSupport;
-
-    public AccountsController(
-            TelegramSettingsRepository settingsRepository,
-            DiscordSettingsRepository discordSettingsRepository,
-            UserRepository userRepository,
-            TelegramClientService telegramClient,
-            HtmxSupport htmxSupport
-    ) {
-        this.settingsRepository = settingsRepository;
-        this.discordSettingsRepository = discordSettingsRepository;
-        this.userRepository = userRepository;
-        this.telegramClient = telegramClient;
-        this.htmxSupport = htmxSupport;
-    }
-
-    @GetMapping("/accounts")
-    public String accountsPage(@CurrentUser CurrentUserView currentUser, Model model) {
-        TelegramSettingsView telegram = settingsRepository.findByUserId(currentUser.id())
-                .map(TelegramSettingsView::from)
-                .orElse(TelegramSettingsView.empty());
-
-        DiscordSettingsView discord = discordSettingsRepository.findByUserId(currentUser.id())
-                .map(DiscordSettingsView::from)
-                .orElse(DiscordSettingsView.empty());
-
-        model.addAttribute("user", currentUser);
-        model.addAttribute("telegramSettings", telegram);
-        model.addAttribute("settingsRequest", new TelegramSettingsRequest());
-        model.addAttribute("discordSettings", discord);
-        model.addAttribute("discordSettingsRequest", new DiscordSettingsRequest());
-        return "pages/accounts/accounts";
-    }
 
     @PostMapping("/accounts/telegram")
     public String saveTelegram(

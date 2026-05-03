@@ -1,6 +1,7 @@
 package com.socialpublish.scheduling.service;
 
 import com.socialpublish.posts.entity.Post;
+import com.socialpublish.scheduling.exception.SchedulingException;
 import com.socialpublish.scheduling.jobs.PublishPostJob;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -48,7 +49,7 @@ public class PostSchedulerService {
             scheduler.scheduleJob(jobDetail, trigger);
             log.info("Scheduled post {} for {}", post.getId(), post.getScheduledAt());
         } catch (SchedulerException ex) {
-            throw new RuntimeException("Failed to schedule post " + post.getId(), ex);
+            throw new SchedulingException("Failed to schedule post " + post.getId(), ex);
         }
     }
 
@@ -60,7 +61,7 @@ public class PostSchedulerService {
                 log.info("Cancelled scheduled job for post {}", postId);
             }
         } catch (SchedulerException ex) {
-            throw new RuntimeException("Failed to cancel scheduled post " + postId, ex);
+            throw new SchedulingException("Failed to cancel scheduled post " + postId, ex);
         }
     }
 

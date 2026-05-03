@@ -28,8 +28,10 @@
             <form class="creator-layout"
                   th:object="${postRequest}"
                   method="post"
+                  enctype="multipart/form-data"
                   th:action="${mode == 'edit'} ? @{|/posts/${postId}|} : @{/posts}"
                   th:attr="hx-post=${mode == 'edit'} ? @{|/posts/${postId}|} : @{/posts}"
+                  hx-encoding="multipart/form-data"
                   hx-target="#post-form-status"
                   hx-swap="innerHTML">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -85,10 +87,61 @@
                             <span class="toolbar-label">Message</span>
                             <span class="char-count"><span id="charCount">0</span>/5000</span>
                         </div>
+                        <div class="format-toolbar" id="formatToolbar">
+                            <button type="button" class="format-btn" data-feature="bold" title="Bold">B</button>
+                            <button type="button" class="format-btn" data-feature="italic" title="Italic">I</button>
+                            <button type="button" class="format-btn" data-feature="underline" title="Underline">U</button>
+                            <button type="button" class="format-btn" data-feature="strikethrough" title="Strikethrough">S</button>
+                            <button type="button" class="format-btn" data-feature="spoiler" title="Spoiler">Spoiler</button>
+                            <button type="button" class="format-btn" data-feature="code" title="Monospace">Code</button>
+                            <button type="button" class="format-btn" data-feature="quote" title="Quote">Quote</button>
+                            <button type="button" class="format-btn" data-feature="link" title="Create link">Link</button>
+                            <button type="button" class="format-btn" data-feature="hashtag" title="Hashtag">#</button>
+                            <button type="button" class="format-btn" data-feature="mention" title="Mention">@</button>
+                        </div>
+                        <div class="feature-hint" id="featureHint">Select a platform to see available formatting features.</div>
                         <div class="field mb-0">
                             <textarea id="content" th:field="*{content}" rows="6" maxlength="5000"
                                       placeholder="What do you want to share?" required></textarea>
                         </div>
+                    </section>
+
+                    <section class="panel media-panel">
+                        <div class="editor-toolbar">
+                            <span class="toolbar-label">Photos</span>
+                            <span class="char-count">Up to 10 images, 10 MB each</span>
+                        </div>
+
+                        <div class="media-dropzone" id="mediaDropzone">
+                            <input id="mediaFiles" name="mediaFiles" type="file" accept="image/*" multiple class="media-dropzone-input">
+                            <div class="media-dropzone-content">
+                                <svg class="media-dropzone-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <p class="media-dropzone-title">Drag &amp; drop media</p>
+                                <p class="media-dropzone-hint">or click to browse files. Supports JPG, PNG, WEBP.</p>
+                            </div>
+                        </div>
+
+                        <div class="media-preview-grid sortable-grid" id="mediaPreview"></div>
+
+                        <div class="media-preview-grid sortable-grid" id="existingMediaGrid" th:if="${!#lists.isEmpty(existingMedia)}">
+                            <article class="media-thumb-card existing-media-item" th:each="media : ${existingMedia}"
+                                     th:attr="data-public-id=${media.publicId}" draggable="true">
+                                <img th:src="${media.url}" alt="Post image">
+                                <span class="media-order-badge"></span>
+                                <button type="button" class="media-remove-btn existing-media-remove"
+                                        th:attr="data-public-id=${media.publicId}">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                                <div class="media-drag-handle">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
+                                </div>
+                            </article>
+                        </div>
+                        <div id="removedMediaContainer"></div>
                     </section>
                 </div>
 
@@ -101,12 +154,6 @@
                         </h3>
 
                         <div class="field">
-                            <label for="title">Title</label>
-                            <input id="title" th:field="*{title}" type="text" maxlength="150"
-                                   placeholder="Post title" required>
-                        </div>
-
-                        <div class="field">
                             <label for="scheduledAt">Date & Time</label>
                             <input id="scheduledAt" th:field="*{scheduledAt}" type="text" placeholder="Select date and time...">
                         </div>
@@ -115,6 +162,10 @@
                             <button type="submit" name="status" value="SCHEDULED" class="btn-schedule">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                                 <span th:text="${mode == 'edit' ? 'Save Changes' : 'Schedule Post'}">Schedule Post</span>
+                            </button>
+                            <button type="submit" name="publishNow" value="true" class="btn-publish-now">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                Post now
                             </button>
                             <button type="submit" name="status" value="DRAFT" class="btn-draft-action">
                                 Save as Draft
@@ -129,7 +180,6 @@
                             Preview
                         </h3>
                         <div class="preview-box">
-                            <strong id="previewTitle" class="preview-title">Your title here</strong>
                             <p id="previewContent" class="preview-text">Your content will appear here...</p>
                         </div>
                     </section>
@@ -139,37 +189,7 @@
     </div>
 </div>
 <div id="toast-container"></div>
-<script>
-    flatpickr("#scheduledAt", {
-        enableTime: true,
-        dateFormat: "Y-m-d\\TH:i",
-        altInput: true,
-        altFormat: "Y-m-d H:i",
-        time_24hr: true,
-        minDate: "today",
-        minuteIncrement: 1,
-        defaultHour: new Date().getHours(),
-        defaultMinute: new Date().getMinutes()
-    });
-
-    (function() {
-        var content = document.getElementById('content');
-        var title = document.getElementById('title');
-        var charCount = document.getElementById('charCount');
-        var previewTitle = document.getElementById('previewTitle');
-        var previewContent = document.getElementById('previewContent');
-
-        function updatePreview() {
-            if (previewTitle) previewTitle.textContent = title.value || 'Your title here';
-            if (previewContent) previewContent.textContent = content.value || 'Your content will appear here...';
-            if (charCount) charCount.textContent = content.value.length;
-        }
-
-        content.addEventListener('input', updatePreview);
-        title.addEventListener('input', updatePreview);
-        updatePreview();
-    })();
-</script>
+<script src="/js/post-creator.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
 <script src="/js/notifications.js"></script>

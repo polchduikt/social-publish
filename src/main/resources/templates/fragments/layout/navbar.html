@@ -20,29 +20,5 @@
         <div class="profile-chip" th:if="${user != null}" th:text="${user.fullName}">Profile</div>
         <a href="/login" class="btn-primary" th:unless="${user != null}">Login</a>
     </div>
-    <script>
-        const theme = localStorage.getItem('theme') || 'light';
-        if (theme === 'dark') document.documentElement.classList.add('dark-mode');
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('theme-toggle');
-            if (!btn) return;
-            const sun = btn.querySelector('.sun-icon');
-            const moon = btn.querySelector('.moon-icon');
-            
-            const isDark = document.documentElement.classList.contains('dark-mode');
-            if (isDark) {
-                sun.style.display = 'block';
-                moon.style.display = 'none';
-            }
-            
-            btn.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark-mode');
-                const dark = document.documentElement.classList.contains('dark-mode');
-                localStorage.setItem('theme', dark ? 'dark' : 'light');
-                sun.style.display = dark ? 'block' : 'none';
-                moon.style.display = dark ? 'none' : 'block';
-            });
-        });
-    </script>
+    <script src="/js/theme-toggle.js"></script>
 </nav>

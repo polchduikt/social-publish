@@ -1,0 +1,446 @@
+(function () {
+    flatpickr("#scheduledAt", {
+        enableTime: true,
+        dateFormat: "Y-m-d\\TH:i",
+        altInput: true,
+        altFormat: "Y-m-d H:i",
+        time_24hr: true,
+        minDate: "today",
+        minuteIncrement: 1,
+        defaultHour: new Date().getHours(),
+        defaultMinute: new Date().getMinutes()
+    });
+
+    var content = document.getElementById("content");
+    var charCount = document.getElementById("charCount");
+    var previewContent = document.getElementById("previewContent");
+    var toolbar = document.getElementById("formatToolbar");
+    var featureHint = document.getElementById("featureHint");
+    var mediaInput = document.getElementById("mediaFiles");
+    var mediaPreview = document.getElementById("mediaPreview");
+    var mediaDropzone = document.getElementById("mediaDropzone");
+    var existingMediaGrid = document.getElementById("existingMediaGrid");
+    var removedMediaContainer = document.getElementById("removedMediaContainer");
+
+    if (!content || !toolbar) {
+        return;
+    }
+
+    var collectedFiles = [];
+    var dragSrcIndex = null;
+
+    var featureSupport = {
+        bold: { telegram: true, discord: true },
+        italic: { telegram: true, discord: true },
+        underline: { telegram: true, discord: true },
+        strikethrough: { telegram: true, discord: true },
+        spoiler: { telegram: true, discord: true },
+        code: { telegram: true, discord: true },
+        quote: { telegram: true, discord: true },
+        link: { telegram: true, discord: true },
+        hashtag: { telegram: true, discord: true },
+        mention: { telegram: true, discord: true }
+    };
+
+    function getSelectedPlatforms() {
+        var result = [];
+        document.querySelectorAll('input[name="platforms"]:checked').forEach(function (input) {
+            result.push(input.value);
+        });
+        return result;
+    }
+
+    function applyWrap(open, close, fallbackText) {
+        var start = content.selectionStart;
+        var end = content.selectionEnd;
+        var selectedText = content.value.substring(start, end);
+        var inner = selectedText || fallbackText;
+        var output = open + inner + close;
+
+        content.setRangeText(output, start, end, "end");
+        var caretStart = start + open.length;
+        var caretEnd = caretStart + inner.length;
+        content.focus();
+        content.setSelectionRange(caretStart, caretEnd);
+        updatePreview();
+    }
+
+    function applyLinePrefix(prefix) {
+        var start = content.selectionStart;
+        var end = content.selectionEnd;
+        var selectedText = content.value.substring(start, end);
+        var textToFormat = selectedText || "quoted text";
+        var lines = textToFormat.split("\n").map(function (line) {
+            return prefix + line;
+        }).join("\n");
+        content.setRangeText(lines, start, end, "end");
+        content.focus();
+        updatePreview();
+    }
+
+    function applyLink() {
+        var url = prompt("Enter URL", "https://");
+        if (!url) {
+            return;
+        }
+        var start = content.selectionStart;
+        var end = content.selectionEnd;
+        var selectedText = content.value.substring(start, end) || "link text";
+        var output = "[" + selectedText + "](" + url + ")";
+        content.setRangeText(output, start, end, "end");
+        content.focus();
+        updatePreview();
+    }
+
+    function applyHashtag() {
+        var tag = prompt("Hashtag (without #)", "news");
+        if (!tag) {
+            return;
+        }
+        var cleaned = tag.replace(/\s+/g, "");
+        var start = content.selectionStart;
+        content.setRangeText("#" + cleaned + " ", start, start, "end");
+        content.focus();
+        updatePreview();
+    }
+
+    function applyMention() {
+        var username = prompt("Username (without @)", "username");
+        if (!username) {
+            return;
+        }
+        var cleaned = username.replace(/\s+/g, "");
+        var start = content.selectionStart;
+        content.setRangeText("@" + cleaned + " ", start, start, "end");
+        content.focus();
+        updatePreview();
+    }
+
+    function applyFeature(feature) {
+        switch (feature) {
+            case "bold":
+                return applyWrap("**", "**", "bold text");
+            case "italic":
+                return applyWrap("*", "*", "italic text");
+            case "underline":
+                return applyWrap("__", "__", "underlined text");
+            case "strikethrough":
+                return applyWrap("~~", "~~", "strikethrough text");
+            case "spoiler":
+                return applyWrap("||", "||", "hidden text");
+            case "code":
+                return applyWrap("`", "`", "code");
+            case "quote":
+                return applyLinePrefix("> ");
+            case "link":
+                return applyLink();
+            case "hashtag":
+                return applyHashtag();
+            case "mention":
+                return applyMention();
+            default:
+                return;
+        }
+    }
+
+    function updateToolbarAvailability() {
+        var selected = getSelectedPlatforms();
+        var hasTelegram = selected.indexOf("TELEGRAM") !== -1;
+        var hasDiscord = selected.indexOf("DISCORD") !== -1;
+
+        var modeText = "No platform selected";
+        if (hasTelegram && hasDiscord) {
+            modeText = "Mixed mode: cross-platform formatting";
+        } else if (hasTelegram) {
+            modeText = "Telegram mode";
+        } else if (hasDiscord) {
+            modeText = "Discord mode";
+        }
+
+        Array.prototype.forEach.call(toolbar.querySelectorAll(".format-btn"), function (button) {
+            var feature = button.dataset.feature;
+            var support = featureSupport[feature];
+            var enabled = true;
+
+            if (hasTelegram && hasDiscord) {
+                enabled = support.telegram && support.discord;
+            } else if (hasTelegram) {
+                enabled = support.telegram;
+            } else if (hasDiscord) {
+                enabled = support.discord;
+            }
+
+            button.disabled = !enabled;
+            button.classList.toggle("is-disabled", !enabled);
+        });
+
+        if (featureHint) {
+            if (hasTelegram && !hasDiscord) {
+                featureHint.textContent = modeText + ": markdown shortcuts will be converted for Telegram.";
+            } else if (!hasTelegram && hasDiscord) {
+                featureHint.textContent = modeText + ": Discord markdown formatting.";
+            } else if (hasTelegram && hasDiscord) {
+                featureHint.textContent = modeText + ": only shared features are enabled.";
+            } else {
+                featureHint.textContent = modeText + ". Formatting will default to cross-platform markdown.";
+            }
+        }
+    }
+
+    function updatePreview() {
+        if (previewContent) previewContent.textContent = content.value || "Your content will appear here...";
+        if (charCount) charCount.textContent = content.value.length;
+    }
+
+    function syncFilesToInput() {
+        if (!mediaInput) return;
+        var dt = new DataTransfer();
+        collectedFiles.forEach(function (file) {
+            dt.items.add(file);
+        });
+        mediaInput.files = dt.files;
+    }
+
+    function addFiles(fileList) {
+        var maxFiles = 10;
+        Array.from(fileList).forEach(function (file) {
+            if (collectedFiles.length >= maxFiles) return;
+            if (!file.type.startsWith("image/")) return;
+            if (file.size > 10 * 1024 * 1024) return;
+            collectedFiles.push(file);
+        });
+        syncFilesToInput();
+        renderSelectedMedia();
+    }
+
+    function renderSelectedMedia() {
+        if (!mediaPreview) return;
+
+        mediaPreview.innerHTML = "";
+        collectedFiles.forEach(function (file, index) {
+            var item = document.createElement("article");
+            item.className = "media-thumb-card";
+            item.draggable = true;
+            item.dataset.sortIndex = String(index);
+
+            var img = document.createElement("img");
+            img.alt = "Selected image";
+            img.src = URL.createObjectURL(file);
+
+            var badge = document.createElement("span");
+            badge.className = "media-order-badge";
+            badge.textContent = String(index + 1);
+
+            var removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "media-remove-btn selected-media-remove";
+            removeButton.dataset.index = String(index);
+            removeButton.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+            var handle = document.createElement("div");
+            handle.className = "media-drag-handle";
+            handle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
+
+            item.appendChild(img);
+            item.appendChild(badge);
+            item.appendChild(removeButton);
+            item.appendChild(handle);
+            mediaPreview.appendChild(item);
+
+            item.addEventListener("dragstart", function (e) {
+                dragSrcIndex = index;
+                item.classList.add("is-dragging");
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", String(index));
+            });
+
+            item.addEventListener("dragend", function () {
+                item.classList.remove("is-dragging");
+                clearDragOverStates(mediaPreview);
+            });
+
+            item.addEventListener("dragover", function (e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                item.classList.add("drag-over");
+            });
+
+            item.addEventListener("dragleave", function () {
+                item.classList.remove("drag-over");
+            });
+
+            item.addEventListener("drop", function (e) {
+                e.preventDefault();
+                item.classList.remove("drag-over");
+                var fromIndex = dragSrcIndex;
+                var toIndex = index;
+                if (fromIndex === null || fromIndex === toIndex) return;
+                var moved = collectedFiles.splice(fromIndex, 1)[0];
+                collectedFiles.splice(toIndex, 0, moved);
+                syncFilesToInput();
+                renderSelectedMedia();
+            });
+        });
+    }
+
+    function clearDragOverStates(container) {
+        container.querySelectorAll(".drag-over").forEach(function (el) {
+            el.classList.remove("drag-over");
+        });
+    }
+
+    function removeSelectedFile(indexToRemove) {
+        collectedFiles.splice(indexToRemove, 1);
+        syncFilesToInput();
+        renderSelectedMedia();
+    }
+
+    function markExistingMediaRemoved(publicId, targetCard) {
+        if (!removedMediaContainer || !publicId) {
+            return;
+        }
+        var hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "removeMediaPublicIds";
+        hidden.value = publicId;
+        removedMediaContainer.appendChild(hidden);
+
+        if (targetCard) {
+            targetCard.remove();
+        }
+        updateExistingMediaBadges();
+    }
+
+    function updateExistingMediaBadges() {
+        if (!existingMediaGrid) return;
+        existingMediaGrid.querySelectorAll(".media-thumb-card").forEach(function (card, idx) {
+            var badge = card.querySelector(".media-order-badge");
+            if (badge) badge.textContent = String(idx + 1);
+        });
+    }
+
+    function initExistingMediaSorting() {
+        if (!existingMediaGrid) return;
+        var cards = existingMediaGrid.querySelectorAll(".media-thumb-card");
+        cards.forEach(function (card, index) {
+            var badge = card.querySelector(".media-order-badge");
+            if (badge) badge.textContent = String(index + 1);
+
+            card.addEventListener("dragstart", function (e) {
+                dragSrcIndex = index;
+                card.classList.add("is-dragging");
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", String(index));
+            });
+
+            card.addEventListener("dragend", function () {
+                card.classList.remove("is-dragging");
+                clearDragOverStates(existingMediaGrid);
+            });
+
+            card.addEventListener("dragover", function (e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                card.classList.add("drag-over");
+            });
+
+            card.addEventListener("dragleave", function () {
+                card.classList.remove("drag-over");
+            });
+
+            card.addEventListener("drop", function (e) {
+                e.preventDefault();
+                card.classList.remove("drag-over");
+                var fromIndex = dragSrcIndex;
+                var allCards = Array.from(existingMediaGrid.querySelectorAll(".media-thumb-card"));
+                var toIndex = allCards.indexOf(card);
+                if (fromIndex === null || fromIndex === toIndex) return;
+
+                var movedCard = allCards[fromIndex];
+                var refCard = allCards[toIndex];
+                if (fromIndex < toIndex) {
+                    existingMediaGrid.insertBefore(movedCard, refCard.nextSibling);
+                } else {
+                    existingMediaGrid.insertBefore(movedCard, refCard);
+                }
+                updateExistingMediaBadges();
+            });
+        });
+    }
+
+    toolbar.addEventListener("click", function (event) {
+        var button = event.target.closest(".format-btn");
+        if (!button || button.disabled) {
+            return;
+        }
+        applyFeature(button.dataset.feature);
+    });
+
+    if (mediaDropzone) {
+        var dropzoneEnterCount = 0;
+
+        mediaDropzone.addEventListener("dragenter", function (e) {
+            e.preventDefault();
+            dropzoneEnterCount++;
+            mediaDropzone.classList.add("is-dragover");
+        });
+
+        mediaDropzone.addEventListener("dragleave", function (e) {
+            e.preventDefault();
+            dropzoneEnterCount--;
+            if (dropzoneEnterCount <= 0) {
+                dropzoneEnterCount = 0;
+                mediaDropzone.classList.remove("is-dragover");
+            }
+        });
+
+        mediaDropzone.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+        });
+
+        mediaDropzone.addEventListener("drop", function (e) {
+            e.preventDefault();
+            dropzoneEnterCount = 0;
+            mediaDropzone.classList.remove("is-dragover");
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                addFiles(e.dataTransfer.files);
+            }
+        });
+    }
+
+    if (mediaInput) {
+        mediaInput.addEventListener("change", function () {
+            addFiles(mediaInput.files);
+        });
+    }
+
+    if (mediaPreview) {
+        mediaPreview.addEventListener("click", function (event) {
+            var removeBtn = event.target.closest(".selected-media-remove");
+            if (!removeBtn) return;
+            var index = Number.parseInt(removeBtn.dataset.index, 10);
+            if (!Number.isNaN(index)) {
+                removeSelectedFile(index);
+            }
+        });
+    }
+
+    if (existingMediaGrid) {
+        existingMediaGrid.addEventListener("click", function (event) {
+            var removeBtn = event.target.closest(".existing-media-remove");
+            if (!removeBtn) return;
+            var publicId = removeBtn.dataset.publicId;
+            markExistingMediaRemoved(publicId, removeBtn.closest(".existing-media-item"));
+        });
+        initExistingMediaSorting();
+    }
+
+    document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
+        input.addEventListener("change", updateToolbarAvailability);
+    });
+
+    content.addEventListener("input", updatePreview);
+    updateToolbarAvailability();
+    updatePreview();
+})();

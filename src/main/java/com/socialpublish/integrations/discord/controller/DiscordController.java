@@ -13,6 +13,7 @@ import com.socialpublish.integrations.discord.service.DiscordClientService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,24 +22,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 public class DiscordController {
 
     private final DiscordSettingsRepository settingsRepository;
     private final UserRepository userRepository;
     private final DiscordClientService discordClient;
     private final HtmxSupport htmxSupport;
-
-    public DiscordController(
-            DiscordSettingsRepository settingsRepository,
-            UserRepository userRepository,
-            DiscordClientService discordClient,
-            HtmxSupport htmxSupport
-    ) {
-        this.settingsRepository = settingsRepository;
-        this.userRepository = userRepository;
-        this.discordClient = discordClient;
-        this.htmxSupport = htmxSupport;
-    }
 
     @PostMapping("/accounts/discord")
     public String saveDiscord(

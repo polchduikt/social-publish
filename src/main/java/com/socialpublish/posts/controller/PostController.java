@@ -4,10 +4,7 @@ import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
-import com.socialpublish.integrations.telegram.dto.TelegramSettingsView;
-import com.socialpublish.integrations.telegram.repository.TelegramSettingsRepository;
-import com.socialpublish.integrations.discord.dto.DiscordSettingsView;
-import com.socialpublish.integrations.discord.repository.DiscordSettingsRepository;
+import com.socialpublish.integrations.service.IntegrationStatusService;
 import com.socialpublish.posts.dto.PostUpsertRequest;
 import com.socialpublish.posts.dto.PostView;
 import com.socialpublish.posts.entity.PostStatus;
@@ -18,6 +15,7 @@ import com.socialpublish.posts.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,28 +24,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 @Controller
+@RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
     private final HtmxSupport htmxSupport;
-    private final TelegramSettingsRepository telegramSettingsRepository;
-    private final DiscordSettingsRepository discordSettingsRepository;
-
-    public PostController(
-            PostService postService,
-            HtmxSupport htmxSupport,
-            TelegramSettingsRepository telegramSettingsRepository,
-            DiscordSettingsRepository discordSettingsRepository
-    ) {
-        this.postService = postService;
-        this.htmxSupport = htmxSupport;
-        this.telegramSettingsRepository = telegramSettingsRepository;
-        this.discordSettingsRepository = discordSettingsRepository;
-    }
+    private final IntegrationStatusService integrationStatusService;
 
     @GetMapping("/posts/new")
     public String createPage(@CurrentUser CurrentUserView currentUser, Model model) {
@@ -60,6 +48,8 @@ public class PostController {
             @CurrentUser CurrentUserView currentUser,
             @Valid @ModelAttribute("postRequest") PostUpsertRequest postRequest,
             BindingResult bindingResult,
+            @RequestParam(name = "publishNow", required = false) Boolean publishNow,
+            @RequestParam(name = "mediaFiles", required = false) List<MultipartFile> mediaFiles,
             HttpServletRequest request,
             HttpServletResponse response,
             Model model
@@ -70,12 +60,21 @@ public class PostController {
         }
 
         try {
-            postService.createPost(currentUser.id(), postRequest);
+            boolean immediatePublish = Boolean.TRUE.equals(publishNow);
+            if (immediatePublish) {
+                postService.createPostAndPublishNow(currentUser.id(), postRequest, mediaFiles);
+            } else {
+                postService.createPost(currentUser.id(), postRequest, mediaFiles);
+            }
             if (isHtmx) {
-                htmxSupport.redirectTo(response, "/dashboard?message=Post+created");
+                htmxSupport.redirectTo(response, immediatePublish
+                        ? "/dashboard?message=Post+queued+for+publishing"
+                        : "/dashboard?message=Post+created");
                 return "fragments/posts/form-status :: status";
             }
-            return "redirect:/dashboard?message=Post+created";
+            return immediatePublish
+                    ? "redirect:/dashboard?message=Post+queued+for+publishing"
+                    : "redirect:/dashboard?message=Post+created";
         } catch (PostValidationException ex) {
             return renderFormError(model, currentUser, "create", null, ex.getMessage(), isHtmx);
         } catch (UnauthorizedPostAccessException ex) {
@@ -87,7 +86,9 @@ public class PostController {
     public String editPage(@CurrentUser CurrentUserView currentUser, @PathVariable("id") UUID postId, Model model) {
         try {
             PostUpsertRequest request = postService.getEditRequest(currentUser.id(), postId);
+            PostView postView = postService.getPostView(currentUser.id(), postId);
             populateFormModel(model, currentUser, "edit", postId, request);
+            model.addAttribute("existingMedia", postView.media());
             model.addAttribute("statuses", PostStatus.values());
             return "pages/posts/form";
         } catch (PostNotFoundException ex) {
@@ -101,6 +102,9 @@ public class PostController {
             @PathVariable("id") UUID postId,
             @Valid @ModelAttribute("postRequest") PostUpsertRequest postRequest,
             BindingResult bindingResult,
+            @RequestParam(name = "publishNow", required = false) Boolean publishNow,
+            @RequestParam(name = "mediaFiles", required = false) List<MultipartFile> mediaFiles,
+            @RequestParam(name = "removeMediaPublicIds", required = false) List<String> removeMediaPublicIds,
             HttpServletRequest request,
             HttpServletResponse response,
             Model model
@@ -111,12 +115,33 @@ public class PostController {
         }
 
         try {
-            postService.updatePost(currentUser.id(), postId, postRequest);
+            boolean immediatePublish = Boolean.TRUE.equals(publishNow);
+            if (immediatePublish) {
+                postService.updatePostAndPublishNow(
+                        currentUser.id(),
+                        postId,
+                        postRequest,
+                        mediaFiles,
+                        removeMediaPublicIds
+                );
+            } else {
+                postService.updatePost(
+                        currentUser.id(),
+                        postId,
+                        postRequest,
+                        mediaFiles,
+                        removeMediaPublicIds
+                );
+            }
             if (isHtmx) {
-                htmxSupport.redirectTo(response, "/dashboard?message=Post+updated");
+                htmxSupport.redirectTo(response, immediatePublish
+                        ? "/dashboard?message=Post+queued+for+publishing"
+                        : "/dashboard?message=Post+updated");
                 return "fragments/posts/form-status :: status";
             }
-            return "redirect:/dashboard?message=Post+updated";
+            return immediatePublish
+                    ? "redirect:/dashboard?message=Post+queued+for+publishing"
+                    : "redirect:/dashboard?message=Post+updated";
         } catch (PostValidationException ex) {
             return renderFormError(model, currentUser, "edit", postId, ex.getMessage(), isHtmx);
         } catch (PostNotFoundException ex) {
@@ -153,22 +178,17 @@ public class PostController {
     }
 
     private void populateFormModel(Model model, CurrentUserView user, String mode, UUID postId, PostUpsertRequest request) {
-        TelegramSettingsView telegram = telegramSettingsRepository.findByUserId(user.id())
-                .map(TelegramSettingsView::from)
-                .orElse(TelegramSettingsView.empty());
-
-        DiscordSettingsView discord = discordSettingsRepository.findByUserId(user.id())
-                .map(DiscordSettingsView::from)
-                .orElse(DiscordSettingsView.empty());
-
         model.addAttribute("user", user);
         model.addAttribute("mode", mode);
         if (request != null) {
             model.addAttribute("postRequest", request);
         }
+        if (!model.containsAttribute("existingMedia")) {
+            model.addAttribute("existingMedia", List.of());
+        }
         model.addAttribute("statuses", PostStatus.userSettable());
-        model.addAttribute("telegramConnected", telegram.configured() && telegram.enabled());
-        model.addAttribute("discordConnected", discord.configured() && discord.enabled());
+        model.addAttribute("telegramConnected", integrationStatusService.isTelegramConnected(user.id()));
+        model.addAttribute("discordConnected", integrationStatusService.isDiscordConnected(user.id()));
         if (postId != null) {
             model.addAttribute("postId", postId);
         }
@@ -187,6 +207,13 @@ public class PostController {
             return "fragments/posts/form-status :: status";
         }
         populateFormModel(model, currentUser, mode, postId, (PostUpsertRequest) model.asMap().get("postRequest"));
+        if (postId != null) {
+            try {
+                model.addAttribute("existingMedia", postService.getPostView(currentUser.id(), postId).media());
+            } catch (PostNotFoundException ignored) {
+                model.addAttribute("existingMedia", List.of());
+            }
+        }
         return "pages/posts/form";
     }
 }

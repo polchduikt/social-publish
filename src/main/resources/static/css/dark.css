@@ -73,6 +73,79 @@ html.dark-mode .toolbar-label,
 html.dark-mode .panel-title {
     color: #c8d6eb;
 }
+html.dark-mode .feature-hint {
+    color: #9eb0c8;
+}
+html.dark-mode .format-btn {
+    background: #14233e;
+    border-color: #3c5375;
+    color: #d6e2f5;
+}
+html.dark-mode .format-btn:hover {
+    background: #1a3156;
+    border-color: #5a7caf;
+    color: #ffffff;
+}
+html.dark-mode .format-btn.is-disabled,
+html.dark-mode .format-btn:disabled {
+    background: #18273f;
+    border-color: #314660;
+    color: #7f95b2;
+}
+html.dark-mode .media-dropzone {
+    background: #0d1730;
+    border-color: #334968;
+}
+html.dark-mode .media-dropzone:hover {
+    border-color: #4f83ff;
+    background: #111f3a;
+    box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.1);
+}
+html.dark-mode .media-dropzone.is-dragover {
+    border-color: #4f83ff;
+    background: #162a4a;
+    box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.2);
+}
+html.dark-mode .media-dropzone-title {
+    color: #e6edf8;
+}
+html.dark-mode .media-dropzone-hint {
+    color: #7f95b2;
+}
+html.dark-mode .media-dropzone-icon {
+    color: #7f95b2;
+}
+html.dark-mode .media-dropzone:hover .media-dropzone-icon {
+    color: #4f83ff;
+}
+html.dark-mode .media-thumb-card {
+    background: #13213a;
+    border-color: #3b4f70;
+}
+html.dark-mode .media-thumb-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+html.dark-mode .media-thumb-card.drag-over {
+    border-color: #4f83ff;
+    box-shadow: 0 0 0 2px rgba(79, 131, 255, 0.3);
+}
+html.dark-mode .media-remove-btn {
+    background: rgba(8, 14, 27, 0.8);
+    border: none;
+    color: #e8f1ff;
+}
+html.dark-mode .media-remove-btn svg {
+    stroke: #e8f1ff;
+}
+html.dark-mode .media-order-badge {
+    background: rgba(8, 14, 27, 0.8);
+}
+html.dark-mode .media-drag-handle {
+    background: rgba(8, 14, 27, 0.8);
+}
+html.dark-mode .preview-media-grid img {
+    border-color: #3b4f70;
+}
 html.dark-mode .profile-chip,
 html.dark-mode .preview-box,
 html.dark-mode .info-row,

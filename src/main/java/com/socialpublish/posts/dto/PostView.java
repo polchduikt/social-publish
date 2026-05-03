@@ -21,13 +21,25 @@ public record PostView(
         int retryCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        String platforms
+        String platforms,
+        List<PostMediaView> media
 ) {
 
     private static final int EXCERPT_MAX_LENGTH = 88;
     private static final int EXCERPT_TRIM_LENGTH = 85;
 
     public static PostView from(Post post) {
+        return map(post, List.of());
+    }
+
+    public static PostView fromWithMedia(Post post) {
+        List<PostMediaView> mediaViews = post.getMedia().stream()
+                .map(media -> new PostMediaView(media.getPublicId(), media.getSecureUrl(), media.getSortOrder()))
+                .toList();
+        return map(post, mediaViews);
+    }
+
+    private static PostView map(Post post, List<PostMediaView> mediaViews) {
         ZoneId zoneId = ZoneId.systemDefault();
         return new PostView(
                 post.getId(),
@@ -40,7 +52,8 @@ public record PostView(
                 post.getRetryCount(),
                 post.getCreatedAt().atZone(zoneId).toLocalDateTime(),
                 post.getUpdatedAt().atZone(zoneId).toLocalDateTime(),
-                post.getPlatforms() == null ? "" : post.getPlatforms()
+                post.getPlatforms() == null ? "" : post.getPlatforms(),
+                mediaViews
         );
     }
 

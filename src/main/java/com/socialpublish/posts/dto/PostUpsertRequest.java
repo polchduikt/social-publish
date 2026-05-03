@@ -16,10 +16,6 @@ import java.util.List;
 @Setter
 public class PostUpsertRequest {
 
-    @NotBlank(message = "Title is required")
-    @Size(max = 150, message = "Title must be at most 150 characters")
-    private String title;
-
     @NotBlank(message = "Post content is required")
     @Size(max = 5000, message = "Post content must be at most 5000 characters")
     private String content;

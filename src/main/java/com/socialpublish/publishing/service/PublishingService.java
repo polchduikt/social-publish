@@ -12,11 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class PublishingService {
 
     private static final Logger log = LoggerFactory.getLogger(PublishingService.class);
@@ -28,20 +30,35 @@ public class PublishingService {
     private final DiscordPublisherService discordPublisherService;
     private final NotificationService notificationService;
 
-    public PublishingService(
-            PostRepository postRepository,
-            PostStatusMachine statusMachine,
-            PublishingProducer publishingProducer,
-            TelegramPublisherService telegramPublisherService,
-            DiscordPublisherService discordPublisherService,
-            NotificationService notificationService
-    ) {
-        this.postRepository = postRepository;
-        this.statusMachine = statusMachine;
-        this.publishingProducer = publishingProducer;
-        this.telegramPublisherService = telegramPublisherService;
-        this.discordPublisherService = discordPublisherService;
-        this.notificationService = notificationService;
+    @Transactional
+    public void startScheduledPublish(UUID postId) {
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) {
+            log.warn("Post {} not found, skipping scheduled publish", postId);
+            return;
+        }
+
+        if (post.getStatus() != PostStatus.SCHEDULED) {
+            log.info("Post {} is {}, not SCHEDULED — skipping scheduled publish", postId, post.getStatus());
+            return;
+        }
+
+        statusMachine.transition(post, PostStatus.PUBLISHING);
+        post.setRetryCount(0);
+        postRepository.save(post);
+
+        notificationService.sendPostUpdate(post.getOwner().getId(),
+                PostNotification.publishing(postId, post.getTitle()));
+
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        publishingProducer.sendPublishRequest(postId);
+                        log.info("Post {} transitioned to PUBLISHING and sent to RabbitMQ", postId);
+                    }
+                }
+        );
     }
 
     @Transactional
