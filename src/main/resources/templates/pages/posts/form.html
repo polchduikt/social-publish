@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="/css/dark.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script>
+        document.addEventListener('htmx:configRequest', (event) => {
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+            event.detail.headers[csrfHeader] = csrfToken;
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body th:attr="data-user-id=${user.id}">
@@ -35,9 +42,10 @@
                   hx-target="#post-form-status"
                   hx-swap="innerHTML">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <meta name="_csrf" th:content="${_csrf.token}"/>
+                <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
                 <div class="creator-content">
-
                     <section class="panel platform-panel">
                         <h3 class="panel-title">Select Platforms</h3>
                         <div class="platform-chips">
@@ -83,6 +91,8 @@
                             <a href="/accounts" class="inline-link">Connect platforms</a> to start publishing.
                         </p>
                     </section>
+
+                    <div th:replace="~{fragments/posts/templates :: templates-list}"></div>
 
                     <section class="panel message-panel">
                         <div class="editor-toolbar">
@@ -171,6 +181,9 @@
                             <button type="submit" name="status" value="DRAFT" class="btn-draft-action">
                                 Save as Draft
                             </button>
+                            <button type="button" class="btn-draft-action" id="btnSaveTemplate" style="margin-top: 8px;">
+                                Save as Template
+                            </button>
                         </div>
                     </section>
 
@@ -188,6 +201,34 @@
         </main>
     </div>
 </div>
+
+<div id="saveTemplateModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Save Template</h3>
+            <button type="button" class="close-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field">
+                <label for="templateNameInput">Template Name</label>
+                <input type="text" id="templateNameInput" name="templateName" placeholder="e.g. Weekly Update" required>
+            </div>
+            <div id="saveTemplateStatus"></div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button type="button" class="btn-secondary" id="btnCancelSaveTemplate">Cancel</button>
+            <button type="button" class="btn-primary" id="btnConfirmSaveTemplate"
+                    hx-post="/posts/templates"
+                    hx-include="[name='platforms'], #content, #templateNameInput"
+                    hx-target="#templates-container"
+                    hx-swap="outerHTML"
+                    hx-on::after-request="document.getElementById('saveTemplateModal').classList.remove('active')">
+                Save Template
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="toast-container"></div>
 <script src="/js/post-creator.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

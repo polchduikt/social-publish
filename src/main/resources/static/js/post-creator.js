@@ -448,4 +448,63 @@
     content.addEventListener("input", updatePreview);
     updateToolbarAvailability();
     updatePreview();
+
+    const btnSaveTemplate = document.getElementById("btnSaveTemplate");
+    const saveTemplateModal = document.getElementById("saveTemplateModal");
+    const btnCancelSaveTemplate = document.getElementById("btnCancelSaveTemplate");
+    const templateNameInput = document.getElementById("templateNameInput");
+
+    function openSaveModal() {
+        if (!saveTemplateModal) return;
+        if (!content.value.trim()) {
+            return;
+        }
+        templateNameInput.value = "";
+        saveTemplateModal.classList.add("active");
+        templateNameInput.focus();
+    }
+
+    function closeSaveModal() {
+        if (!saveTemplateModal) return;
+        saveTemplateModal.classList.remove("active");
+    }
+
+    function applyTemplate(contentVal, platformsStr) {
+        content.value = contentVal || "";
+
+        document.querySelectorAll('input[name="platforms"]').forEach(input => {
+            input.checked = false;
+        });
+        
+        if (platformsStr) {
+            const platforms = platformsStr.split(',');
+            platforms.forEach(p => {
+                const input = document.querySelector(`input[name="platforms"][value="${p}"]`);
+                if (input && !input.disabled) {
+                    input.checked = true;
+                }
+            });
+        }
+        
+        updateToolbarAvailability();
+        updatePreview();
+    }
+
+    document.addEventListener('click', (e) => {
+        const applyBtn = e.target.closest('.btn-apply-template');
+        if (applyBtn) {
+            const card = applyBtn.closest('.template-inline-card');
+            if (card) applyTemplate(card.dataset.content, card.dataset.platforms);
+        }
+    });
+
+    if (btnSaveTemplate) btnSaveTemplate.addEventListener("click", openSaveModal);
+    if (btnCancelSaveTemplate) btnCancelSaveTemplate.addEventListener("click", closeSaveModal);
+    if (saveTemplateModal) {
+        saveTemplateModal.addEventListener("click", (e) => {
+            if (e.target === saveTemplateModal) closeSaveModal();
+        });
+        const closeModalBtn = saveTemplateModal.querySelector('.close-modal-btn');
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeSaveModal);
+    }
 })();

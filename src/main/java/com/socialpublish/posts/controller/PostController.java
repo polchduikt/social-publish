@@ -12,6 +12,7 @@ import com.socialpublish.posts.exception.PostNotFoundException;
 import com.socialpublish.posts.exception.PostValidationException;
 import com.socialpublish.posts.exception.UnauthorizedPostAccessException;
 import com.socialpublish.posts.service.PostService;
+import com.socialpublish.posts.service.PostTemplateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -19,12 +20,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.socialpublish.posts.dto.CreatePostTemplateRequest;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +34,7 @@ public class PostController {
     private final PostService postService;
     private final HtmxSupport htmxSupport;
     private final IntegrationStatusService integrationStatusService;
+    private final PostTemplateService postTemplateService;
 
     @GetMapping("/posts/new")
     public String createPostPage(@CurrentUser CurrentUserView currentUser, Model model) {
@@ -166,6 +165,37 @@ public class PostController {
         }
     }
 
+    @PostMapping("/posts/templates")
+    public String saveTemplate(
+            @CurrentUser CurrentUserView user,
+            @RequestParam("templateName") String templateName,
+            @RequestParam(name = "platforms", required = false) List<String> platforms,
+            @RequestParam("content") String content,
+            Model model
+    ) {
+        CreatePostTemplateRequest req = new CreatePostTemplateRequest(
+                templateName,
+                content,
+                platforms != null ? String.join(",", platforms) : ""
+        );
+        postTemplateService.createTemplate(user.id(), req);
+        model.addAttribute("templates", postTemplateService.getUserTemplates(user.id()));
+        model.addAttribute("openTemplates", true);
+        return "fragments/posts/templates :: templates-list";
+    }
+
+    @DeleteMapping("/posts/templates/{id}")
+    public String deleteTemplate(
+            @CurrentUser CurrentUserView user,
+            @PathVariable("id") UUID id,
+            Model model
+    ) {
+        postTemplateService.deleteTemplate(user.id(), id);
+        model.addAttribute("templates", postTemplateService.getUserTemplates(user.id()));
+        model.addAttribute("openTemplates", true);
+        return "fragments/posts/templates :: templates-list";
+    }
+
     private void populateFormModel(Model model, CurrentUserView user, String mode, UUID postId, PostUpsertRequest request) {
         model.addAttribute("user", user);
         model.addAttribute("mode", mode);
@@ -179,6 +209,7 @@ public class PostController {
         model.addAttribute("telegramConnected", integrationStatusService.isTelegramConnected(user.id()));
         model.addAttribute("discordConnected", integrationStatusService.isDiscordConnected(user.id()));
         model.addAttribute("redditConnected", integrationStatusService.isRedditConnected(user.id()));
+        model.addAttribute("templates", postTemplateService.getUserTemplates(user.id()));
 
         if (postId != null) {
             model.addAttribute("postId", postId);
