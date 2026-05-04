@@ -38,8 +38,9 @@ public class PostController {
     private final IntegrationStatusService integrationStatusService;
 
     @GetMapping("/posts/new")
-    public String createPage(@CurrentUser CurrentUserView currentUser, Model model) {
-        populateFormModel(model, currentUser, "create", null, new PostUpsertRequest());
+    public String createPostPage(@CurrentUser CurrentUserView currentUser, Model model) {
+        PostUpsertRequest request = new PostUpsertRequest();
+        populateFormModel(model, currentUser, "create", null, request);
         return "pages/posts/form";
     }
 
@@ -83,7 +84,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/{id}/edit")
-    public String editPage(@CurrentUser CurrentUserView currentUser, @PathVariable("id") UUID postId, Model model) {
+    public String editPostPage(@CurrentUser CurrentUserView currentUser, @PathVariable("id") UUID postId, Model model) {
         try {
             PostUpsertRequest request = postService.getEditRequest(currentUser.id(), postId);
             PostView postView = postService.getPostView(currentUser.id(), postId);
@@ -117,21 +118,9 @@ public class PostController {
         try {
             boolean immediatePublish = Boolean.TRUE.equals(publishNow);
             if (immediatePublish) {
-                postService.updatePostAndPublishNow(
-                        currentUser.id(),
-                        postId,
-                        postRequest,
-                        mediaFiles,
-                        removeMediaPublicIds
-                );
+                postService.updatePostAndPublishNow(currentUser.id(), postId, postRequest, mediaFiles, removeMediaPublicIds);
             } else {
-                postService.updatePost(
-                        currentUser.id(),
-                        postId,
-                        postRequest,
-                        mediaFiles,
-                        removeMediaPublicIds
-                );
+                postService.updatePost(currentUser.id(), postId, postRequest, mediaFiles, removeMediaPublicIds);
             }
             if (isHtmx) {
                 htmxSupport.redirectTo(response, immediatePublish
@@ -189,6 +178,8 @@ public class PostController {
         model.addAttribute("statuses", PostStatus.userSettable());
         model.addAttribute("telegramConnected", integrationStatusService.isTelegramConnected(user.id()));
         model.addAttribute("discordConnected", integrationStatusService.isDiscordConnected(user.id()));
+        model.addAttribute("redditConnected", integrationStatusService.isRedditConnected(user.id()));
+
         if (postId != null) {
             model.addAttribute("postId", postId);
         }

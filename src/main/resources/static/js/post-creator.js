@@ -30,16 +30,16 @@
     var dragSrcIndex = null;
 
     var featureSupport = {
-        bold: { telegram: true, discord: true },
-        italic: { telegram: true, discord: true },
-        underline: { telegram: true, discord: true },
-        strikethrough: { telegram: true, discord: true },
-        spoiler: { telegram: true, discord: true },
-        code: { telegram: true, discord: true },
-        quote: { telegram: true, discord: true },
-        link: { telegram: true, discord: true },
-        hashtag: { telegram: true, discord: true },
-        mention: { telegram: true, discord: true }
+        bold: { telegram: true, discord: true, whatsapp: true },
+        italic: { telegram: true, discord: true, whatsapp: true },
+        underline: { telegram: true, discord: true, whatsapp: false },
+        strikethrough: { telegram: true, discord: true, whatsapp: true },
+        spoiler: { telegram: true, discord: true, whatsapp: false },
+        code: { telegram: true, discord: true, whatsapp: true },
+        quote: { telegram: true, discord: true, whatsapp: false },
+        link: { telegram: true, discord: true, whatsapp: true },
+        hashtag: { telegram: true, discord: true, whatsapp: false },
+        mention: { telegram: true, discord: true, whatsapp: false }
     };
 
     function getSelectedPlatforms() {
@@ -147,14 +147,19 @@
         var selected = getSelectedPlatforms();
         var hasTelegram = selected.indexOf("TELEGRAM") !== -1;
         var hasDiscord = selected.indexOf("DISCORD") !== -1;
+        var hasWhatsapp = selected.indexOf("WHATSAPP") !== -1;
+
+        var count = (hasTelegram ? 1 : 0) + (hasDiscord ? 1 : 0) + (hasWhatsapp ? 1 : 0);
 
         var modeText = "No platform selected";
-        if (hasTelegram && hasDiscord) {
+        if (count > 1) {
             modeText = "Mixed mode: cross-platform formatting";
         } else if (hasTelegram) {
             modeText = "Telegram mode";
         } else if (hasDiscord) {
             modeText = "Discord mode";
+        } else if (hasWhatsapp) {
+            modeText = "WhatsApp mode";
         }
 
         Array.prototype.forEach.call(toolbar.querySelectorAll(".format-btn"), function (button) {
@@ -162,12 +167,14 @@
             var support = featureSupport[feature];
             var enabled = true;
 
-            if (hasTelegram && hasDiscord) {
-                enabled = support.telegram && support.discord;
+            if (count > 1) {
+                enabled = (!hasTelegram || support.telegram) && (!hasDiscord || support.discord) && (!hasWhatsapp || support.whatsapp);
             } else if (hasTelegram) {
                 enabled = support.telegram;
             } else if (hasDiscord) {
                 enabled = support.discord;
+            } else if (hasWhatsapp) {
+                enabled = support.whatsapp;
             }
 
             button.disabled = !enabled;
@@ -175,11 +182,9 @@
         });
 
         if (featureHint) {
-            if (hasTelegram && !hasDiscord) {
-                featureHint.textContent = modeText + ": markdown shortcuts will be converted for Telegram.";
-            } else if (!hasTelegram && hasDiscord) {
-                featureHint.textContent = modeText + ": Discord markdown formatting.";
-            } else if (hasTelegram && hasDiscord) {
+            if (count === 1) {
+                featureHint.textContent = modeText + ": formatting adapted for the target platform.";
+            } else if (count > 1) {
                 featureHint.textContent = modeText + ": only shared features are enabled.";
             } else {
                 featureHint.textContent = modeText + ". Formatting will default to cross-platform markdown.";

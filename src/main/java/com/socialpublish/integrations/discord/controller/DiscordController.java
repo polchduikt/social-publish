@@ -99,4 +99,11 @@ public class DiscordController {
             return "redirect:/accounts?error=Test+failed";
         }
     }
+
+    @PostMapping("/accounts/discord/disconnect")
+    public String disconnectDiscord(@CurrentUser CurrentUserView currentUser) {
+        settingsRepository.findByUserId(currentUser.id())
+                .ifPresent(settingsRepository::delete);
+        return "redirect:/accounts?message=Discord+disconnected";
+    }
 }

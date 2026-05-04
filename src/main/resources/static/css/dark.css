@@ -201,7 +201,8 @@ html.dark-mode .queue-platform-chip {
     color: #d7e4f7;
 }
 html.dark-mode .queue-platform-chip svg.text-primary,
-html.dark-mode .queue-platform-chip svg.text-discord {
+html.dark-mode .queue-platform-chip svg.text-discord,
+html.dark-mode .queue-platform-chip svg.text-whatsapp {
     color: #7fb2ff;
 }
 html.dark-mode .filter-pill {
@@ -220,11 +221,14 @@ html.dark-mode .btn-icon {
 html.dark-mode .btn-icon:hover {
     background: rgba(255,255,255,0.08);
 }
-html.dark-mode .sidebar-nav a {
+html.dark-mode .sidebar-nav a,
+html.dark-mode .sidebar-dropdown summary {
     color: #c6d5eb;
 }
 html.dark-mode .sidebar-nav a:hover,
-html.dark-mode .sidebar-nav a.active {
+html.dark-mode .sidebar-nav a.active,
+html.dark-mode .sidebar-dropdown summary:hover,
+html.dark-mode .sidebar-dropdown summary.active {
     background: #1c2b45;
     color: #f7fbff;
 }

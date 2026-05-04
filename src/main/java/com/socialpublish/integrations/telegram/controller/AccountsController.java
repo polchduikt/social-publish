@@ -100,4 +100,11 @@ public class AccountsController {
             return "redirect:/accounts?error=Test+failed";
         }
     }
+
+    @PostMapping("/accounts/telegram/disconnect")
+    public String disconnectTelegram(@CurrentUser CurrentUserView currentUser) {
+        settingsRepository.findByUserId(currentUser.id())
+                .ifPresent(settingsRepository::delete);
+        return "redirect:/accounts?message=Telegram+disconnected";
+    }
 }

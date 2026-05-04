@@ -2,6 +2,8 @@ package com.socialpublish.publishing.service;
 
 import com.socialpublish.integrations.telegram.service.TelegramPublisherService;
 import com.socialpublish.integrations.discord.service.DiscordPublisherService;
+import com.socialpublish.integrations.reddit.service.RedditPublisherService;
+
 import com.socialpublish.notifications.dto.PostNotification;
 import com.socialpublish.notifications.service.NotificationService;
 import com.socialpublish.posts.entity.Post;
@@ -28,6 +30,7 @@ public class PublishingService {
     private final PublishingProducer publishingProducer;
     private final TelegramPublisherService telegramPublisherService;
     private final DiscordPublisherService discordPublisherService;
+    private final RedditPublisherService redditPublisherService;
     private final NotificationService notificationService;
 
     @Transactional
@@ -122,6 +125,19 @@ public class PublishingService {
                 errors.append("Discord: ").append(ex.getMessage());
             }
         }
+
+        if (platforms.contains("REDDIT")) {
+            try {
+                redditPublisherService.publish(post);
+                anyPublished = true;
+            } catch (Exception ex) {
+                log.warn("Reddit publishing failed for post {}: {}", post.getId(), ex.getMessage());
+                if (!errors.isEmpty()) errors.append("; ");
+                errors.append("Reddit: ").append(ex.getMessage());
+            }
+        }
+
+
 
         if (!anyPublished) {
             throw new RuntimeException(errors.toString());

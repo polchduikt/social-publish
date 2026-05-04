@@ -57,6 +57,11 @@
     color: #E1306C;
 }
 
+.whatsapp-icon {
+    background: #25D366;
+    color: white;
+}
+
 .account-info {
     flex: 1;
     min-width: 0;

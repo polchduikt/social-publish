@@ -48,7 +48,7 @@
                     <p th:unless="${telegramSettings.configured()}">Connect your Telegram bot to start publishing.</p>
                 </div>
                 <div class="account-card-footer">
-                    <a href="#telegram-setup" class="action-link" onclick="document.getElementById('telegram-setup').scrollIntoView({behavior:'smooth'})">Manage →</a>
+                    <a href="javascript:void(0)" class="action-link" onclick="toggleSetup('telegram-setup')">Manage →</a>
                 </div>
             </div>
 
@@ -72,10 +72,31 @@
                     <p th:unless="${discordSettings.configured()}">Connect your Discord webhook to start publishing.</p>
                 </div>
                 <div class="account-card-footer">
-                    <a href="#discord-setup" class="action-link" onclick="document.getElementById('discord-setup').scrollIntoView({behavior:'smooth'})">Manage →</a>
+                    <a href="javascript:void(0)" class="action-link" onclick="toggleSetup('discord-setup')">Manage →</a>
                 </div>
             </div>
-
+            <div class="account-card" th:classappend="${redditSettings.configured() and redditSettings.enabled() ? 'account-connected' : ''}">
+                <div class="account-card-header">
+                    <div class="account-icon" style="color: #FF4500;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.218-.88 2.91-1.455 4.773-1.517l.889-4.172a.34.34 0 0 1 .403-.26l3.142.664a1.253 1.253 0 0 1 1.083-.684zm-9.366 5.569c-.83 0-1.505.676-1.505 1.505 0 .828.675 1.505 1.505 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm8.712 0c-.829 0-1.504.676-1.504 1.505 0 .828.675 1.505 1.504 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm-4.356 3.901c-1.42 0-2.607.568-2.607.568a.335.335 0 0 0-.155.456.336.336 0 0 0 .456.155s1.002-.455 2.306-.455c1.305 0 2.307.455 2.307.455a.335.335 0 0 0 .456-.155.336.336 0 0 0-.156-.456s-1.187-.568-2.607-.568z"/></svg>
+                    </div>
+                    <div class="account-info">
+                        <strong>Reddit</strong>
+                        <span>Reddit API</span>
+                    </div>
+                    <div class="account-status-dot" th:classappend="${redditSettings.configured() and redditSettings.enabled() ? 'online' : 'offline'}">
+                        <span class="dot"></span>
+                        <span th:text="${redditSettings.configured() and redditSettings.enabled() ? 'Online' : 'Disconnected'}">Status</span>
+                    </div>
+                </div>
+                <div class="account-card-body">
+                    <p th:if="${redditSettings.configured()}">Subreddit: <code th:text="${redditSettings.defaultSubreddit()}">***</code></p>
+                    <p th:unless="${redditSettings.configured()}">Connect Reddit to start publishing.</p>
+                </div>
+                <div class="account-card-footer">
+                    <a href="javascript:void(0)" class="action-link" onclick="toggleSetup('reddit-setup')">Manage →</a>
+                </div>
+            </div>
 
             <div class="account-card account-disabled">
                 <div class="account-card-header">
@@ -97,7 +118,7 @@
         </div>
 
 
-        <section id="telegram-setup" class="panel mt-20">
+        <section id="telegram-setup" class="panel mt-20 setup-panel" style="display: none;">
             <div class="card-header">
                 <h3>Telegram Bot Configuration</h3>
                 <span class="step-badge" th:text="${telegramSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
@@ -156,25 +177,32 @@
                     </form>
                 </div>
 
-                <div th:if="${telegramSettings.configured() and telegramSettings.enabled()}">
-                    <h4 class="mb-12">Send Test Message</h4>
-                    <form th:action="@{/accounts/telegram/test}" method="post"
-                          hx-post="/accounts/telegram/test" hx-target="#test-status" hx-swap="innerHTML">
+                <div th:if="${telegramSettings.configured()}">
+                    <div th:if="${telegramSettings.enabled()}">
+                        <h4 class="mb-12">Send Test Message</h4>
+                        <form th:action="@{/accounts/telegram/test}" method="post"
+                              hx-post="/accounts/telegram/test" hx-target="#test-status" hx-swap="innerHTML">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="field">
+                                <textarea id="testMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
+                            </div>
+                            <div id="test-status"></div>
+                            <button type="submit" class="btn-test">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                Send Test
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <form th:action="@{/accounts/telegram/disconnect}" method="post" onsubmit="return confirm('Are you sure you want to disconnect Telegram?');" style="margin-top: 20px;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <div class="field">
-                            <textarea id="testMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
-                        </div>
-                        <div id="test-status"></div>
-                        <button type="submit" class="btn-test">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                            Send Test
-                        </button>
+                        <button type="submit" class="btn-danger" style="background: transparent; border: 1px solid var(--danger-color); color: var(--danger-color); width: 100%;">Disconnect Telegram Bot</button>
                     </form>
                 </div>
             </div>
         </section>
 
-        <section id="discord-setup" class="panel mt-20">
+        <section id="discord-setup" class="panel mt-20 setup-panel" style="display: none;">
             <div class="card-header">
                 <h3>Discord Webhook Configuration</h3>
                 <span class="step-badge" th:text="${discordSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
@@ -227,29 +255,112 @@
                     </form>
                 </div>
 
-                <div th:if="${discordSettings.configured() and discordSettings.enabled()}">
-                    <h4 class="mb-12">Send Test Message</h4>
-                    <form th:action="@{/accounts/discord/test}" method="post"
-                          hx-post="/accounts/discord/test" hx-target="#discord-test-status" hx-swap="innerHTML">
+                <div th:if="${discordSettings.configured()}">
+                    <div th:if="${discordSettings.enabled()}">
+                        <h4 class="mb-12">Send Test Message</h4>
+                        <form th:action="@{/accounts/discord/test}" method="post"
+                              hx-post="/accounts/discord/test" hx-target="#discord-test-status" hx-swap="innerHTML">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="field">
+                                <textarea id="discordTestMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
+                            </div>
+                            <div id="discord-test-status"></div>
+                            <button type="submit" class="btn-test">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                Send Test
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <form th:action="@{/accounts/discord/disconnect}" method="post" onsubmit="return confirm('Are you sure you want to disconnect Discord?');" style="margin-top: 20px;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <div class="field">
-                            <textarea id="discordTestMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
-                        </div>
-                        <div id="discord-test-status"></div>
-                        <button type="submit" class="btn-test">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                            Send Test
-                        </button>
+                        <button type="submit" class="btn-danger" style="background: transparent; border: 1px solid var(--danger-color); color: var(--danger-color); width: 100%;">Disconnect Discord Webhook</button>
                     </form>
                 </div>
             </div>
         </section>
-        </main>
+
+
+        <section id="reddit-setup" class="panel mt-20 setup-panel" style="display: none;">
+            <div class="card-header">
+                <h3>Reddit Configuration</h3>
+                <span class="step-badge" th:text="${redditSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
+            </div>
+
+            <div class="integration-grid">
+                <div>
+                    <div class="setup-steps" th:if="${!redditSettings.configured()}">
+                        <div class="setup-step">
+                            <span class="step-num">1</span>
+                            <div>
+                                <strong>Click Connect</strong>
+                                <p>Simply click the "Connect with Reddit" button below.</p>
+                            </div>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">2</span>
+                            <div>
+                                <strong>Authorize App</strong>
+                                <p>You will be redirected to Reddit to securely authorize Social Publish.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${!redditSettings.configured()}">
+                        <a href="/integrations/reddit/authorize" class="btn-primary" style="display: inline-block; padding: 10px 20px; background: #FF4500; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 8px;"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.218-.88 2.91-1.455 4.773-1.517l.889-4.172a.34.34 0 0 1 .403-.26l3.142.664a1.253 1.253 0 0 1 1.083-.684zm-9.366 5.569c-.83 0-1.505.676-1.505 1.505 0 .828.675 1.505 1.505 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm8.712 0c-.829 0-1.504.676-1.504 1.505 0 .828.675 1.505 1.504 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm-4.356 3.901c-1.42 0-2.607.568-2.607.568a.335.335 0 0 0-.155.456.336.336 0 0 0 .456.155s1.002-.455 2.306-.455c1.305 0 2.307.455 2.307.455a.335.335 0 0 0 .456-.155.336.336 0 0 0-.156-.456s-1.187-.568-2.607-.568z"/></svg>
+                            Connect with Reddit
+                        </a>
+                    </div>
+                    
+                    <div th:if="${redditSettings.configured()}">
+                        <form th:action="@{/accounts/reddit/settings}" method="post" class="integration-form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            
+                            <div class="field">
+                                <label for="defaultSubreddit">Default Subreddit (e.g. funny, aww, programming)</label>
+                                <input type="text" id="defaultSubreddit" name="defaultSubreddit" required
+                                       th:value="${redditSettings.defaultSubreddit()}"
+                                       placeholder="funny"/>
+                                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Do not include 'r/', just the name.</p>
+                            </div>
+
+                            <div class="field checkbox-field">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enabled" value="true"
+                                           th:checked="${redditSettings.enabled()}" />
+                                    <span>Enable Reddit integration</span>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" style="margin-bottom: 20px;">Save Configuration</button>
+                        </form>
+                        
+                        <form th:action="@{/accounts/reddit/disconnect}" method="post" onsubmit="return confirm('Are you sure you want to disconnect Reddit?');">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn-danger" style="background: transparent; border: 1px solid var(--danger-color); color: var(--danger-color);">Disconnect Reddit Account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 <div id="toast-container"></div>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
 <script src="/js/notifications.js"></script>
+<script>
+    function toggleSetup(panelId) {
+        document.querySelectorAll('.setup-panel').forEach(function(panel) {
+            panel.style.display = 'none';
+        });
+        var selectedPanel = document.getElementById(panelId);
+        if (selectedPanel) {
+            selectedPanel.style.display = 'block';
+            selectedPanel.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+    }
+</script>
 </body>
 </html>
