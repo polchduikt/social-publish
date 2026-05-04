@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Settings — Social Publish</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/integrations.css">
+    <link rel="stylesheet" href="/css/toasts.css">
+    <link rel="stylesheet" href="/css/dark.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="dashboard-page" th:attr="data-user-id=${user.id}">
+<div class="app-layout">
+    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+
+    <div class="dashboard-shell">
+        <div th:replace="~{fragments/layout/sidebar :: sidebar('accounts')}"></div>
+
+        <main class="dashboard-main">
+
+            <div class="status-stack" th:if="${param.message != null or param.error != null}">
+                <div class="status success" th:if="${param.message != null}" th:text="${param.message[0]}"></div>
+                <div class="status error" th:if="${param.error != null}" th:text="${param.error[0]}"></div>
+            </div>
+
+            <div class="breadcrumb" style="margin-bottom: 20px;">
+                <a href="/accounts" style="color: var(--text-secondary); text-decoration: none;">&larr; Back to Accounts</a>
+            </div>
+
+            <section class="panel setup-panel">
+                <div class="card-header">
+                    <h3>Telegram Bot Configuration</h3>
+                    <span class="step-badge" th:text="${telegramSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
+                </div>
+
+                <div class="integration-grid">
+                    <div>
+                        <div class="setup-steps">
+                            <div class="setup-step">
+                                <span class="step-num">1</span>
+                                <div>
+                                    <strong>Create a bot</strong>
+                                    <p>Open <a href="https://t.me/BotFather" target="_blank" class="inline-link">@BotFather</a> &rarr; send <code>/newbot</code></p>
+                                </div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="step-num">2</span>
+                                <div>
+                                    <strong>Copy Bot Token</strong>
+                                    <p>BotFather gives you a token like <code>123456:ABC-DEF...</code></p>
+                                </div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="step-num">3</span>
+                                <div>
+                                    <strong>Get Chat ID & start the bot</strong>
+                                    <p>Send <code>/start</code> to your bot. Use <a href="https://t.me/getmyid_bot" target="_blank" class="inline-link">@getmyid_bot</a> for Chat ID.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/accounts/telegram}" method="post"
+                              hx-post="/accounts/telegram" hx-target="#tg-status" hx-swap="innerHTML"
+                              class="integration-form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="field">
+                                <label for="botToken">Bot Token</label>
+                                <input type="password" id="botToken" name="botToken" required autocomplete="off"
+                                       th:placeholder="${telegramSettings.configured() ? telegramSettings.botToken() : '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'}"/>
+                            </div>
+                            <div class="field">
+                                <label for="chatId">Chat ID</label>
+                                <input type="text" id="chatId" name="chatId" required
+                                       th:value="${telegramSettings.configured() ? telegramSettings.chatId() : ''}"
+                                       placeholder="-1001234567890"/>
+                            </div>
+                            <div class="field checkbox-field">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enabled" value="true"
+                                           th:checked="${!telegramSettings.configured() or telegramSettings.enabled()}" />
+                                    <span>Enable integration</span>
+                                </label>
+                            </div>
+                            <div id="tg-status"></div>
+                            <button type="submit">Save Configuration</button>
+                        </form>
+                    </div>
+
+                    <div th:if="${telegramSettings.configured()}">
+                        <div th:if="${telegramSettings.enabled()}">
+                            <h4 class="mb-12">Send Test Message</h4>
+                            <form th:action="@{/accounts/telegram/test}" method="post"
+                                  hx-post="/accounts/telegram/test" hx-target="#test-status" hx-swap="innerHTML">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <div class="field">
+                                    <textarea id="testMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
+                                </div>
+                                <div id="test-status"></div>
+                                <button type="submit" class="btn-test">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                    Send Test
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <form th:action="@{/accounts/telegram/disconnect}" method="post" onsubmit="return confirm('Are you sure you want to disconnect Telegram?');" style="margin-top: 20px;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn-danger" style="background: transparent; border: 1px solid var(--danger-color); color: var(--danger-color); width: 100%;">Disconnect Telegram Bot</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>

@@ -1,8 +1,28 @@
+.category-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: "Sora", sans-serif;
+    margin: 28px 0 0;
+    color: #1e293b;
+}
+
+.category-title:first-of-type {
+    margin-top: 0;
+}
+
+.category-title svg {
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
 .accounts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
-    margin-top: 20px;
+    margin-top: 14px;
 }
 
 .account-card {
@@ -10,11 +30,14 @@
     border: 1px solid #dce4f1;
     border-radius: 14px;
     padding: 18px;
-    transition: box-shadow 0.2s, border-color 0.2s;
+    transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 .account-card:hover {
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    transform: translateY(-2px);
 }
 
 .account-connected {
@@ -23,8 +46,7 @@
 }
 
 .account-disabled {
-    opacity: 0.55;
-    pointer-events: none;
+    opacity: 0.5;
 }
 
 .account-card-header {
@@ -52,14 +74,34 @@
     color: #5865F2;
 }
 
+.reddit-icon {
+    background: #fff1f0;
+    color: #FF4500;
+}
+
+.tiktok-icon {
+    background: #f0fdf4;
+    color: #000000;
+}
+
+.youtube-icon {
+    background: #fef2f2;
+    color: #FF0000;
+}
+
 .instagram-icon {
     background: #fff1f2;
     color: #E1306C;
 }
 
+.x-icon {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
 .whatsapp-icon {
-    background: #25D366;
-    color: white;
+    background: #ecfdf5;
+    color: #25D366;
 }
 
 .account-info {
@@ -114,6 +156,7 @@
 
 .account-card-body {
     margin: 12px 0;
+    flex: 1;
 }
 
 .account-card-body p {
@@ -130,6 +173,11 @@
     word-break: break-all;
     display: inline-block;
     max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+    vertical-align: bottom;
 }
 
 .account-card-footer {
@@ -147,4 +195,3 @@
         grid-template-columns: 1fr;
     }
 }
-

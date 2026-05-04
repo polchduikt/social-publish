@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Settings — Social Publish</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/integrations.css">
+    <link rel="stylesheet" href="/css/toasts.css">
+    <link rel="stylesheet" href="/css/dark.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="dashboard-page" th:attr="data-user-id=${user.id}">
+<div class="app-layout">
+    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+
+    <div class="dashboard-shell">
+        <div th:replace="~{fragments/layout/sidebar :: sidebar('accounts')}"></div>
+
+        <main class="dashboard-main">
+
+            <div class="status-stack" th:if="${param.message != null or param.error != null}">
+                <div class="status success" th:if="${param.message != null}" th:text="${param.message[0]}"></div>
+                <div class="status error" th:if="${param.error != null}" th:text="${param.error[0]}"></div>
+            </div>
+
+            <div class="breadcrumb" style="margin-bottom: 20px;">
+                <a href="/accounts" style="color: var(--text-secondary); text-decoration: none;">&larr; Back to Accounts</a>
+            </div>
+
+            <section class="panel setup-panel">
+                <div class="card-header">
+                    <h3>Discord Webhook Configuration</h3>
+                    <span class="step-badge" th:text="${discordSettings.configured() ? 'Connected' : 'Setup Required'}">Status</span>
+                </div>
+
+                <div class="integration-grid">
+                    <div>
+                        <div class="setup-steps">
+                            <div class="setup-step">
+                                <span class="step-num">1</span>
+                                <div>
+                                    <strong>Open Server Settings</strong>
+                                    <p>Go to your Discord server &rarr; Server Settings &rarr; Integrations</p>
+                                </div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="step-num">2</span>
+                                <div>
+                                    <strong>Create Webhook</strong>
+                                    <p>Click "Webhooks" &rarr; "New Webhook". Choose the channel for posts.</p>
+                                </div>
+                            </div>
+                            <div class="setup-step">
+                                <span class="step-num">3</span>
+                                <div>
+                                    <strong>Copy Webhook URL</strong>
+                                    <p>Click "Copy Webhook URL" and paste it below.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form th:action="@{/accounts/discord}" method="post"
+                              hx-post="/accounts/discord" hx-target="#discord-status" hx-swap="innerHTML"
+                              class="integration-form">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <div class="field">
+                                <label for="webhookUrl">Webhook URL</label>
+                                <input type="url" id="webhookUrl" name="webhookUrl" required autocomplete="off"
+                                       th:placeholder="${discordSettings.configured() ? discordSettings.webhookUrl() : 'https://discord.com/api/webhooks/...'}"/>
+                            </div>
+                            <div class="field checkbox-field">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enabled" value="true"
+                                           th:checked="${!discordSettings.configured() or discordSettings.enabled()}" />
+                                    <span>Enable integration</span>
+                                </label>
+                            </div>
+                            <div id="discord-status"></div>
+                            <button type="submit">Save Configuration</button>
+                        </form>
+                    </div>
+
+                    <div th:if="${discordSettings.configured()}">
+                        <div th:if="${discordSettings.enabled()}">
+                            <h4 class="mb-12">Send Test Message</h4>
+                            <form th:action="@{/accounts/discord/test}" method="post"
+                                  hx-post="/accounts/discord/test" hx-target="#discord-test-status" hx-swap="innerHTML">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <div class="field">
+                                    <textarea id="discordTestMessage" name="testMessage" rows="3" placeholder="Hello from Social Publish!">Hello from Social Publish!</textarea>
+                                </div>
+                                <div id="discord-test-status"></div>
+                                <button type="submit" class="btn-test">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                    Send Test
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <form th:action="@{/accounts/discord/disconnect}" method="post" onsubmit="return confirm('Are you sure you want to disconnect Discord?');" style="margin-top: 20px;">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn-danger" style="background: transparent; border: 1px solid var(--danger-color); color: var(--danger-color); width: 100%;">Disconnect Discord Webhook</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>

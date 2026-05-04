@@ -147,7 +147,8 @@
     color: #1e293b;
 }
 
-.sidebar-nav a.active {
+.sidebar-nav a.active,
+.sidebar-bottom a.active {
     background: #dbeafe;
     color: #1d4ed8;
     border-left: 3px solid #2563eb;

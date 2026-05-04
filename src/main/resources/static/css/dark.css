@@ -222,11 +222,14 @@ html.dark-mode .btn-icon:hover {
     background: rgba(255,255,255,0.08);
 }
 html.dark-mode .sidebar-nav a,
-html.dark-mode .sidebar-dropdown summary {
+html.dark-mode .sidebar-dropdown summary,
+html.dark-mode .sidebar-bottom a {
     color: #c6d5eb;
 }
 html.dark-mode .sidebar-nav a:hover,
 html.dark-mode .sidebar-nav a.active,
+html.dark-mode .sidebar-bottom a:hover,
+html.dark-mode .sidebar-bottom a.active,
 html.dark-mode .sidebar-dropdown summary:hover,
 html.dark-mode .sidebar-dropdown summary.active {
     background: #1c2b45;
@@ -287,4 +290,82 @@ html.dark-mode .auth-visual {
             linear-gradient(145deg, #1b2b49, #0f1b33),
             radial-gradient(circle at 78% 22%, rgba(79, 131, 255, 0.35), transparent 52%);
 }
+
+
+html.dark-mode .settings-section {
+    background: var(--dm-surface-2);
+    border-color: var(--dm-border);
+    color: var(--dm-text-strong);
+}
+html.dark-mode .settings-section:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+html.dark-mode .settings-section h3 {
+    color: var(--dm-text-strong);
+}
+html.dark-mode .settings-section .section-desc {
+    color: var(--dm-text-muted);
+}
+html.dark-mode .settings-header-info h2 {
+    color: var(--dm-text-strong);
+}
+html.dark-mode .settings-header-info p {
+    color: var(--dm-text-muted);
+}
+html.dark-mode .settings-form label {
+    color: #c8d6eb;
+}
+html.dark-mode .settings-form input[type="text"],
+html.dark-mode .settings-form input[type="email"],
+html.dark-mode .settings-form input[type="password"] {
+    background: #0d1730;
+    border-color: var(--dm-border);
+    color: var(--dm-text-strong);
+}
+html.dark-mode .settings-form input::placeholder {
+    color: #7890b2;
+}
+html.dark-mode .settings-form input:focus {
+    border-color: var(--dm-accent);
+    box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.15);
+}
+html.dark-mode .btn-save {
+    background: linear-gradient(180deg, var(--dm-accent), var(--dm-accent-2));
+}
+html.dark-mode .btn-save:hover {
+    box-shadow: 0 6px 20px rgba(79, 131, 255, 0.35);
+}
+html.dark-mode .btn-logout {
+    border-color: var(--dm-border);
+    color: #cbd9ee;
+}
+html.dark-mode .btn-logout:hover {
+    background: #152440;
+    border-color: #466089;
+    color: #f3f7ff;
+}
+html.dark-mode .provider-badge.local {
+    background: rgba(79, 131, 255, 0.15);
+    color: var(--dm-accent);
+}
+html.dark-mode .provider-badge.google {
+    background: rgba(66, 133, 244, 0.15);
+    color: #6ba5f7;
+}
+html.dark-mode .danger-zone {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+html.dark-mode .btn-delete-account {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+html.dark-mode .btn-delete-account:hover {
+    background: #ef4444;
+    color: #fff;
+}
+html.dark-mode .settings-avatar {
+    background: linear-gradient(135deg, var(--dm-accent), var(--dm-accent-2));
+    box-shadow: 0 4px 16px rgba(79, 131, 255, 0.3);
+}
+
 
