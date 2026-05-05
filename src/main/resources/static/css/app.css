@@ -1,10 +1,9 @@
-@import url('/css/common.css');
-@import url('/css/auth.css');
-@import url('/css/dashboard.css');
-@import url('/css/posts.css');
-@import url('/css/queue.css');
-@import url('/css/accounts.css');
-@import url('/css/integrations.css');
-@import url('/css/toasts.css');
-@import url('/css/dark.css');
-
+@import url("static/css/common.css");
+@import url("static/css/auth.css");
+@import url("static/css/dashboard.css");
+@import url("static/css/posts.css");
+@import url("static/css/queue.css");
+@import url("static/css/accounts.css");
+@import url("static/css/integrations.css");
+@import url("static/css/toasts.css");
+@import url("static/css/dark.css");

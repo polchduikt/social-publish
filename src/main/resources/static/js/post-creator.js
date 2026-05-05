@@ -13,7 +13,12 @@
 
     var content = document.getElementById("content");
     var charCount = document.getElementById("charCount");
-    var previewContent = document.getElementById("previewContent");
+    var previewTelegramContent = document.getElementById("previewTelegramContent");
+    var previewDiscordContent = document.getElementById("previewDiscordContent");
+    var previewTelegramMedia = document.getElementById("previewTelegramMedia");
+    var previewDiscordMedia = document.getElementById("previewDiscordMedia");
+    var previewTelegramCard = document.getElementById("previewTelegram");
+    var previewDiscordCard = document.getElementById("previewDiscord");
     var toolbar = document.getElementById("formatToolbar");
     var featureHint = document.getElementById("featureHint");
     var mediaInput = document.getElementById("mediaFiles");
@@ -22,9 +27,22 @@
     var existingMediaGrid = document.getElementById("existingMediaGrid");
     var removedMediaContainer = document.getElementById("removedMediaContainer");
 
-    if (!content || !toolbar) {
+    var creatorShell = document.querySelector(".creator-shell");
+    if (!content || !toolbar || !creatorShell) {
         return;
     }
+
+    var messages = {
+        noPlatform: creatorShell.dataset.msgNoPlatform,
+        mixedMode: creatorShell.dataset.msgMixedMode,
+        telegramMode: creatorShell.dataset.msgTelegramMode,
+        discordMode: creatorShell.dataset.msgDiscordMode,
+        whatsappMode: creatorShell.dataset.msgWhatsappMode,
+        formattingSuffix: creatorShell.dataset.msgFormattingSuffix,
+        sharedSuffix: creatorShell.dataset.msgSharedSuffix,
+        defaultSuffix: creatorShell.dataset.msgDefaultSuffix,
+        previewPlaceholder: creatorShell.dataset.msgPreviewPlaceholder
+    };
 
     var collectedFiles = [];
     var dragSrcIndex = null;
@@ -151,15 +169,15 @@
 
         var count = (hasTelegram ? 1 : 0) + (hasDiscord ? 1 : 0) + (hasWhatsapp ? 1 : 0);
 
-        var modeText = "No platform selected";
+        var modeText = messages.noPlatform;
         if (count > 1) {
-            modeText = "Mixed mode: cross-platform formatting";
+            modeText = messages.mixedMode;
         } else if (hasTelegram) {
-            modeText = "Telegram mode";
+            modeText = messages.telegramMode;
         } else if (hasDiscord) {
-            modeText = "Discord mode";
+            modeText = messages.discordMode;
         } else if (hasWhatsapp) {
-            modeText = "WhatsApp mode";
+            modeText = messages.whatsappMode;
         }
 
         Array.prototype.forEach.call(toolbar.querySelectorAll(".format-btn"), function (button) {
@@ -183,19 +201,100 @@
 
         if (featureHint) {
             if (count === 1) {
-                featureHint.textContent = modeText + ": formatting adapted for the target platform.";
+                featureHint.textContent = modeText + messages.formattingSuffix;
             } else if (count > 1) {
-                featureHint.textContent = modeText + ": only shared features are enabled.";
+                featureHint.textContent = modeText + messages.sharedSuffix;
             } else {
-                featureHint.textContent = modeText + ". Formatting will default to cross-platform markdown.";
+                featureHint.textContent = modeText + messages.defaultSuffix;
             }
         }
     }
 
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function renderMarkdownForPreview(rawText) {
+        if (!rawText || !rawText.trim()) {
+            return messages.previewPlaceholder;
+        }
+
+        var safe = escapeHtml(rawText);
+        safe = safe.replace(/\r\n/g, "\n");
+
+        safe = safe.replace(/^&gt; (.+)$/gm, "<blockquote>$1</blockquote>");
+        safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        safe = safe.replace(/__(.+?)__/g, "<u>$1</u>");
+        safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+        safe = safe.replace(/~~(.+?)~~/g, "<del>$1</del>");
+        safe = safe.replace(/\|\|(.+?)\|\|/g, "<span class=\"preview-spoiler\">$1</span>");
+        safe = safe.replace(/`([^`]+?)`/g, "<code>$1</code>");
+        safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, "<a href=\"$2\" target=\"_blank\" rel=\"noopener noreferrer\">$1</a>");
+        safe = safe.replace(/(^|[\s])#([A-Za-z0-9_]+)/g, "$1<span class=\"preview-tag\">#$2</span>");
+        safe = safe.replace(/(^|[\s])@([A-Za-z0-9_]+)/g, "$1<span class=\"preview-mention\">@$2</span>");
+        safe = safe.replace(/\n/g, "<br>");
+
+        return safe;
+    }
+
+    function buildImageCard(src, index) {
+        return "<figure class=\"preview-media-card\"><img src=\"" + src + "\" alt=\"Selected media " + (index + 1) + "\"></figure>";
+    }
+
+    function renderPreviewMedia() {
+        if (!previewTelegramMedia || !previewDiscordMedia) {
+            return;
+        }
+
+        var combinedHtml = "";
+        collectedFiles.forEach(function (file, index) {
+            combinedHtml += buildImageCard(URL.createObjectURL(file), index);
+        });
+
+        if (existingMediaGrid) {
+            Array.prototype.forEach.call(existingMediaGrid.querySelectorAll(".existing-media-item img"), function (img, index) {
+                combinedHtml += buildImageCard(img.src, index + collectedFiles.length);
+            });
+        }
+
+        previewTelegramMedia.innerHTML = combinedHtml;
+        previewDiscordMedia.innerHTML = combinedHtml;
+    }
+
     function updatePreview() {
-        if (previewContent) previewContent.textContent = content.value || "Your content will appear here...";
+        if (previewTelegramContent) {
+            previewTelegramContent.innerHTML = renderMarkdownForPreview(content.value);
+        }
+        if (previewDiscordContent) {
+            previewDiscordContent.innerHTML = renderMarkdownForPreview(content.value);
+        }
+        renderPreviewMedia();
         if (charCount) charCount.textContent = content.value.length;
     }
+
+    function resolvePreviewMode() {
+        var selected = getSelectedPlatforms();
+        if (selected.indexOf("DISCORD") !== -1) {
+            return "discord";
+        }
+        return "telegram";
+    }
+
+    function setPreviewMode(mode) {
+        var showDiscord = mode === "discord";
+        if (previewTelegramCard) previewTelegramCard.classList.toggle("is-hidden", showDiscord);
+        if (previewDiscordCard) previewDiscordCard.classList.toggle("is-hidden", !showDiscord);
+
+        document.querySelectorAll(".preview-platform-tab").forEach(function (tab) {
+            tab.classList.toggle("is-active", tab.dataset.previewPlatform === mode);
+        });
+    }
+
 
     function syncFilesToInput() {
         if (!mediaInput) return;
@@ -216,6 +315,7 @@
         });
         syncFilesToInput();
         renderSelectedMedia();
+        updatePreview();
     }
 
     function renderSelectedMedia() {
@@ -284,6 +384,7 @@
                 collectedFiles.splice(toIndex, 0, moved);
                 syncFilesToInput();
                 renderSelectedMedia();
+                updatePreview();
             });
         });
     }
@@ -298,6 +399,7 @@
         collectedFiles.splice(indexToRemove, 1);
         syncFilesToInput();
         renderSelectedMedia();
+        updatePreview();
     }
 
     function markExistingMediaRemoved(publicId, targetCard) {
@@ -314,6 +416,7 @@
             targetCard.remove();
         }
         updateExistingMediaBadges();
+        updatePreview();
     }
 
     function updateExistingMediaBadges() {
@@ -369,6 +472,7 @@
                     existingMediaGrid.insertBefore(movedCard, refCard);
                 }
                 updateExistingMediaBadges();
+                updatePreview();
             });
         });
     }
@@ -442,11 +546,32 @@
     }
 
     document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
-        input.addEventListener("change", updateToolbarAvailability);
+        input.addEventListener("change", function () {
+            updateToolbarAvailability();
+            setPreviewMode(resolvePreviewMode());
+        });
     });
+
+    document.querySelectorAll(".preview-platform-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            setPreviewMode(tab.dataset.previewPlatform || "telegram");
+        });
+    });
+
+    function updateTelegramTime() {
+        var timeEl = document.querySelector(".tg-bubble-time");
+        if (timeEl) {
+            var now = new Date();
+            var h = String(now.getHours()).padStart(2, "0");
+            var m = String(now.getMinutes()).padStart(2, "0");
+            timeEl.textContent = h + ":" + m;
+        }
+    }
 
     content.addEventListener("input", updatePreview);
     updateToolbarAvailability();
+    setPreviewMode(resolvePreviewMode());
+    updateTelegramTime();
     updatePreview();
 
     const btnSaveTemplate = document.getElementById("btnSaveTemplate");

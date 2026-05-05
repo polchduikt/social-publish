@@ -24,27 +24,27 @@
 
         <section class="stats-grid">
             <article class="stat-card">
-                <h3>Total Posts</h3>
+                <h3 th:text="#{dash.totalPosts}">Total Posts</h3>
                 <p class="stat-value" th:text="${dashboard.stats.totalPosts}">0</p>
-                <span class="stat-sub">All statuses</span>
+                <span class="stat-sub" th:text="#{dash.allStatuses}">All statuses</span>
             </article>
             <article class="stat-card">
-                <h3>Scheduled</h3>
+                <h3 th:text="#{dash.scheduledCard}">Scheduled</h3>
                 <p class="stat-value" th:text="${dashboard.stats.scheduledPosts}">0</p>
-                <span class="stat-sub">Ready in queue</span>
+                <span class="stat-sub" th:text="#{dash.readyInQueue}">Ready in queue</span>
             </article>
             <article class="stat-card">
-                <h3>Success Rate</h3>
+                <h3 th:text="#{dash.successRate}">Success Rate</h3>
                 <p class="stat-value" th:text="${#numbers.formatDecimal(dashboard.stats.successRate, 1, 1)} + '%'">0%</p>
-                <span class="stat-sub">Published vs failed</span>
+                <span class="stat-sub" th:text="#{dash.publishedVsFailed}">Published vs failed</span>
             </article>
             <article class="stat-card stat-statuses">
-                <h3>Status Breakdown</h3>
+                <h3 th:text="#{dash.statusBreakdown}">Status Breakdown</h3>
                 <div class="mini-statuses">
-                    <span>DRAFT <strong th:text="${dashboard.stats.draftPosts}">0</strong></span>
-                    <span>SCHEDULED <strong th:text="${dashboard.stats.scheduledPosts}">0</strong></span>
-                    <span>PUBLISHED <strong th:text="${dashboard.stats.publishedPosts}">0</strong></span>
-                    <span>FAILED <strong th:text="${dashboard.stats.failedPosts}">0</strong></span>
+                    <span><span th:text="#{dash.draft}">DRAFT</span> <strong th:text="${dashboard.stats.draftPosts}">0</strong></span>
+                    <span><span th:text="#{dash.scheduled}">SCHEDULED</span> <strong th:text="${dashboard.stats.scheduledPosts}">0</strong></span>
+                    <span><span th:text="#{dash.published}">PUBLISHED</span> <strong th:text="${dashboard.stats.publishedPosts}">0</strong></span>
+                    <span><span th:text="#{dash.failed}">FAILED</span> <strong th:text="${dashboard.stats.failedPosts}">0</strong></span>
                 </div>
             </article>
         </section>
@@ -52,14 +52,14 @@
         <section class="board-grid">
             <article class="panel chart-panel">
                 <div class="panel-head">
-                    <h3>Posting Activity (Last 7 Days)</h3>
+                    <h3 th:text="#{dash.postingActivity}">Posting Activity (Last 7 Days)</h3>
                 </div>
                 <div class="bar-chart">
                     <div class="bar-item" th:each="bar : ${dashboard.activityBars}">
                         <div class="bar-column">
                             <span class="bar" th:style="'height:' + ${bar.heightPercent} + '%'"></span>
                         </div>
-                        <span class="bar-label" th:text="${bar.day}">Mon</span>
+                        <span class="bar-label" th:text="${#messages.msg('day.' + bar.day)}">Mon</span>
                         <span class="bar-count" th:text="${bar.value}">0</span>
                     </div>
                 </div>
@@ -67,8 +67,8 @@
 
             <article class="panel recent-panel">
                 <div class="panel-head">
-                    <h3>Recent Activity</h3>
-                    <span class="live-dot">● Live</span>
+                    <h3 th:text="#{dash.recentActivity}">Recent Activity</h3>
+                    <span class="live-dot">● <span th:text="#{dash.live}">Live</span></span>
                 </div>
                 <div class="recent-list">
                     <div class="recent-item" th:each="post : ${dashboard.recentPosts}" th:attr="data-post-id=${post.id}">
@@ -79,27 +79,27 @@
                         <p th:text="${post.excerpt()}">Excerpt</p>
                         <span class="status-badge"
                               th:classappend="${#strings.toLowerCase(post.status.name())}"
-                              th:text="${post.status}">DRAFT</span>
+                              th:text="${#messages.msg('status.' + post.status.name())}">DRAFT</span>
                     </div>
-                    <p class="empty-hint" th:if="${#lists.isEmpty(dashboard.recentPosts)}">No posts yet. Create your first one.</p>
+                    <p class="empty-hint" th:if="${#lists.isEmpty(dashboard.recentPosts)}" th:text="#{dash.noPostsYet}">No posts yet. Create your first one.</p>
                 </div>
             </article>
         </section>
 
         <section class="panel posts-panel">
             <div class="panel-head">
-                <h3>All Posts</h3>
-                <a class="btn-link" href="/posts/new">Create Post</a>
+                <h3 th:text="#{dash.allPosts}">All Posts</h3>
+                <a class="btn-link" href="/posts/new" th:text="#{dash.createPost}">Create Post</a>
             </div>
             <div class="posts-table-wrap">
                 <table class="posts-table">
                     <thead>
                     <tr>
-                        <th>Title</th>
-                        <th>Status</th>
-                        <th>Scheduled</th>
-                        <th>Updated</th>
-                        <th>Actions</th>
+                        <th th:text="#{dash.table.title}">Title</th>
+                        <th th:text="#{dash.table.status}">Status</th>
+                        <th th:text="#{dash.table.scheduled}">Scheduled</th>
+                        <th th:text="#{dash.table.updated}">Updated</th>
+                        <th th:text="#{dash.table.actions}">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -111,23 +111,23 @@
                         <td>
                             <span class="status-badge"
                                   th:classappend="${#strings.toLowerCase(post.status.name())}"
-                                  th:text="${post.status}">DRAFT</span>
+                                  th:text="${#messages.msg('status.' + post.status.name())}">DRAFT</span>
                         </td>
                         <td th:text="${post.scheduledAt != null ? #temporals.format(post.scheduledAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
                         <td th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">-</td>
                         <td>
                             <div class="row-actions">
-                                <a th:href="@{|/posts/${post.id}/preview?from=/|}" class="action-link">Preview</a>
-                                <a th:href="@{|/posts/${post.id}/edit|}" class="action-link">Edit</a>
+                                <a th:href="@{|/posts/${post.id}/preview?from=/|}" class="action-link" th:text="#{dash.table.preview}">Preview</a>
+                                <a th:href="@{|/posts/${post.id}/edit|}" class="action-link" th:text="#{dash.table.edit}">Edit</a>
                                 <form th:action="@{|/posts/${post.id}/delete|}" method="post">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button type="submit" class="action-link danger-link">Delete</button>
+                                    <button type="submit" class="action-link danger-link" th:text="#{dash.table.delete}">Delete</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(dashboard.allPosts)}">
-                        <td colspan="5" class="empty-row">No posts yet. Start by creating a post.</td>
+                        <td colspan="5" class="empty-row" th:text="#{dash.table.empty}">No posts yet. Start by creating a post.</td>
                     </tr>
                     </tbody>
                 </table>

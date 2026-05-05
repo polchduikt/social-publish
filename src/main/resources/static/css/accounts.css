@@ -1,197 +1,230 @@
 .category-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: 700;
-    font-family: "Sora", sans-serif;
-    margin: 28px 0 0;
-    color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: "Sora", sans-serif;
+  margin: 28px 0 0;
+  color: #1e293b;
 }
 
 .category-title:first-of-type {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .category-title svg {
-    opacity: 0.5;
-    flex-shrink: 0;
+  opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .accounts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
 }
 
 .account-card {
-    background: #fff;
-    border: 1px solid #dce4f1;
-    border-radius: 14px;
-    padding: 18px;
-    transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
-    display: flex;
-    flex-direction: column;
+  background: #fff;
+  border: 1px solid #dce4f1;
+  border-radius: 14px;
+  padding: 18px;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+  display: flex;
+  flex-direction: column;
 }
 
 .account-card:hover {
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-    transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
 }
 
 .account-connected {
-    border-color: #2563eb;
-    border-left: 4px solid #2563eb;
+  border-color: #2563eb;
+  border-left: 4px solid #2563eb;
 }
 
 .account-disabled {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 .account-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .account-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
 }
 
 .telegram-icon {
-    background: #e0f2fe;
-    color: #0088cc;
+  background: #e0f2fe;
+  color: #0088cc;
 }
 
 .discord-icon {
-    background: #eef2ff;
-    color: #5865F2;
+  background: #eef2ff;
+  color: #5865f2;
 }
 
 .reddit-icon {
-    background: #fff1f0;
-    color: #FF4500;
+  background: #fff1f0;
+  color: #ff4500;
 }
 
 .tiktok-icon {
-    background: #f0fdf4;
-    color: #000000;
+  background: #f0fdf4;
+  color: #000000;
 }
 
 .youtube-icon {
-    background: #fef2f2;
-    color: #FF0000;
+  background: #fef2f2;
+  color: #ff0000;
 }
 
 .instagram-icon {
-    background: #fff1f2;
-    color: #E1306C;
+  background: #fff1f2;
+  color: #e1306c;
 }
 
 .x-icon {
-    background: #f1f5f9;
-    color: #0f172a;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .whatsapp-icon {
-    background: #ecfdf5;
-    color: #25D366;
+  background: #ecfdf5;
+  color: #25d366;
 }
 
 .account-info {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .account-info strong {
-    display: block;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  display: block;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .account-info span {
-    font-size: 12px;
-    color: #64748b;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .account-status-dot {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .account-status-dot .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
 .account-status-dot.online {
-    color: #16a34a;
+  color: #16a34a;
 }
 
 .account-status-dot.online .dot {
-    background: #16a34a;
-    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
 }
 
 .account-status-dot.offline {
-    color: #94a3b8;
+  color: #94a3b8;
 }
 
 .account-status-dot.offline .dot {
-    background: #cbd5e1;
+  background: #cbd5e1;
 }
 
 .account-card-body {
-    margin: 12px 0;
-    flex: 1;
+  margin: 12px 0;
+  flex: 1;
 }
 
 .account-card-body p {
-    margin: 0;
-    font-size: 13px;
-    color: #64748b;
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
 }
 
 .account-card-body code {
-    background: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 5px;
-    font-size: 12px;
-    word-break: break-all;
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 160px;
-    vertical-align: bottom;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 12px;
+  word-break: break-all;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+  vertical-align: bottom;
 }
 
 .account-card-footer {
-    padding-top: 8px;
-    border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .action-link.disabled {
-    color: #cbd5e1;
-    pointer-events: none;
+  color: #cbd5e1;
+  pointer-events: none;
 }
 
 @media (max-width: 1040px) {
-    .creator-layout {
-        grid-template-columns: 1fr;
-    }
+  .creator-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.linkedin-icon {
+  background: #eef2ff;
+  color: #0a66c2;
+}
+
+.pinterest-icon {
+  background: #fff1f2;
+  color: #bd081c;
+}
+
+.viber-icon {
+  background: #f4f4f5;
+  color: #7d52cc;
+}
+
+.btn-reddit {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #ff4500;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.btn-icon-svg {
+  vertical-align: middle;
+  margin-right: 8px;
 }

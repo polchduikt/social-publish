@@ -22,8 +22,6 @@ public class TelegramPublisherService {
     private final TelegramSettingsRepository settingsRepository;
     private final TelegramClientService telegramClientService;
 
-
-
     public void publish(Post post) {
         UUID userId = post.getOwner().getId();
         TelegramSettingsEntity settings = settingsRepository.findByUserId(userId)

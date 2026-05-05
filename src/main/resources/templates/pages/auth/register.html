@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title th:text="#{reg.title} + ' — ' + #{nav.title}">Register</title>
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/auth.css">
     <link rel="stylesheet" href="/css/dark.css">
@@ -16,23 +16,23 @@
             <span class="brand-dot"></span>
             Social Publish
         </span>
-        <h2 class="visual-title">Create your command center for social growth.</h2>
-        <p class="visual-text">
+        <h2 class="visual-title" th:text="#{reg.visualTitle}">Create your command center for social growth.</h2>
+        <p class="visual-text" th:text="#{reg.visualText}">
             Plan posts, collaborate faster, and keep every publication aligned with your brand voice.
         </p>
         <div class="visual-pills">
-            <span>Fast Onboarding</span>
-            <span>Automated Flows</span>
-            <span>Secure Sessions</span>
+            <span th:text="#{reg.visual1}">Fast Onboarding</span>
+            <span th:text="#{reg.visual2}">Automated Flows</span>
+            <span th:text="#{reg.visual3}">Secure Sessions</span>
         </div>
     </section>
 
     <section class="auth-panel">
-        <h1 class="auth-heading">Create account</h1>
-        <p class="auth-subtitle">Set up your workspace and start publishing in minutes.</p>
+        <h1 class="auth-heading" th:text="#{reg.heading}">Create account</h1>
+        <p class="auth-subtitle" th:text="#{reg.subtitle}">Set up your workspace and start publishing in minutes.</p>
 
         <div class="status-stack">
-            <div th:if="${error}" class="status error">Registration failed. Check data or use another email.</div>
+            <div th:if="${error}" class="status error" th:text="#{reg.error}">Registration failed. Check data or use another email.</div>
             <div id="register-status"></div>
         </div>
 
@@ -49,29 +49,29 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
             <div class="social-auth">
-                <a class="btn-link btn-secondary" href="/oauth2/authorization/google">Continue with Google</a>
+                <a class="btn-link btn-secondary" href="/oauth2/authorization/google" th:text="#{reg.google}">Continue with Google</a>
             </div>
 
-            <div class="divider">or register with email</div>
+            <div class="divider" th:text="#{reg.orWithEmail}">or register with email</div>
 
             <div class="field">
-                <label for="fullName">Full Name</label>
+                <label for="fullName" th:text="#{reg.fullName}">Full Name</label>
                 <input id="fullName" th:field="*{fullName}" type="text" required>
             </div>
 
             <div class="field">
-                <label for="email">Work Email</label>
+                <label for="email" th:text="#{reg.workEmail}">Work Email</label>
                 <input id="email" th:field="*{email}" type="email" required>
             </div>
 
             <div class="field">
-                <label for="password">Password</label>
+                <label for="password" th:text="#{reg.password}">Password</label>
                 <input id="password" th:field="*{password}" type="password" minlength="8" required>
             </div>
 
             <div class="cta-row">
-                <button type="submit">Create account</button>
-                <a class="btn-link btn-secondary" href="/login">Back to login</a>
+                <button type="submit" th:text="#{reg.submit}">Create account</button>
+                <a class="btn-link btn-secondary" href="/login" th:text="#{reg.backToLogin}">Back to login</a>
             </div>
         </form>
     </section>

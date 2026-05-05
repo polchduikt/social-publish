@@ -39,20 +39,20 @@
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
                     </div>
                     <div class="account-info">
-                        <strong th:text="${telegramSettings.configured() ? telegramSettings.chatId() : 'Telegram'}">Telegram</strong>
-                        <span>Telegram Bot</span>
+                        <strong th:text="${telegramSettings.configured() ? 'Telegram Bot' : 'Telegram'}">Telegram</strong>
+                        <span th:text="#{acc.telegramBot}">Telegram Bot</span>
                     </div>
                     <div class="account-status-dot" th:classappend="${telegramSettings.configured() and telegramSettings.enabled() ? 'online' : 'offline'}">
                         <span class="dot"></span>
-                        <span th:text="${telegramSettings.configured() and telegramSettings.enabled() ? 'Online' : 'Disconnected'}">Status</span>
+                        <span th:text="${telegramSettings.configured() and telegramSettings.enabled() ? #messages.msg('acc.status.online') : #messages.msg('acc.status.disconnected')}">Status</span>
                     </div>
                 </div>
                 <div class="account-card-body">
-                    <p th:if="${telegramSettings.configured()}">Bot connected and ready to publish.</p>
-                    <p th:unless="${telegramSettings.configured()}">Connect your Telegram bot to start publishing.</p>
+                    <p th:if="${telegramSettings.configured()}" th:text="#{acc.botConnected}">Bot connected and ready to publish.</p>
+                    <p th:unless="${telegramSettings.configured()}" th:text="#{acc.connectBot}">Connect your Telegram bot to start publishing.</p>
                 </div>
                 <div class="account-card-footer">
-                    <a href="/accounts/telegram" class="action-link">Manage &#x2192;</a>
+                    <a href="/accounts/telegram" class="action-link"><span th:text="#{acc.manage}">Manage</span> &#x2192;</a>
                 </div>
             </div>
 
@@ -63,40 +63,40 @@
                     </div>
                     <div class="account-info">
                         <strong th:text="${discordSettings.configured() ? 'Discord Webhook' : 'Discord'}">Discord</strong>
-                        <span>Discord</span>
+                        <span th:text="#{acc.discordWebhook}">Discord Webhook</span>
                     </div>
                     <div class="account-status-dot" th:classappend="${discordSettings.configured() and discordSettings.enabled() ? 'online' : 'offline'}">
                         <span class="dot"></span>
-                        <span th:text="${discordSettings.configured() and discordSettings.enabled() ? 'Online' : 'Disconnected'}">Status</span>
+                        <span th:text="${discordSettings.configured() and discordSettings.enabled() ? #messages.msg('acc.status.online') : #messages.msg('acc.status.disconnected')}">Status</span>
                     </div>
                 </div>
                 <div class="account-card-body">
-                    <p th:if="${discordSettings.configured()}">Webhook connected and ready.</p>
-                    <p th:unless="${discordSettings.configured()}">Connect your Discord webhook to start publishing.</p>
+                    <p th:if="${discordSettings.configured()}" th:text="#{acc.webhookConnected}">Webhook connected and ready.</p>
+                    <p th:unless="${discordSettings.configured()}" th:text="#{acc.connectWebhook}">Connect your Discord webhook to start publishing.</p>
                 </div>
                 <div class="account-card-footer">
-                    <a href="/accounts/discord" class="action-link">Manage &#x2192;</a>
+                    <a href="/accounts/discord" class="action-link"><span th:text="#{acc.manage}">Manage</span> &#x2192;</a>
                 </div>
             </div>
 
             <div class="account-card account-disabled">
                 <div class="account-card-header">
-                    <div class="account-icon" style="background:#f0fdf4; color:#16a34a;">
+                    <div class="account-icon whatsapp-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 0C5.385 0 0 5.386 0 12.034c0 2.127.551 4.2 1.6 6.027L.182 23.23l5.312-1.393c1.761.948 3.738 1.448 5.762 1.448h.005C18.614 23.284 24 17.898 24 11.25S18.614 0 12.031 0zm0 19.395c-1.8 0-3.565-.484-5.111-1.401l-.367-.217-3.8.997 1.018-3.705-.238-.378a9.458 9.458 0 01-1.444-5.07c0-5.234 4.26-9.495 9.5-9.495s9.495 4.261 9.495 9.495-4.26 9.495-9.495 9.495c0-.001.002-.001.002-.001zM17.25 14.18c-.286-.143-1.69-.836-1.953-.931-.261-.096-.452-.143-.643.143-.19.286-.738.931-.904 1.121-.167.191-.334.215-.619.071-1.392-.68-2.316-1.31-3.23-2.883-.167-.286-.019-.441.123-.583.128-.128.286-.334.428-.5.143-.167.19-.286.286-.476.096-.191.048-.358-.024-.5-.071-.143-.643-1.551-.881-2.123-.231-.555-.464-.479-.643-.488-.166-.008-.357-.008-.547-.008-.19 0-.5.071-.762.357s-1 1-1 2.455c0 1.455 1.024 2.861 1.166 3.051.143.191 2.052 3.234 5.068 4.444.717.288 1.275.46 1.71.589.721.214 1.378.183 1.896.111.581-.081 1.69-.691 1.928-1.359.238-.668.238-1.24.167-1.359-.071-.12-.262-.191-.548-.334z"/></svg>
                     </div>
                     <div class="account-info">
                         <strong>WhatsApp</strong>
-                        <span>WhatsApp Business</span>
+                        <span th:text="#{acc.whatsappBusiness}">WhatsApp Business</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Send updates via WhatsApp Business API.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.whatsappDesc}">Send updates via WhatsApp Business API.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
             <div class="account-card account-disabled">
                 <div class="account-card-header">
-                    <div class="account-icon" style="background:#f4f4f5; color:#7d52cc;">
+                    <div class="account-icon viber-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.467 2.146c-1.383-.34-4.887-.34-7.467-.34-2.58 0-6.084 0-7.467.34-1.928.473-3.085 2.502-3.085 5.86v7.988c0 3.358 1.157 5.387 3.085 5.86 1.383.34 4.887.34 7.467.34 2.58 0 6.084 0 7.467-.34 1.928-.473 3.085-2.502 3.085-5.86v-7.988c0-3.358-1.157-5.387-3.085-5.86zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                     </div>
                     <div class="account-info">
@@ -111,9 +111,9 @@
 
         </div>
 
-        <h3 class="category-title" style="margin-top: 28px;">
+        <h3 class="category-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-            Social Networks
+            <span th:text="#{acc.socialNetworks}">Social Networks</span>
         </h3>
         <div class="accounts-grid">
 
@@ -124,19 +124,19 @@
                     </div>
                     <div class="account-info">
                         <strong>Reddit</strong>
-                        <span>Reddit API</span>
+                        <span th:text="#{acc.redditApi}">Reddit API</span>
                     </div>
                     <div class="account-status-dot" th:classappend="${redditSettings.configured() and redditSettings.enabled() ? 'online' : 'offline'}">
                         <span class="dot"></span>
-                        <span th:text="${redditSettings.configured() and redditSettings.enabled() ? 'Online' : 'Disconnected'}">Status</span>
+                        <span th:text="${redditSettings.configured() and redditSettings.enabled() ? #messages.msg('acc.status.online') : #messages.msg('acc.status.disconnected')}">Status</span>
                     </div>
                 </div>
                 <div class="account-card-body">
                     <p th:if="${redditSettings.configured()}">Subreddit: <code th:text="${redditSettings.defaultSubreddit()}">***</code></p>
-                    <p th:unless="${redditSettings.configured()}">Connect Reddit to start publishing.</p>
+                    <p th:unless="${redditSettings.configured()}" th:text="#{acc.redditDesc}">Connect Reddit to start publishing.</p>
                 </div>
                 <div class="account-card-footer">
-                    <a href="/accounts/reddit" class="action-link">Manage &#x2192;</a>
+                    <a href="/accounts/reddit" class="action-link"><span th:text="#{acc.manage}">Manage</span> &#x2192;</a>
                 </div>
             </div>
 
@@ -147,12 +147,12 @@
                     </div>
                     <div class="account-info">
                         <strong>TikTok</strong>
-                        <span>TikTok API</span>
+                        <span th:text="#{acc.tiktokApi}">TikTok API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Publish short-form videos directly to TikTok.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.tiktokDesc}">Publish short-form videos directly to TikTok.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
             <div class="account-card account-disabled">
@@ -162,12 +162,12 @@
                     </div>
                     <div class="account-info">
                         <strong>YouTube</strong>
-                        <span>YouTube Data API</span>
+                        <span th:text="#{acc.youtubeApi}">YouTube Data API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Upload and schedule videos to your YouTube channel.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.youtubeDesc}">Upload and schedule videos to your YouTube channel.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
             <div class="account-card account-disabled">
@@ -177,12 +177,12 @@
                     </div>
                     <div class="account-info">
                         <strong>Instagram</strong>
-                        <span>Graph API</span>
+                        <span th:text="#{acc.instagramApi}">Graph API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Publish photos and reels to your Instagram profile.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.instagramDesc}">Publish photos and reels to your Instagram profile.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
             <div class="account-card account-disabled">
@@ -192,42 +192,42 @@
                     </div>
                     <div class="account-info">
                         <strong>X (Twitter)</strong>
-                        <span>X API v2</span>
+                        <span th:text="#{acc.twitterApi}">X API v2</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Post tweets and threads to your X account.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.twitterDesc}">Post tweets and threads to your X account.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
             <div class="account-card account-disabled">
                 <div class="account-card-header">
-                    <div class="account-icon" style="background:#eef2ff; color:#0a66c2;">
+                    <div class="account-icon linkedin-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </div>
                     <div class="account-info">
                         <strong>LinkedIn</strong>
-                        <span>LinkedIn API</span>
+                        <span th:text="#{acc.linkedinApi}">LinkedIn API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Publish professional updates to your network.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.linkedinDesc}">Publish professional updates to your network.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
             <div class="account-card account-disabled">
                 <div class="account-card-header">
-                    <div class="account-icon" style="background:#fff1f2; color:#bd081c;">
+                    <div class="account-icon pinterest-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.951-7.252 4.168 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.367 18.633 0 12.017 0z"/></svg>
                     </div>
                     <div class="account-info">
                         <strong>Pinterest</strong>
-                        <span>Pinterest API</span>
+                        <span th:text="#{acc.pinterestApi}">Pinterest API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Pin images and videos directly to your boards.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.pinterestDesc}">Pin images and videos directly to your boards.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
         </div>

@@ -1,10 +1,10 @@
 <nav class="top-navbar" xmlns:th="http://www.thymeleaf.org" th:fragment="navbar">
     <div class="navbar-left">
-        <a href="/dashboard" class="brand-link" style="display: flex; gap: 12px; align-items: center; text-decoration: none;">
+        <a href="/dashboard" class="brand-link">
             <div class="brand-mark">SP</div>
             <div class="brand-text">
-                <h1>Social Publish</h1>
-                <p>Automation Hub</p>
+                <h1 th:text="#{nav.title}">Social Publish</h1>
+                <p th:text="#{nav.subtitle}">Automation Hub</p>
             </div>
         </a>
     </div>
@@ -13,12 +13,23 @@
     </div>
 
     <div class="navbar-right">
+        <div class="lang-switcher">
+            <button class="lang-btn">
+                <span th:text="${#locale.language == 'uk' ? 'UK' : 'EN'}">EN</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="lang-dropdown">
+                <a href="?lang=en" class="lang-option" th:classappend="${#locale.language != 'uk'} ? 'active'">English</a>
+                <a href="?lang=uk" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'active'">Українська</a>
+            </div>
+        </div>
+
         <button id="theme-toggle" class="btn-icon" aria-label="Toggle dark mode">
-            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg class="sun-icon" style="display: none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
             <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
         <div class="profile-chip" th:if="${user != null}" th:text="${user.fullName}">Profile</div>
-        <a href="/login" class="btn-primary" th:unless="${user != null}">Login</a>
+        <a href="/login" class="btn-primary" th:unless="${user != null}" th:text="#{nav.login}">Login</a>
     </div>
     <script src="/js/theme-toggle.js"></script>
 </nav>
