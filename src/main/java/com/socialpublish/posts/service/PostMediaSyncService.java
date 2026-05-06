@@ -55,6 +55,25 @@ public class PostMediaSyncService {
         cloudinaryMediaService.deleteByPublicIds(publicIds);
     }
 
+    public void copyMedia(Post source, Post target, UUID ownerId) {
+        List<String> sourceUrls = source.getMedia().stream()
+                .map(PostMedia::getSecureUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .toList();
+
+        List<MediaUploadResult> copied = cloudinaryMediaService.copyImagesFromUrls(
+                sourceUrls,
+                ownerId,
+                target.getMedia().size()
+        );
+
+        int startOrder = target.getMedia().size();
+        List<PostMedia> clonedMedia = IntStream.range(0, copied.size())
+                .mapToObj(index -> mapToPostMedia(target, copied.get(index), startOrder + index))
+                .toList();
+        target.getMedia().addAll(clonedMedia);
+    }
+
     private PostMedia mapToPostMedia(Post post, MediaUploadResult upload, int sortOrder) {
         PostMedia media = new PostMedia();
         media.setPost(post);

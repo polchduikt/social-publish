@@ -29,7 +29,7 @@
 
         <h3 class="category-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            Messengers
+            <span th:text="#{acc.messengers}">Messengers</span>
         </h3>
         <div class="accounts-grid">
 
@@ -101,12 +101,12 @@
                     </div>
                     <div class="account-info">
                         <strong>Viber</strong>
-                        <span>Viber Bot</span>
+                        <span th:text="#{acc.viberBot}">Viber Bot</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span>Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
-                <div class="account-card-body"><p>Broadcast messages to your Viber community.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled">Manage &#x2192;</span></div>
+                <div class="account-card-body"><p th:text="#{acc.viberDesc}">Broadcast messages to your Viber community.</p></div>
+                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage</span></div>
             </div>
 
         </div>

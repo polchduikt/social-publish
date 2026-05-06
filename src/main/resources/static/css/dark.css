@@ -215,6 +215,49 @@ html.dark-mode .filter-pill.active {
   border-color: var(--dm-accent);
   color: #ffffff;
 }
+html.dark-mode .queue-metric-card {
+  background: var(--dm-surface-2);
+  border-color: var(--dm-border);
+}
+html.dark-mode .queue-metric-card h3,
+html.dark-mode .next-post-card span,
+html.dark-mode .queue-radio {
+  color: var(--dm-text-muted);
+}
+html.dark-mode .queue-metric-card p {
+  color: var(--dm-text-strong);
+}
+html.dark-mode .bulk-actions-bar {
+  background: #14233e;
+  border-color: #334968;
+}
+html.dark-mode .queue-search-wrap input,
+html.dark-mode .queue-sort-wrap select,
+html.dark-mode .bulk-actions-bar select,
+html.dark-mode .bulk-date-input {
+  background: #0d1730;
+  border-color: var(--dm-border);
+  color: var(--dm-text-strong);
+}
+html.dark-mode .queue-table tbody tr:nth-child(even) td {
+  background: #202f4d;
+}
+html.dark-mode .queue-table tbody tr:hover td {
+  background: #22385f;
+}
+html.dark-mode .queue-table .queue-preview-cell p {
+  color: var(--dm-text-muted);
+}
+html.dark-mode .icon-action {
+  background: #1b2c4a;
+  border-color: #3a5278;
+  color: #cfe0ff;
+}
+html.dark-mode .icon-action:hover {
+  background: #27406a;
+  border-color: #4f83ff;
+  color: #ffffff;
+}
 html.dark-mode .btn-icon {
   color: var(--dm-text-strong);
 }

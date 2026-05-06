@@ -5,8 +5,8 @@ import com.cloudinary.utils.ObjectUtils;
 import com.socialpublish.media.config.CloudinaryProperties;
 import com.socialpublish.media.dto.MediaUploadResult;
 import com.socialpublish.posts.exception.PostValidationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,19 +17,15 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class CloudinaryMediaService {
 
-    private static final Logger log = LoggerFactory.getLogger(CloudinaryMediaService.class);
     private static final long MAX_FILE_SIZE_BYTES = 10L * 1024 * 1024;
     private static final int MAX_FILES_PER_POST = 10;
 
     private final Cloudinary cloudinary;
     private final CloudinaryProperties cloudinaryProperties;
-
-    public CloudinaryMediaService(Cloudinary cloudinary, CloudinaryProperties cloudinaryProperties) {
-        this.cloudinary = cloudinary;
-        this.cloudinaryProperties = cloudinaryProperties;
-    }
 
     public List<MediaUploadResult> uploadImages(List<MultipartFile> files, UUID ownerId, int existingCount) {
         List<MultipartFile> safeFiles = files == null
@@ -51,6 +47,29 @@ public class CloudinaryMediaService {
             uploaded.add(uploadSingle(file, ownerId));
         }
         return uploaded;
+    }
+
+    public List<MediaUploadResult> copyImagesFromUrls(List<String> urls, UUID ownerId, int existingCount) {
+        List<String> safeUrls = urls == null
+                ? List.of()
+                : urls.stream()
+                .filter(url -> url != null && !url.isBlank())
+                .toList();
+
+        if (safeUrls.isEmpty()) {
+            return List.of();
+        }
+
+        validateCloudinaryConfigured();
+        if (existingCount + safeUrls.size() > MAX_FILES_PER_POST) {
+            throw new PostValidationException("You can attach up to " + MAX_FILES_PER_POST + " photos");
+        }
+
+        List<MediaUploadResult> copied = new ArrayList<>();
+        for (String url : safeUrls) {
+            copied.add(uploadRemoteUrl(url, ownerId));
+        }
+        return copied;
     }
 
     public void deleteByPublicIds(List<String> publicIds) {
@@ -80,28 +99,40 @@ public class CloudinaryMediaService {
 
     private MediaUploadResult uploadSingle(MultipartFile file, UUID ownerId) {
         try {
-            Map<?, ?> response = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "social-publish/posts/" + ownerId,
-                            "resource_type", "image",
-                            "overwrite", false
-                    )
-            );
-
-            String publicId = readString(response.get("public_id"));
-            String secureUrl = readString(response.get("secure_url"));
-            String format = readString(response.get("format"));
-            int width = readInt(response.get("width"));
-            int height = readInt(response.get("height"));
-            long bytes = readLong(response.get("bytes"));
-
-            return new MediaUploadResult(publicId, secureUrl, format, width, height, bytes);
+            Map<?, ?> response = cloudinary.uploader().upload(file.getBytes(), uploadOptions(ownerId));
+            return toUploadResult(response);
         } catch (IOException ex) {
             throw new PostValidationException("Failed to read uploaded file");
         } catch (Exception ex) {
             throw new PostValidationException("Failed to upload image to Cloudinary");
         }
+    }
+
+    private MediaUploadResult uploadRemoteUrl(String url, UUID ownerId) {
+        try {
+            Map<?, ?> response = cloudinary.uploader().upload(url, uploadOptions(ownerId));
+            return toUploadResult(response);
+        } catch (Exception ex) {
+            throw new PostValidationException("Failed to copy image to Cloudinary");
+        }
+    }
+
+    private Map<String, Object> uploadOptions(UUID ownerId) {
+        return ObjectUtils.asMap(
+                "folder", "social-publish/posts/" + ownerId,
+                "resource_type", "image",
+                "overwrite", false
+        );
+    }
+
+    private MediaUploadResult toUploadResult(Map<?, ?> response) {
+        String publicId = readString(response.get("public_id"));
+        String secureUrl = readString(response.get("secure_url"));
+        String format = readString(response.get("format"));
+        int width = readInt(response.get("width"));
+        int height = readInt(response.get("height"));
+        long bytes = readLong(response.get("bytes"));
+        return new MediaUploadResult(publicId, secureUrl, format, width, height, bytes);
     }
 
     private void validateImage(MultipartFile file) {

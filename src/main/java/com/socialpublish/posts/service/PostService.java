@@ -2,9 +2,7 @@ package com.socialpublish.posts.service;
 
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.repository.UserRepository;
-import com.socialpublish.media.dto.MediaUploadResult;
 import com.socialpublish.media.entity.PostMedia;
-import com.socialpublish.media.service.CloudinaryMediaService;
 import com.socialpublish.notifications.dto.PostNotification;
 import com.socialpublish.notifications.service.NotificationService;
 import com.socialpublish.posts.dto.PostUpsertRequest;
@@ -24,13 +22,11 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -190,6 +186,100 @@ public class PostService {
                 post.getMedia().stream().map(PostMedia::getPublicId).toList()
         );
         postRepository.delete(post);
+    }
+
+    @Transactional
+    public void publishNow(UUID ownerId, UUID postId) {
+        Post post = requireOwnedPost(ownerId, postId);
+        PostStatus oldStatus = post.getStatus();
+
+        PostUpsertRequest request = new PostUpsertRequest();
+        request.setScheduledAt(LocalDateTime.now());
+        prepareForImmediatePublish(post, request);
+
+        Post saved = postRepository.save(post);
+        if (oldStatus == PostStatus.SCHEDULED) {
+            postSchedulerService.cancelScheduledPost(saved.getId());
+        }
+        dispatchImmediatePublishing(saved);
+    }
+
+    @Transactional
+    public void moveToDraft(UUID ownerId, UUID postId) {
+        Post post = requireOwnedPost(ownerId, postId);
+        PostStatus oldStatus = post.getStatus();
+
+        if (oldStatus == PostStatus.DRAFT) {
+            return;
+        }
+
+        if (oldStatus == PostStatus.SCHEDULED || oldStatus == PostStatus.FAILED || oldStatus == PostStatus.CANCELLED) {
+            statusMachine.transition(post, PostStatus.DRAFT);
+            applyDraftFields(post);
+            Post saved = postRepository.save(post);
+            handleSchedulingChange(saved, oldStatus);
+            return;
+        }
+
+        throw new PostValidationException("Cannot move status " + oldStatus + " to draft");
+    }
+
+    @Transactional
+    public void retryFailedNow(UUID ownerId, UUID postId) {
+        Post post = requireOwnedPost(ownerId, postId);
+        if (post.getStatus() != PostStatus.FAILED) {
+            throw new PostValidationException("Retry is available only for FAILED posts");
+        }
+        publishNow(ownerId, postId);
+    }
+
+    @Transactional
+    public PostView duplicatePost(UUID ownerId, UUID postId) {
+        Post source = requireOwnedPost(ownerId, postId);
+        User owner = source.getOwner();
+
+        Post duplicate = new Post();
+        duplicate.setOwner(owner);
+        duplicate.setStatus(PostStatus.DRAFT);
+        duplicate.setContent(source.getContent());
+        duplicate.setTitle(buildTitleFromContent(source.getContent()));
+        duplicate.setPlatforms(source.getPlatforms());
+        duplicate.setFailedReason(null);
+        duplicate.setScheduledAt(null);
+        duplicate.setPublishedAt(null);
+        duplicate.setRetryCount(0);
+
+        postMediaSyncService.copyMedia(source, duplicate, ownerId);
+
+        Post saved = postRepository.save(duplicate);
+        return PostView.from(saved);
+    }
+
+    @Transactional
+    public void reschedulePost(UUID ownerId, UUID postId, LocalDateTime scheduledAt) {
+        if (scheduledAt == null) {
+            throw new PostValidationException("Scheduled date is required");
+        }
+
+        Post post = requireOwnedPost(ownerId, postId);
+        PostStatus oldStatus = post.getStatus();
+
+        PostUpsertRequest request = new PostUpsertRequest();
+        request.setScheduledAt(scheduledAt);
+
+        if (oldStatus == PostStatus.SCHEDULED) {
+            applyScheduledFields(post, request);
+        } else if (oldStatus == PostStatus.DRAFT) {
+            applyUserTransition(post, PostStatus.SCHEDULED, request);
+        } else if (oldStatus == PostStatus.FAILED || oldStatus == PostStatus.CANCELLED) {
+            statusMachine.transition(post, PostStatus.DRAFT);
+            applyUserTransition(post, PostStatus.SCHEDULED, request);
+        } else {
+            throw new PostValidationException("Cannot reschedule post with status " + oldStatus);
+        }
+
+        Post saved = postRepository.save(post);
+        handleSchedulingChange(saved, oldStatus);
     }
 
     private Post requireOwnedPost(UUID ownerId, UUID postId) {
