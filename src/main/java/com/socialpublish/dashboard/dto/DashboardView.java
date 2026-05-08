@@ -6,7 +6,16 @@ import java.util.List;
 
 public record DashboardView(
         DashboardStatsView stats,
-        List<ActivityBarView> activityBars,
+        List<DashboardActivityDayView> activityDays,
+        List<DashboardStatusSliceView> statusSlices,
+        String statusDonutGradient,
+        List<DashboardSuccessTimelinePointView> successTimeline,
+        String successTimelineLinePath,
+        String successTimelineAreaPath,
+        boolean successTimelineShowArea,
+        int successTimelineAxisMax,
+        int successTimelineAxisMid,
+        int successTimelineAxisMin,
         List<PostView> recentPosts,
         List<PostView> allPosts
 ) {}

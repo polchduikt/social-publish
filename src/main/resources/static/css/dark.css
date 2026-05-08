@@ -444,3 +444,76 @@ html.dark-mode .settings-avatar {
   background: linear-gradient(135deg, var(--dm-accent), var(--dm-accent-2));
   box-shadow: 0 4px 16px rgba(79, 131, 255, 0.3);
 }
+html.dark-mode .status-donut::after {
+  background: #0f1b33;
+  border-color: #334968;
+}
+html.dark-mode .status-donut-meta span,
+html.dark-mode .status-name,
+html.dark-mode .activity-legend,
+html.dark-mode .bar-count,
+html.dark-mode .recent-title-wrap p {
+  color: #9eb0c8;
+}
+html.dark-mode .status-progress-track {
+  background: #213452;
+}
+html.dark-mode .line-dot {
+  border-color: #1b2942;
+  box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.2);
+}
+html.dark-mode .stacked-column {
+  background: rgba(148, 163, 184, 0.12);
+}
+html.dark-mode .recent-list::-webkit-scrollbar-thumb {
+  background: #3b4f70;
+}
+html.dark-mode .recent-platform-avatar {
+  color: #f8fbff;
+}
+html.dark-mode .recent-platform-avatar.telegram {
+  background: #3c72e0;
+}
+html.dark-mode .recent-platform-avatar.discord {
+  background: #5865f2;
+}
+html.dark-mode .recent-platform-avatar.reddit {
+  background: #ea6a1e;
+}
+html.dark-mode .recent-time {
+  color: #93a8c8;
+}
+html.dark-mode .icon-action-danger {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+html.dark-mode .icon-action-danger:hover {
+  border-color: rgba(248, 113, 113, 0.9);
+  background: rgba(248, 113, 113, 0.3);
+  color: #ffe4e6;
+}
+html.dark-mode .success-timeline-axis,
+html.dark-mode .success-week-label {
+  color: #9eb0c8;
+}
+html.dark-mode .timeline-guide-line {
+  stroke: rgba(148, 163, 184, 0.22);
+}
+html.dark-mode .success-tooltip {
+  background: #0f1b33;
+  color: #e2eaff;
+  border: 1px solid #334968;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+html.dark-mode .success-point-dot {
+  background: radial-gradient(circle at 35% 35%, #93c5fd, #4f83ff);
+  box-shadow:
+    0 0 0 3px rgba(79, 131, 255, 0.35),
+    0 0 14px 3px rgba(79, 131, 255, 0.4);
+}
+html.dark-mode .success-point-dot:hover {
+  box-shadow:
+    0 0 0 4px rgba(79, 131, 255, 0.5),
+    0 0 22px 5px rgba(79, 131, 255, 0.55);
+}
