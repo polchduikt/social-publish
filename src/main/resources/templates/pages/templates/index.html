@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Templates - Social Publish</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/templates.css">
+    <link rel="stylesheet" href="/css/toasts.css">
+    <link rel="stylesheet" href="/css/dark.css">
+</head>
+<body class="dashboard-page" th:attr="data-user-id=${user.id}">
+<div class="app-layout">
+    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+    <div class="dashboard-shell">
+        <div th:replace="~{fragments/layout/sidebar :: sidebar('templates')}"></div>
+
+        <main class="dashboard-main templates-main">
+
+            <div id="page-messages" style="display: none;"
+                 th:data-tmpl-deleted="#{tmpl.deletedMsg}"
+                 data-toast-title="Success">
+            </div>
+            <div class="templates-grid" th:if="${not #lists.isEmpty(templates)}">
+                <article class="template-card" th:each="tpl : ${templates}">
+                    <div class="template-card-header">
+                        <div class="template-title-row">
+                            <h3 class="template-title" th:text="${tpl.templateName}">Template Name</h3>
+                            <span class="template-date" th:text="${#temporals.format(tpl.updatedAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                        </div>
+                        <div class="template-platforms">
+                            <th:block th:if="${!#strings.isEmpty(tpl.platforms)}">
+                                <span class="platform-badge" th:each="p : ${#strings.arraySplit(tpl.platforms, ',')}" th:text="${p}">Platform</span>
+                            </th:block>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card-body">
+                        <p class="template-preview" th:text="${tpl.content}">Content preview...</p>
+                    </div>
+                    
+                    <div class="template-card-actions">
+                        <a th:href="@{/posts/new(templateId=${tpl.id})}" class="btn primary-btn btn-apply" th:text="#{tmpl.apply}">
+                            Apply
+                        </a>
+                        <form th:action="@{/templates/{id}/delete(id=${tpl.id})}" method="post" class="delete-form">
+                            <button type="submit" class="btn danger-btn btn-delete">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+
+            <div class="empty-state" th:if="${#lists.isEmpty(templates)}">
+                <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <h2 th:text="#{tmpl.noTemplatesTitle}">No saved templates</h2>
+                <p th:text="#{tmpl.noTemplatesDesc}">Create templates while writing posts to quickly reuse them later.</p>
+                <a th:href="@{/posts/new}" class="btn primary-btn mt-4" th:text="#{dash.createPost}">Create post</a>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>

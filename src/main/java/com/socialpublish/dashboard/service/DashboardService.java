@@ -1,6 +1,7 @@
 package com.socialpublish.dashboard.service;
 
 import com.socialpublish.dashboard.dto.DashboardActivityDayView;
+import com.socialpublish.dashboard.dto.DashboardNextPublishView;
 import com.socialpublish.dashboard.dto.DashboardStatsView;
 import com.socialpublish.dashboard.dto.DashboardStatusSliceView;
 import com.socialpublish.dashboard.dto.DashboardSuccessTimelinePointView;
@@ -14,11 +15,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,18 +33,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DashboardService {
 
+    private static final int RECENT_ACTIVITY_LIMIT = 10;
+
     private final PostRepository postRepository;
 
     @Transactional(readOnly = true)
     public DashboardView buildDashboard(UUID ownerId) {
         List<Post> allPosts = postRepository.findByOwnerIdOrderByUpdatedAtDesc(ownerId);
         List<PostView> allPostViews = allPosts.stream().map(PostView::from).toList();
-        List<PostView> recentPosts = allPostViews.stream().limit(5).toList();
+        List<PostView> recentPosts = allPostViews.stream().limit(RECENT_ACTIVITY_LIMIT).toList();
 
         DashboardStatsView stats = buildStats(allPosts);
         List<DashboardActivityDayView> activityDays = buildActivityDays(allPosts);
         List<DashboardStatusSliceView> statusSlices = buildStatusSlices(stats);
         SuccessTimelineData successTimeline = buildSuccessTimeline(allPosts);
+        DashboardNextPublishView nextPublish = buildNextPublish(allPostViews);
 
         return new DashboardView(
                 stats,
@@ -56,8 +61,55 @@ public class DashboardService {
                 successTimeline.axisMax(),
                 successTimeline.axisMid(),
                 successTimeline.axisMin(),
+                nextPublish,
                 recentPosts,
                 allPostViews
+        );
+    }
+
+    private DashboardNextPublishView buildNextPublish(List<PostView> posts) {
+        LocalDateTime now = LocalDateTime.now();
+
+        PostView next = posts.stream()
+                .filter(post -> post.scheduledAt() != null)
+                .filter(post -> post.status() == PostStatus.SCHEDULED
+                        || post.status() == PostStatus.PUBLISHING
+                        || post.status() == PostStatus.RETRYING)
+                .sorted((left, right) -> left.scheduledAt().compareTo(right.scheduledAt()))
+                .findFirst()
+                .orElse(null);
+
+        if (next == null) {
+            return null;
+        }
+
+        Duration delta = Duration.between(now, next.scheduledAt());
+        boolean overdue = delta.isNegative();
+        Duration absolute = delta.abs();
+
+        long days = absolute.toDays();
+        long hours = absolute.toHoursPart();
+        long minutes = absolute.toMinutesPart();
+
+        StringBuilder countdown = new StringBuilder();
+        if (days > 0) {
+            countdown.append(days).append("d ");
+        }
+        if (hours > 0 || days > 0) {
+            countdown.append(hours).append("h ");
+        }
+        countdown.append(minutes).append("m");
+
+        List<String> platforms = next.platformList();
+
+        return new DashboardNextPublishView(
+                next.id(),
+                next.title(),
+                next.excerpt(),
+                next.scheduledAt(),
+                countdown.toString().trim(),
+                overdue,
+                platforms
         );
     }
 
@@ -193,10 +245,10 @@ public class DashboardService {
     private SuccessTimelineData buildSuccessTimeline(List<Post> posts) {
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDate today = LocalDate.now(zoneId);
-        LocalDate startDate = today.minusDays(29);
+        LocalDate startDate = today.minusDays(13);
 
         Map<LocalDate, DailySuccessCounter> byDate = new LinkedHashMap<>();
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 14; i++) {
             LocalDate d = startDate.plusDays(i);
             byDate.put(d, new DailySuccessCounter(d));
         }

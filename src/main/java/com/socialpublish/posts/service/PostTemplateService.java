@@ -44,6 +44,18 @@ public class PostTemplateService {
         return toDto(saved);
     }
 
+    @Transactional(readOnly = true)
+    public PostTemplateDto getTemplate(UUID userId, UUID templateId) {
+        PostTemplate template = postTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new IllegalArgumentException("Template not found"));
+
+        if (!template.getOwner().getId().equals(userId)) {
+            throw new IllegalStateException("You don't own this template");
+        }
+
+        return toDto(template);
+    }
+
     @Transactional
     public void deleteTemplate(UUID userId, UUID templateId) {
         PostTemplate template = postTemplateRepository.findById(templateId)

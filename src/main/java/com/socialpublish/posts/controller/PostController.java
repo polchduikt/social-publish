@@ -37,8 +37,20 @@ public class PostController {
     private final PostTemplateService postTemplateService;
 
     @GetMapping("/posts/new")
-    public String createPostPage(@CurrentUser CurrentUserView currentUser, Model model) {
+    public String createPostPage(@CurrentUser CurrentUserView currentUser, 
+                                 @RequestParam(name = "templateId", required = false) UUID templateId,
+                                 Model model) {
         PostUpsertRequest request = new PostUpsertRequest();
+        
+        if (templateId != null) {
+            try {
+                var template = postTemplateService.getTemplate(currentUser.id(), templateId);
+                request.setContent(template.content());
+                request.setPlatforms(template.platforms() != null ? List.of(template.platforms().split(",")) : List.of());
+            } catch (Exception ignored) {
+            }
+        }
+        
         populateFormModel(model, currentUser, "create", null, request);
         return "pages/posts/form";
     }
@@ -166,12 +178,12 @@ public class PostController {
     }
 
     @PostMapping("/posts/templates")
-    public String saveTemplate(
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<Void> saveTemplate(
             @CurrentUser CurrentUserView user,
             @RequestParam("templateName") String templateName,
             @RequestParam(name = "platforms", required = false) List<String> platforms,
-            @RequestParam("content") String content,
-            Model model
+            @RequestParam("content") String content
     ) {
         CreatePostTemplateRequest req = new CreatePostTemplateRequest(
                 templateName,
@@ -179,9 +191,7 @@ public class PostController {
                 platforms != null ? String.join(",", platforms) : ""
         );
         postTemplateService.createTemplate(user.id(), req);
-        model.addAttribute("templates", postTemplateService.getUserTemplates(user.id()));
-        model.addAttribute("openTemplates", true);
-        return "fragments/posts/templates :: templates-list";
+        return org.springframework.http.ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/posts/templates/{id}")

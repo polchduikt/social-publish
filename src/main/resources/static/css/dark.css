@@ -406,6 +406,16 @@ html.dark-mode .settings-form input:focus {
   border-color: var(--dm-accent);
   box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.15);
 }
+html.dark-mode .overview-item {
+  background: #13213a;
+  border-color: #3b4f70;
+}
+html.dark-mode .overview-item span {
+  color: #9eb0c8;
+}
+html.dark-mode .overview-item strong {
+  color: #f5f9ff;
+}
 html.dark-mode .btn-save {
   background: linear-gradient(180deg, var(--dm-accent), var(--dm-accent-2));
 }
@@ -482,6 +492,33 @@ html.dark-mode .recent-platform-avatar.reddit {
 }
 html.dark-mode .recent-time {
   color: #93a8c8;
+}
+html.dark-mode .next-publish-countdown {
+  background: rgba(79, 131, 255, 0.24);
+  color: #cfe0ff;
+}
+html.dark-mode .next-publish-countdown.overdue {
+  background: rgba(248, 113, 113, 0.28);
+  color: #ffe4e6;
+}
+html.dark-mode .next-publish-time,
+html.dark-mode .next-publish-empty p,
+html.dark-mode .next-publish-body p {
+  color: #9eb0c8;
+}
+html.dark-mode .next-label {
+  color: #89a1c4;
+}
+html.dark-mode .next-value {
+  color: #e7efff;
+}
+html.dark-mode .next-publish-empty-hint {
+  color: #7f95b2;
+}
+html.dark-mode .next-platform-chip {
+  background: #1a2a44;
+  border-color: #395273;
+  color: #d7e4f7;
 }
 html.dark-mode .icon-action-danger {
   border-color: rgba(248, 113, 113, 0.7);

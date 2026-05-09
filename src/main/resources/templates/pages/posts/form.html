@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${mode == 'edit' ? #messages.msg('post.editPost') : #messages.msg('post.createPost')} + ' — ' + #{nav.title}">Post Form</title>
+    <title
+        th:text="${mode == 'edit' ? #messages.msg('post.editPost') : #messages.msg('post.createPost')} + ' — ' + #{nav.title}">
+        Post Form</title>
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/posts.css">
@@ -20,15 +23,15 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
+
 <body th:attr="data-user-id=${user.id}">
-<div class="app-layout">
-    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+    <div class="app-layout">
+        <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
 
-    <div class="dashboard-shell">
-        <div th:replace="~{fragments/layout/sidebar :: sidebar('creator')}"></div>
+        <div class="dashboard-shell">
+            <div th:replace="~{fragments/layout/sidebar :: sidebar('creator')}"></div>
 
-        <main class="dashboard-main creator-shell"
-              th:attr="data-msg-no-platform=#{post.noPlatform},
+            <main class="dashboard-main creator-shell" th:attr="data-msg-no-platform=#{post.noPlatform},
                        data-msg-mixed-mode=#{post.mixedMode},
                        data-msg-telegram-mode=#{post.telegramMode},
                        data-msg-discord-mode=#{post.discordMode},
@@ -37,250 +40,315 @@
                        data-msg-shared-suffix=#{post.sharedSuffix},
                        data-msg-default-suffix=#{post.defaultSuffix},
                        data-msg-preview-placeholder=#{post.previewPlaceholder}">
-            <div id="post-form-status"
-                 th:insert="~{fragments/posts/form-status :: status}">
-            </div>
+                <div id="post-form-status" th:insert="~{fragments/posts/form-status :: status}">
+                </div>
 
-            <form class="creator-layout"
-                  th:object="${postRequest}"
-                  method="post"
-                  enctype="multipart/form-data"
-                  th:action="${mode == 'edit'} ? @{|/posts/${postId}|} : @{/posts}"
-                  th:attr="hx-post=${mode == 'edit'} ? @{|/posts/${postId}|} : @{/posts}"
-                  hx-encoding="multipart/form-data"
-                  hx-target="#post-form-status"
-                  hx-swap="innerHTML">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <meta name="_csrf" th:content="${_csrf.token}"/>
-                <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+                <form class="creator-layout" th:object="${postRequest}" method="post" enctype="multipart/form-data"
+                    th:action="${mode == 'edit'} ? @{|/posts/${postId}|} : @{/posts}"
+                    th:attr="hx-post=${mode == 'edit'} ? @{|/posts/${postId}|} : @{/posts}"
+                    hx-encoding="multipart/form-data" hx-target="#post-form-status" hx-swap="innerHTML">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <meta name="_csrf" th:content="${_csrf.token}" />
+                    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
-                <div class="creator-content">
-                    <section class="panel platform-panel">
-                        <h3 class="panel-title" th:text="#{post.platforms}">Select Platforms</h3>
-                        <div class="platform-chips">
-                            <label class="platform-chip"
-                                   th:classappend="${telegramConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                <input type="checkbox"
-                                       name="platforms"
-                                       value="TELEGRAM"
-                                       th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'TELEGRAM')}"
-                                       th:disabled="${!telegramConnected}"/>
-                                <span class="platform-chip-inner">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-                                    <span th:text="#{platform.TELEGRAM}">Telegram</span>
-                                </span>
-                            </label>
+                    <div class="creator-content">
+                        <section class="panel platform-panel">
+                            <h3 class="panel-title" th:text="#{post.platforms}">Select Platforms</h3>
+                            <div class="platform-chips">
+                                <label class="platform-chip"
+                                    th:classappend="${telegramConnected} ? 'platform-connected' : 'platform-disconnected'">
+                                    <input type="checkbox" name="platforms" value="TELEGRAM"
+                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'TELEGRAM')}"
+                                        th:disabled="${!telegramConnected}" />
+                                    <span class="platform-chip-inner">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+                                        </svg>
+                                        <span th:text="#{platform.TELEGRAM}">Telegram</span>
+                                    </span>
+                                </label>
 
-                            <label class="platform-chip"
-                                   th:classappend="${discordConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                <input type="checkbox"
-                                       name="platforms"
-                                       value="DISCORD"
-                                       th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'DISCORD')}"
-                                       th:disabled="${!discordConnected}"/>
-                                <span class="platform-chip-inner">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
-                                    <span th:text="#{platform.DISCORD}">Discord</span>
-                                </span>
-                            </label>
+                                <label class="platform-chip"
+                                    th:classappend="${discordConnected} ? 'platform-connected' : 'platform-disconnected'">
+                                    <input type="checkbox" name="platforms" value="DISCORD"
+                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'DISCORD')}"
+                                        th:disabled="${!discordConnected}" />
+                                    <span class="platform-chip-inner">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z" />
+                                        </svg>
+                                        <span th:text="#{platform.DISCORD}">Discord</span>
+                                    </span>
+                                </label>
 
-                            <label class="platform-chip"
-                                   th:classappend="${redditConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                <input type="checkbox" name="platforms" value="REDDIT"
-                                       th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'REDDIT')}"
-                                       th:disabled="${!redditConnected}"/>
-                                <span class="platform-chip-inner">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.218-.88 2.91-1.455 4.773-1.517l.889-4.172a.34.34 0 0 1 .403-.26l3.142.664a1.253 1.253 0 0 1 1.083-.684zm-9.366 5.569c-.83 0-1.505.676-1.505 1.505 0 .828.675 1.505 1.505 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm8.712 0c-.829 0-1.504.676-1.504 1.505 0 .828.675 1.505 1.504 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm-4.356 3.901c-1.42 0-2.607.568-2.607.568a.335.335 0 0 0-.155.456.336.336 0 0 0 .456.155s1.002-.455 2.306-.455c1.305 0 2.307.455 2.307.455a.335.335 0 0 0 .456-.155.336.336 0 0 0-.156-.456s-1.187-.568-2.607-.568z"/></svg>
-                                    <span th:text="#{platform.REDDIT}">Reddit</span>
-                                </span>
-                            </label>
+                                <label class="platform-chip"
+                                    th:classappend="${redditConnected} ? 'platform-connected' : 'platform-disconnected'">
+                                    <input type="checkbox" name="platforms" value="REDDIT"
+                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'REDDIT')}"
+                                        th:disabled="${!redditConnected}" />
+                                    <span class="platform-chip-inner">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path
+                                                d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .883.175 1.188.467 1.218-.88 2.91-1.455 4.773-1.517l.889-4.172a.34.34 0 0 1 .403-.26l3.142.664a1.253 1.253 0 0 1 1.083-.684zm-9.366 5.569c-.83 0-1.505.676-1.505 1.505 0 .828.675 1.505 1.505 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm8.712 0c-.829 0-1.504.676-1.504 1.505 0 .828.675 1.505 1.504 1.505.829 0 1.504-.677 1.504-1.505 0-.829-.675-1.505-1.504-1.505zm-4.356 3.901c-1.42 0-2.607.568-2.607.568a.335.335 0 0 0-.155.456.336.336 0 0 0 .456.155s1.002-.455 2.306-.455c1.305 0 2.307.455 2.307.455a.335.335 0 0 0 .456-.155.336.336 0 0 0-.156-.456s-1.187-.568-2.607-.568z" />
+                                        </svg>
+                                        <span th:text="#{platform.REDDIT}">Reddit</span>
+                                    </span>
+                                </label>
 
-                        </div>
-                        <p class="platform-hint" th:unless="${telegramConnected or discordConnected or redditConnected}">
-                            <a href="/accounts" class="inline-link" th:text="#{post.connectPlatforms}">Connect platforms</a> <span th:text="#{post.connectHint}">to start publishing.</span>
-                        </p>
-                    </section>
-
-                    <div th:replace="~{fragments/posts/templates :: templates-list}"></div>
-
-                    <section class="panel message-panel">
-                        <div class="editor-toolbar">
-                            <span class="toolbar-label" th:text="#{post.message}">Message</span>
-                            <span class="char-count"><span id="charCount">0</span>/5000</span>
-                        </div>
-                        <div class="format-toolbar" id="formatToolbar">
-                            <button type="button" class="format-btn" data-feature="bold" th:title="#{post.bold}">B</button>
-                            <button type="button" class="format-btn" data-feature="italic" th:title="#{post.italic}">I</button>
-                            <button type="button" class="format-btn" data-feature="underline" th:title="#{post.underline}">U</button>
-                            <button type="button" class="format-btn" data-feature="strikethrough" th:title="#{post.strikethrough}">S</button>
-                            <button type="button" class="format-btn" data-feature="spoiler" th:title="#{post.spoiler}" th:text="#{post.spoiler}">Spoiler</button>
-                            <button type="button" class="format-btn" data-feature="code" th:title="#{post.monospace}" th:text="#{post.monospace}">Code</button>
-                            <button type="button" class="format-btn" data-feature="quote" th:title="#{post.quote}" th:text="#{post.quote}">Quote</button>
-                            <button type="button" class="format-btn" data-feature="link" th:title="#{post.createLink}" th:text="#{post.createLink}">Link</button>
-                            <button type="button" class="format-btn" data-feature="hashtag" th:title="#{post.hashtag}">#</button>
-                            <button type="button" class="format-btn" data-feature="mention" th:title="#{post.mention}">@</button>
-                        </div>
-                        <div class="feature-hint" id="featureHint" th:text="#{post.formattingHint}">Select a platform to see available formatting features.</div>
-                        <div class="field mb-0">
-                            <textarea id="content" th:field="*{content}" rows="6" maxlength="5000"
-                                      th:placeholder="#{post.contentPlaceholder}" required></textarea>
-                        </div>
-
-                    </section>
-
-                    <section class="panel media-panel">
-                        <div class="editor-toolbar">
-                            <span class="toolbar-label" th:text="#{post.photos}">Photos</span>
-                            <span class="char-count" th:text="#{post.photosHint}">Up to 10 images, 10 MB each</span>
-                        </div>
-
-                        <div class="media-dropzone" id="mediaDropzone">
-                            <input id="mediaFiles" name="mediaFiles" type="file" accept="image/*" multiple class="media-dropzone-input">
-                            <div class="media-dropzone-content">
-                                <svg class="media-dropzone-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
-                                <p class="media-dropzone-title" th:text="#{post.dragDrop}">Drag &amp; drop media</p>
-                                <p class="media-dropzone-hint" th:text="#{post.supports}">or click to browse files. Supports JPG, PNG, WEBP.</p>
                             </div>
-                        </div>
+                            <p class="platform-hint"
+                                th:unless="${telegramConnected or discordConnected or redditConnected}">
+                                <a href="/accounts" class="inline-link" th:text="#{post.connectPlatforms}">Connect
+                                    platforms</a> <span th:text="#{post.connectHint}">to start publishing.</span>
+                            </p>
+                        </section>
 
-                        <div class="media-preview-grid sortable-grid" id="mediaPreview"></div>
 
-                        <div class="media-preview-grid sortable-grid" id="existingMediaGrid" th:if="${!#lists.isEmpty(existingMedia)}">
-                            <article class="media-thumb-card existing-media-item" th:each="media : ${existingMedia}"
-                                     th:attr="data-public-id=${media.publicId}" draggable="true">
-                                <img th:src="${media.url}" alt="Post image">
-                                <span class="media-order-badge"></span>
-                                <button type="button" class="media-remove-btn existing-media-remove"
+                        <section class="panel message-panel">
+                            <div class="editor-toolbar">
+                                <span class="toolbar-label" th:text="#{post.message}">Message</span>
+                                <span class="char-count"><span id="charCount">0</span>/5000</span>
+                            </div>
+                            <div class="format-toolbar" id="formatToolbar">
+                                <button type="button" class="format-btn" data-feature="bold"
+                                    th:title="#{post.bold}">B</button>
+                                <button type="button" class="format-btn" data-feature="italic"
+                                    th:title="#{post.italic}">I</button>
+                                <button type="button" class="format-btn" data-feature="underline"
+                                    th:title="#{post.underline}">U</button>
+                                <button type="button" class="format-btn" data-feature="strikethrough"
+                                    th:title="#{post.strikethrough}">S</button>
+                                <button type="button" class="format-btn" data-feature="spoiler"
+                                    th:title="#{post.spoiler}" th:text="#{post.spoiler}">Spoiler</button>
+                                <button type="button" class="format-btn" data-feature="code"
+                                    th:title="#{post.monospace}" th:text="#{post.monospace}">Code</button>
+                                <button type="button" class="format-btn" data-feature="quote" th:title="#{post.quote}"
+                                    th:text="#{post.quote}">Quote</button>
+                                <button type="button" class="format-btn" data-feature="link"
+                                    th:title="#{post.createLink}" th:text="#{post.createLink}">Link</button>
+                                <button type="button" class="format-btn" data-feature="hashtag"
+                                    th:title="#{post.hashtag}">#</button>
+                                <button type="button" class="format-btn" data-feature="mention"
+                                    th:title="#{post.mention}">@</button>
+                            </div>
+                            <div class="feature-hint" id="featureHint" th:text="#{post.formattingHint}">Select a
+                                platform to see available formatting features.</div>
+                            <div class="field mb-0">
+                                <textarea id="content" th:field="*{content}" rows="6" maxlength="5000"
+                                    th:placeholder="#{post.contentPlaceholder}" required></textarea>
+                            </div>
+
+                        </section>
+
+                        <section class="panel media-panel">
+                            <div class="editor-toolbar">
+                                <span class="toolbar-label" th:text="#{post.photos}">Photos</span>
+                                <span class="char-count" th:text="#{post.photosHint}">Up to 10 images, 10 MB each</span>
+                            </div>
+
+                            <div class="media-dropzone" id="mediaDropzone">
+                                <input id="mediaFiles" name="mediaFiles" type="file" accept="image/*" multiple
+                                    class="media-dropzone-input">
+                                <div class="media-dropzone-content">
+                                    <svg class="media-dropzone-icon" width="40" height="40" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
+                                    <p class="media-dropzone-title" th:text="#{post.dragDrop}">Drag &amp; drop media</p>
+                                    <p class="media-dropzone-hint" th:text="#{post.supports}">or click to browse files.
+                                        Supports JPG, PNG, WEBP.</p>
+                                </div>
+                            </div>
+
+                            <div class="media-preview-grid sortable-grid" id="mediaPreview"></div>
+
+                            <div class="media-preview-grid sortable-grid" id="existingMediaGrid"
+                                th:if="${!#lists.isEmpty(existingMedia)}">
+                                <article class="media-thumb-card existing-media-item" th:each="media : ${existingMedia}"
+                                    th:attr="data-public-id=${media.publicId}" draggable="true">
+                                    <img th:src="${media.url}" alt="Post image">
+                                    <span class="media-order-badge"></span>
+                                    <button type="button" class="media-remove-btn existing-media-remove"
                                         th:attr="data-public-id=${media.publicId}">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                        </svg>
+                                    </button>
+                                    <div class="media-drag-handle">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <circle cx="9" cy="5" r="1.5" />
+                                            <circle cx="15" cy="5" r="1.5" />
+                                            <circle cx="9" cy="12" r="1.5" />
+                                            <circle cx="15" cy="12" r="1.5" />
+                                            <circle cx="9" cy="19" r="1.5" />
+                                            <circle cx="15" cy="19" r="1.5" />
+                                        </svg>
+                                    </div>
+                                </article>
+                            </div>
+                            <div id="removedMediaContainer"></div>
+                        </section>
+
+                    </div>
+
+                    <div class="creator-sidebar">
+                        <section class="panel creator-scheduling">
+                            <h3>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                <span th:text="#{post.scheduling}">Scheduling</span>
+                            </h3>
+
+                            <div class="field">
+                                <label for="scheduledAt" th:text="#{post.dateTime}">Date & Time</label>
+                                <input id="scheduledAt" th:field="*{scheduledAt}" type="text"
+                                    th:placeholder="#{post.selectDateTime}">
+                            </div>
+
+                            <div class="creator-actions">
+                                <button type="submit" name="status" value="SCHEDULED" class="btn-schedule">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polygon points="5 3 19 12 5 21 5 3" />
+                                    </svg>
+                                    <span
+                                        th:text="${mode == 'edit' ? #messages.msg('post.saveChanges') : #messages.msg('nav.schedulePost')}">Schedule
+                                        Post</span>
                                 </button>
-                                <div class="media-drag-handle">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>
-                                </div>
-                            </article>
-                        </div>
-                        <div id="removedMediaContainer"></div>
-                    </section>
+                                <button type="submit" name="publishNow" value="true" class="btn-publish-now">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M22 2L11 13" />
+                                        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+                                    </svg>
+                                    <span th:text="#{post.postNow}">Post now</span>
+                                </button>
+                                <button type="submit" name="status" value="DRAFT" class="btn-draft-action"
+                                    th:text="#{post.saveDraft}">
+                                    Save as Draft
+                                </button>
+                                <button type="button" class="btn-draft-action mt-8" id="btnSaveTemplate"
+                                    th:text="#{tmpl.saveAsTemplate}">
+                                    Save as Template
+                                </button>
+                            </div>
+                        </section>
 
-                </div>
-
-                <div class="creator-sidebar">
-                    <section class="panel creator-scheduling">
-                        <h3>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span th:text="#{post.scheduling}">Scheduling</span>
-                        </h3>
-
-                        <div class="field">
-                            <label for="scheduledAt" th:text="#{post.dateTime}">Date & Time</label>
-                            <input id="scheduledAt" th:field="*{scheduledAt}" type="text" th:placeholder="#{post.selectDateTime}">
-                        </div>
-
-                        <div class="creator-actions">
-                            <button type="submit" name="status" value="SCHEDULED" class="btn-schedule">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                                <span th:text="${mode == 'edit' ? #messages.msg('post.saveChanges') : #messages.msg('nav.schedulePost')}">Schedule Post</span>
-                            </button>
-                            <button type="submit" name="publishNow" value="true" class="btn-publish-now">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                                <span th:text="#{post.postNow}">Post now</span>
-                            </button>
-                            <button type="submit" name="status" value="DRAFT" class="btn-draft-action" th:text="#{post.saveDraft}">
-                                Save as Draft
-                            </button>
-                            <button type="button" class="btn-draft-action mt-8" id="btnSaveTemplate" th:text="#{tmpl.saveAsTemplate}">
-                                Save as Template
-                            </button>
-                        </div>
-                    </section>
-
-                    <section class="panel creator-preview">
-                        <h3>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <span th:text="#{post.preview}">Preview</span>
-                        </h3>
-                        <div class="preview-platform-tabs">
-                            <button type="button" class="preview-platform-tab is-active" data-preview-platform="telegram" th:text="#{platform.TELEGRAM}">Telegram</button>
-                            <button type="button" class="preview-platform-tab" data-preview-platform="discord" th:text="#{platform.DISCORD}">Discord</button>
-                        </div>
-                        <div class="preview-box">
-                            <div class="preview-canvas preview-canvas-telegram" id="previewTelegram">
-                                <div class="tg-chat-bg">
-                                    <div class="tg-channel-bar">
-                                        <span class="tg-channel-avatar">SP</span>
-                                        <div class="tg-channel-info">
-                                            <span class="tg-channel-name">Social Publish</span>
-                                            <span class="tg-channel-subs" th:text="#{post.channelPreview}">Channel post preview</span>
+                        <section class="panel creator-preview">
+                            <h3>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <span th:text="#{post.preview}">Preview</span>
+                            </h3>
+                            <div class="preview-platform-tabs">
+                                <button type="button" class="preview-platform-tab is-active"
+                                    data-preview-platform="telegram" th:text="#{platform.TELEGRAM}">Telegram</button>
+                                <button type="button" class="preview-platform-tab" data-preview-platform="discord"
+                                    th:text="#{platform.DISCORD}">Discord</button>
+                            </div>
+                            <div class="preview-box">
+                                <div class="preview-canvas preview-canvas-telegram" id="previewTelegram">
+                                    <div class="tg-chat-bg">
+                                        <div class="tg-channel-bar">
+                                            <span class="tg-channel-avatar">SP</span>
+                                            <div class="tg-channel-info">
+                                                <span class="tg-channel-name">Social Publish</span>
+                                                <span class="tg-channel-subs" th:text="#{post.channelPreview}">Channel
+                                                    post preview</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="tg-message-bubble">
-                                        <div class="tg-bubble-media" id="previewTelegramMedia"></div>
-                                        <div class="tg-bubble-body">
-                                            <div id="previewTelegramContent" class="tg-bubble-text" th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
-                                            <span class="tg-bubble-meta">
-                                                <span class="tg-bubble-time">16:05</span>
-                                                <svg class="tg-bubble-checks" width="16" height="10" viewBox="0 0 16 11"><path d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.095a.463.463 0 0 0-.36-.186.465.465 0 0 0-.344.156.38.38 0 0 0-.14.305c0 .12.04.222.122.306l2.357 2.453a.478.478 0 0 0 .323.152h.042c.14 0 .265-.06.376-.18l6.578-8.11a.4.4 0 0 0 .106-.28.381.381 0 0 0-.175-.333z" fill="currentColor"/><path d="M14.757.653a.474.474 0 0 0-.686.076l-6.19 7.636-1.138-1.187.39-.48 1.107 1.153 6.578-8.11a.4.4 0 0 0 .106-.28.381.381 0 0 0-.167-.808z" fill="currentColor"/></svg>
-                                            </span>
+                                        <div class="tg-message-bubble">
+                                            <div class="tg-bubble-media" id="previewTelegramMedia"></div>
+                                            <div class="tg-bubble-body">
+                                                <div id="previewTelegramContent" class="tg-bubble-text"
+                                                    th:text="#{post.previewPlaceholder}">Your content will appear
+                                                    here...</div>
+                                                <span class="tg-bubble-meta">
+                                                    <span class="tg-bubble-time">16:05</span>
+                                                    <svg class="tg-bubble-checks" width="16" height="10"
+                                                        viewBox="0 0 16 11">
+                                                        <path
+                                                            d="M11.071.653a.457.457 0 0 0-.304-.102.493.493 0 0 0-.381.178l-6.19 7.636-2.011-2.095a.463.463 0 0 0-.36-.186.465.465 0 0 0-.344.156.38.38 0 0 0-.14.305c0 .12.04.222.122.306l2.357 2.453a.478.478 0 0 0 .323.152h.042c.14 0 .265-.06.376-.18l6.578-8.11a.4.4 0 0 0 .106-.28.381.381 0 0 0-.175-.333z"
+                                                            fill="currentColor" />
+                                                        <path
+                                                            d="M14.757.653a.474.474 0 0 0-.686.076l-6.19 7.636-1.138-1.187.39-.48 1.107 1.153 6.578-8.11a.4.4 0 0 0 .106-.28.381.381 0 0 0-.167-.808z"
+                                                            fill="currentColor" />
+                                                    </svg>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="preview-canvas preview-canvas-discord is-hidden" id="previewDiscord">
-                                <div class="preview-discord-header">
-                                    <span class="preview-discord-avatar">SP</span>
-                                    <p class="preview-discord-meta">
-                                        <span class="preview-discord-name">Social Publish</span>
-                                        <span class="preview-discord-bot" th:text="#{post.botBadge}">BOT</span>
-                                        <span class="preview-discord-time" th:text="#{post.todayAt} + ' 16:06'">Today at 16:06</span>
-                                    </p>
+                                <div class="preview-canvas preview-canvas-discord is-hidden" id="previewDiscord">
+                                    <div class="preview-discord-header">
+                                        <span class="preview-discord-avatar">SP</span>
+                                        <p class="preview-discord-meta">
+                                            <span class="preview-discord-name">Social Publish</span>
+                                            <span class="preview-discord-bot" th:text="#{post.botBadge}">BOT</span>
+                                            <span class="preview-discord-time"
+                                                th:text="#{post.todayAt} + ' 16:06'">Today at 16:06</span>
+                                        </p>
+                                    </div>
+                                    <div id="previewDiscordContent" class="preview-text"
+                                        th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
+                                    <div class="preview-media-strip" id="previewDiscordMedia"></div>
                                 </div>
-                                <div id="previewDiscordContent" class="preview-text" th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
-                                <div class="preview-media-strip" id="previewDiscordMedia"></div>
                             </div>
-                        </div>
-                    </section>
-                </div>
-            </form>
-        </main>
-    </div>
-</div>
-
-<div id="saveTemplateModal" class="modal">
-    <div class="modal-content modal-content-sm">
-        <div class="modal-header">
-            <h3 th:text="#{tmpl.saveAsTemplate}">Save Template</h3>
-            <button type="button" class="close-modal-btn">&times;</button>
+                        </section>
+                    </div>
+                </form>
+            </main>
         </div>
-        <div class="modal-body">
-            <div class="field">
-                <label for="templateNameInput" th:text="#{tmpl.name}">Template Name</label>
-                <input type="text" id="templateNameInput" name="templateName" th:placeholder="#{tmpl.namePlaceholder}" required>
+    </div>
+
+    <div id="saveTemplateModal" class="modal">
+        <div class="modal-content modal-content-sm">
+            <div class="modal-header">
+                <h3 th:text="#{tmpl.saveAsTemplate}">Save Template</h3>
+                <button type="button" class="close-modal-btn">&times;</button>
             </div>
-            <div id="saveTemplateStatus"></div>
-        </div>
-        <div class="modal-footer modal-footer-actions">
-            <button type="button" class="btn-secondary" id="btnCancelSaveTemplate" th:text="#{tmpl.cancel}">Cancel</button>
-            <button type="button" class="btn-primary" id="btnConfirmSaveTemplate"
-                    hx-post="/posts/templates"
-                    hx-include="[name='platforms'], #content, #templateNameInput"
-                    hx-target="#templates-container"
-                    hx-swap="outerHTML"
-                    hx-on::after-request="document.getElementById('saveTemplateModal').classList.remove('active')">
-                <span th:text="#{tmpl.save}">Save Template</span>
-            </button>
+            <div class="modal-body">
+                <div class="field">
+                    <label for="templateNameInput" th:text="#{tmpl.name}">Template Name</label>
+                    <input type="text" id="templateNameInput" name="templateName"
+                        th:placeholder="#{tmpl.namePlaceholder}" required>
+                </div>
+                <div id="saveTemplateStatus"></div>
+            </div>
+            <div class="modal-footer modal-footer-actions">
+                <button type="button" class="btn-secondary" id="btnCancelSaveTemplate"
+                    th:text="#{tmpl.cancel}">Cancel</button>
+                <button type="button" class="btn-primary" id="btnConfirmSaveTemplate" hx-post="/posts/templates"
+                    hx-include="[name='platforms'], #content, #templateNameInput" hx-swap="none"
+                    th:attr="data-toast-title=#{tmpl.savedTitle}, data-toast-msg=#{tmpl.savedMsg}"
+                    hx-on::after-request="if(event.detail.successful) { document.getElementById('saveTemplateModal').classList.remove('active'); window.showToast({title: this.getAttribute('data-toast-title'), message: this.getAttribute('data-toast-msg'), type: 'success'}); document.getElementById('templateNameInput').value = ''; }">
+                    <span th:text="#{tmpl.save}">Save Template</span>
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="toast-container"></div>
-<script src="/js/post-creator.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
-<script src="/js/notifications.js"></script>
+    <div id="toast-container"></div>
+    <script src="/js/post-creator.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+    <script src="/js/notifications.js"></script>
 </body>
+
 </html>

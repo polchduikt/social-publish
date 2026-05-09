@@ -18,30 +18,35 @@
         <div th:replace="~{fragments/layout/sidebar :: sidebar('queue')}"></div>
 
         <main class="dashboard-main">
-            <div class="status-stack" th:if="${message != null or error != null}">
-                <div class="status success" th:if="${message != null}" th:text="${message}"></div>
-                <div class="status error" th:if="${error != null}" th:text="${error}"></div>
+            <div id="page-messages" style="display: none;"
+                 th:data-raw-msg="${message}"
+                 th:data-raw-err="${error}"
+                 th:data-post-deleted="#{post.msg.deleted}"
+                 th:data-post-created="#{post.msg.created}"
+                 th:data-post-updated="#{post.msg.updated}"
+                 th:data-post-queued="#{post.msg.queued}"
+                 th:data-post-notfound="#{post.msg.notFound}">
             </div>
 
             <section class="queue-metrics-grid">
                 <article class="queue-metric-card">
-                    <h3>Scheduled</h3>
+                    <h3 th:text="#{queue.stats.scheduled}">Scheduled</h3>
                     <p th:text="${queue.stats.scheduled}">0</p>
                 </article>
                 <article class="queue-metric-card">
-                    <h3>Published</h3>
+                    <h3 th:text="#{queue.stats.published}">Published</h3>
                     <p th:text="${queue.stats.published}">0</p>
                 </article>
                 <article class="queue-metric-card">
-                    <h3>Failed</h3>
+                    <h3 th:text="#{queue.stats.failed}">Failed</h3>
                     <p th:text="${queue.stats.failed}">0</p>
                 </article>
                 <article class="queue-metric-card">
-                    <h3>Drafts</h3>
+                    <h3 th:text="#{queue.stats.drafts}">Drafts</h3>
                     <p th:text="${queue.stats.drafts}">0</p>
                 </article>
                 <article class="queue-metric-card next-post-card">
-                    <h3>Next post in</h3>
+                    <h3 th:text="#{queue.stats.nextPost}">Next post in</h3>
                     <p th:if="${queue.nextScheduledAt != null}" th:text="${queue.nextPostInMinutes()} + 'm'">-</p>
                     <p th:if="${queue.nextScheduledAt == null}">-</p>
                     <span th:if="${queue.nextScheduledAt != null}"
@@ -52,7 +57,7 @@
             <div class="queue-filters">
                 <a th:href="@{/queue(search=${filters.search},tag=${filters.tag},platform=${filters.platform},type=${filters.type},dateRange=${filters.dateRange},sort=${filters.sort},size=${filters.size})}"
                    class="filter-pill"
-                   th:classappend="${filters.status == null} ? 'active'">All</a>
+                   th:classappend="${filters.status == null} ? 'active'" th:text="#{queue.filters.all}">All</a>
                 <a th:each="s : ${statusOptions}"
                    th:href="@{/queue(status=${s},search=${filters.search},tag=${filters.tag},platform=${filters.platform},type=${filters.type},dateRange=${filters.dateRange},sort=${filters.sort},size=${filters.size})}"
                    class="filter-pill"
@@ -70,18 +75,18 @@
                         <input type="hidden" name="size" th:value="${filters.size}">
 
                         <div class="queue-search-wrap">
-                            <input type="search" name="search" placeholder="Search posts..." th:value="${filters.search}">
-                            <input type="text" name="tag" placeholder="Tag (without #)" th:value="${filters.tag}">
+                            <input type="search" name="search" th:placeholder="#{queue.searchPlaceholder}" th:value="${filters.search}">
+                            <input type="text" name="tag" th:placeholder="#{queue.tagPlaceholder}" th:value="${filters.tag}">
                         </div>
                         <div class="queue-sort-wrap">
-                            <label for="sort">Sort</label>
+                            <label for="sort" th:text="#{queue.sort}">Sort</label>
                             <select id="sort" name="sort">
                                 <option th:each="option : ${sortOptions}"
                                         th:value="${option.name()}"
                                         th:selected="${filters.sort.name() == option.name()}"
                                         th:text="${#strings.replace(option.name(), '_', ' ')}">NEWEST</option>
                             </select>
-                            <button type="submit" class="btn-link btn-sm">Apply</button>
+                            <button type="submit" class="btn-link btn-sm" th:text="#{queue.apply}">Apply</button>
                         </div>
                     </form>
 
@@ -99,16 +104,16 @@
                         <div class="bulk-actions-bar">
                             <label class="bulk-select-all">
                                 <input id="selectAllPosts" type="checkbox">
-                                <span>Select all</span>
+                                <span th:text="#{queue.selectAll}">Select all</span>
                             </label>
                             <select id="bulkAction" name="action" required>
-                                <option value="" selected disabled>Bulk action</option>
+                                <option value="" selected disabled th:text="#{queue.bulkAction}">Bulk action</option>
                                 <option th:each="action : ${bulkActions}"
                                         th:value="${action.name()}"
                                         th:text="${#strings.replace(action.name(), '_', ' ')}">PUBLISH NOW</option>
                             </select>
                             <input id="bulkScheduleAt" name="scheduledAt" type="datetime-local" class="bulk-date-input">
-                            <button type="submit" class="btn-link btn-sm">Run</button>
+                            <button type="submit" class="btn-link btn-sm" th:text="#{queue.run}">Run</button>
                         </div>
 
                         <div class="posts-table-wrap">
@@ -116,11 +121,11 @@
                                 <thead>
                                 <tr>
                                     <th class="check-col"></th>
-                                    <th>Content</th>
-                                    <th>Platforms</th>
-                                    <th>Scheduled For</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th th:text="#{queue.table.content}">Content</th>
+                                    <th th:text="#{queue.table.platforms}">Platforms</th>
+                                    <th th:text="#{queue.table.scheduled}">Scheduled For</th>
+                                    <th th:text="#{queue.table.status}">Status</th>
+                                    <th th:text="#{queue.table.actions}">Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -149,15 +154,10 @@
                                     <td>
                                         <div class="queue-platform-list">
                                             <th:block th:each="p : ${post.platformList()}">
-                                                <span th:if="${p == 'TELEGRAM'}" class="queue-platform-chip">Telegram</span>
-                                                <span th:if="${p == 'DISCORD'}" class="queue-platform-chip">Discord</span>
-                                                <span th:if="${p == 'REDDIT'}" class="queue-platform-chip">Reddit</span>
-                                                <span th:if="${p != 'TELEGRAM' and p != 'DISCORD' and p != 'REDDIT'}"
-                                                      class="queue-platform-chip"
-                                                      th:text="${p}">Platform</span>
+                                                <span class="queue-platform-chip" th:text="${#messages.msg('platform.' + p)}">Platform</span>
                                             </th:block>
                                         </div>
-                                        <span th:if="${#lists.isEmpty(post.platformList())}" class="queue-platform-chip text-muted-slate">
+                                        <span th:if="${#lists.isEmpty(post.platformList())}" class="queue-platform-chip text-muted-slate" th:text="#{queue.unspecified}">
                                             Unspecified
                                         </span>
                                     </td>
@@ -175,13 +175,13 @@
                                     </td>
                                     <td>
                                         <div class="row-actions">
-                                            <a th:href="@{|/posts/${post.id}/preview?from=/queue|}" class="icon-action" title="Preview" aria-label="Preview">
+                                            <a th:href="@{|/posts/${post.id}/preview?from=/queue|}" class="icon-action" th:title="#{queue.previewTitle}" th:aria-label="#{queue.previewTitle}">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                                     <circle cx="12" cy="12" r="3"/>
                                                 </svg>
                                             </a>
-                                            <a th:href="@{|/posts/${post.id}/edit|}" class="icon-action" title="Edit" aria-label="Edit">
+                                            <a th:href="@{|/posts/${post.id}/edit|}" class="icon-action" th:title="#{queue.editTitle}" th:aria-label="#{queue.editTitle}">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M12 20h9"/>
                                                     <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
@@ -191,7 +191,7 @@
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(queue.posts)}">
-                                    <td colspan="6" class="empty-row">No posts in queue.</td>
+                                    <td colspan="6" class="empty-row" th:text="#{queue.empty}">No posts in queue.</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -199,17 +199,17 @@
                     </form>
 
                     <div class="queue-footer">
-                        <span class="queue-count" th:text="${queue.totalFiltered} + ' results'">0 results</span>
+                        <span class="queue-count" th:text="${queue.totalFiltered} + ' ' + #{queue.results}">0 results</span>
                         <a th:if="${queue.hasMore}"
                            class="btn-secondary btn-sm"
                            th:href="@{/queue(status=${filters.status},search=${filters.search},tag=${filters.tag},platform=${filters.platform},type=${filters.type},dateRange=${filters.dateRange},sort=${filters.sort},size=${queue.nextSize})}">
-                            Load more
+                            <span th:text="#{queue.loadMore}">Load more</span>
                         </a>
                     </div>
                 </section>
 
                 <aside class="panel queue-sidebar">
-                    <h3>Filters</h3>
+                    <h3 th:text="#{queue.filters.title}">Filters</h3>
                     <form method="get" action="/queue" class="queue-sidebar-form">
                         <input type="hidden" name="status" th:if="${filters.status != null}" th:value="${filters.status}">
                         <input type="hidden" name="search" th:value="${filters.search}">
@@ -218,33 +218,33 @@
                         <input type="hidden" name="size" th:value="${filters.size}">
 
                         <div class="queue-filter-group">
-                            <h4>By platform</h4>
+                            <h4 th:text="#{queue.filters.byPlatform}">By platform</h4>
                             <label th:each="option : ${platformOptions}" class="queue-radio">
                                 <input type="radio" name="platform" th:value="${option.name()}"
                                        th:checked="${filters.platform.name() == option.name()}">
-                                <span th:text="${#strings.capitalize(#strings.toLowerCase(option.name()))}">All</span>
+                                <span th:text="${#messages.msg('platform.' + option.name())}">All</span>
                             </label>
                         </div>
 
                         <div class="queue-filter-group">
-                            <h4>By type</h4>
+                            <h4 th:text="#{queue.filters.byType}">By type</h4>
                             <label th:each="option : ${typeOptions}" class="queue-radio">
                                 <input type="radio" name="type" th:value="${option.name()}"
                                        th:checked="${filters.type.name() == option.name()}">
-                                <span th:text="${#strings.capitalize(#strings.toLowerCase(option.name()))}">All</span>
+                                <span th:text="${#messages.msg('post.type.' + option.name())}">All</span>
                             </label>
                         </div>
 
                         <div class="queue-filter-group">
-                            <h4>By date</h4>
+                            <h4 th:text="#{queue.filters.byDate}">By date</h4>
                             <label th:each="option : ${dateRangeOptions}" class="queue-radio">
                                 <input type="radio" name="dateRange" th:value="${option.name()}"
                                        th:checked="${filters.dateRange.name() == option.name()}">
-                                <span th:text="${#strings.capitalize(#strings.toLowerCase(option.name()))}">All</span>
+                                <span th:text="${#messages.msg('dateRange.' + option.name())}">All</span>
                             </label>
                         </div>
 
-                        <button type="submit" class="btn-link btn-sm w-100">Apply filters</button>
+                        <button type="submit" class="btn-link btn-sm w-100" th:text="#{queue.filters.apply}">Apply filters</button>
                     </form>
                 </aside>
             </div>

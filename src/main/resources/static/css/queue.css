@@ -7,17 +7,17 @@
 }
 
 .queue-metric-card {
-  border: none;
+  border: 1px solid #dce4f1;
   border-radius: 14px;
-  background: linear-gradient(180deg, #233457 0%, #1c2c4a 100%);
+  background: #ffffff;
   padding: 12px 14px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .queue-metric-card h3 {
   margin: 0;
   font-size: 13px;
-  color: #abc0e2;
+  color: #64748b;
 }
 
 .queue-metric-card p {
@@ -25,14 +25,14 @@
   font-size: 28px;
   font-weight: 800;
   line-height: 1.1;
-  color: #f7fbff;
+  color: #0f172a;
 }
 
 .next-post-card span {
   display: block;
   margin-top: 4px;
   font-size: 12px;
-  color: #9eb2d4;
+  color: #64748b;
 }
 
 .queue-filters {
@@ -47,17 +47,17 @@
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid transparent;
-  background: rgba(148, 163, 184, 0.14);
-  color: #d7e4f7;
+  background: #f1f5f9;
+  color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   transition: all 0.15s;
 }
 
 .filter-pill:hover {
-  background: rgba(79, 131, 255, 0.22);
-  color: #ffffff;
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 .filter-pill.active {
@@ -75,9 +75,10 @@
 
 .queue-main-panel {
   padding-bottom: 12px;
-  border: none;
-  background: linear-gradient(180deg, rgba(30, 45, 74, 0.88), rgba(26, 38, 63, 0.9));
-  box-shadow: 0 10px 30px rgba(3, 10, 24, 0.25);
+  background: #ffffff;
+  border: 1px solid #dce4f1;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .queue-toolbar {
@@ -96,16 +97,16 @@
 }
 
 .queue-search-wrap input {
-  border: 1px solid rgba(108, 140, 198, 0.34);
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 14px;
-  background: rgba(11, 24, 48, 0.55);
-  color: #e8f1ff;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .queue-search-wrap input::placeholder {
-  color: #8ea8cf;
+  color: #94a3b8;
 }
 
 .queue-sort-wrap {
@@ -117,16 +118,16 @@
 .queue-sort-wrap label {
   font-size: 12px;
   font-weight: 700;
-  color: #b4c5df;
+  color: #64748b;
 }
 
 .queue-sort-wrap select {
-  border: 1px solid rgba(108, 140, 198, 0.34);
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 9px 10px;
   font-size: 13px;
-  background: rgba(11, 24, 48, 0.55);
-  color: #e8f1ff;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .bulk-actions-bar {
@@ -136,9 +137,9 @@
   gap: 8px;
   margin-bottom: 12px;
   padding: 10px;
-  border: 1px solid rgba(108, 140, 198, 0.2);
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  background: rgba(14, 28, 54, 0.55);
+  background: #f8fafc;
 }
 
 .bulk-select-all {
@@ -147,17 +148,17 @@
   gap: 8px;
   font-size: 13px;
   font-weight: 700;
-  color: #b9c9e2;
+  color: #475569;
 }
 
 .bulk-actions-bar select,
 .bulk-date-input {
-  border: 1px solid rgba(108, 140, 198, 0.34);
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 9px 10px;
   font-size: 13px;
-  background: rgba(11, 24, 48, 0.65);
-  color: #e8f1ff;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .bulk-date-input:disabled {
@@ -217,25 +218,25 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   border-bottom: none;
-  color: #a9bddc;
-  padding-bottom: 2px;
+  color: #64748b;
+  padding-bottom: 4px;
 }
 
 .queue-table tbody tr:nth-child(even) td {
-  background: rgba(31, 47, 78, 0.7);
+  background: #f8fafc;
 }
 
 .queue-table tbody tr:nth-child(odd) td {
-  background: rgba(26, 40, 67, 0.66);
+  background: #ffffff;
 }
 
 .queue-table tbody tr:hover td {
-  background: rgba(58, 87, 136, 0.45);
+  background: #f1f5f9;
 }
 
 .queue-table tbody td {
   border-bottom: none;
-  box-shadow: inset 0 -1px 0 rgba(100, 126, 169, 0.22);
+  box-shadow: inset 0 -1px 0 #e2e8f0;
 }
 
 .queue-table tbody td:first-child {
@@ -298,7 +299,7 @@
   display: block;
   font-size: 15px;
   margin-bottom: 4px;
-  color: #f5f9ff;
+  color: #0f172a;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -306,7 +307,7 @@
 .queue-table .queue-preview-cell p {
   margin: 0;
   font-size: 13px;
-  color: #9fb3d3;
+  color: #64748b;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -318,12 +319,12 @@
 .queue-date-cell strong {
   display: block;
   font-size: 14px;
-  color: #f2f7ff;
+  color: #1e293b;
 }
 
 .queue-time {
   font-size: 12px;
-  color: #9eb2d3;
+  color: #64748b;
 }
 
 .queue-table .status-badge {
@@ -347,14 +348,14 @@
   font-weight: 700;
   padding: 5px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(110, 146, 207, 0.5);
-  background: rgba(65, 98, 151, 0.22);
-  color: #d7e6ff;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .queue-footer {
   padding: 12px 0 0;
-  border-top: 1px solid rgba(108, 140, 198, 0.3);
+  border-top: 1px solid #e2e8f0;
   margin-top: 8px;
   display: flex;
   align-items: center;
@@ -364,19 +365,20 @@
 
 .queue-count {
   font-size: 13px;
-  color: #a9bcdb;
+  color: #64748b;
 }
 
 .queue-sidebar {
-  border: none;
-  background: linear-gradient(180deg, rgba(31, 45, 73, 0.9), rgba(24, 36, 59, 0.9));
-  box-shadow: 0 10px 30px rgba(3, 10, 24, 0.22);
+  background: #ffffff;
+  border: 1px solid #dce4f1;
+  border-radius: 14px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .queue-sidebar h3 {
   margin: 0 0 12px;
   font-family: "Sora", sans-serif;
-  color: #f4f8ff;
+  color: #0f172a;
 }
 
 .queue-sidebar-form {
@@ -387,7 +389,7 @@
 .queue-filter-group h4 {
   margin: 0 0 8px;
   font-size: 13px;
-  color: #c7d7f0;
+  color: #475569;
 }
 
 .queue-radio {
@@ -396,7 +398,7 @@
   gap: 8px;
   margin-bottom: 7px;
   font-size: 13px;
-  color: #afc2e2;
+  color: #64748b;
 }
 
 .row-actions {
@@ -410,9 +412,9 @@
   width: 28px;
   height: 28px;
   border-radius: 9px;
-  border: none;
-  color: #d8e7ff;
-  background: rgba(79, 131, 255, 0.22);
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  background: #eff6ff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -421,8 +423,8 @@
 }
 
 .icon-action:hover {
-  background: rgba(79, 131, 255, 0.4);
-  color: #ffffff;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 @media (max-width: 1200px) {
@@ -448,4 +450,97 @@
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* Dark Mode Overrides */
+html.dark-mode .queue-metric-card {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-mode .queue-metric-card h3 {
+  color: #94a3b8;
+}
+
+html.dark-mode .queue-metric-card p {
+  color: #f8fafc;
+}
+
+html.dark-mode .queue-main-panel,
+html.dark-mode .queue-sidebar {
+  background: #111827;
+  border-color: #1f2937;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .queue-sidebar h3 {
+  color: #f8fafc;
+}
+
+html.dark-mode .queue-filter-group h4 {
+  color: #94a3b8;
+}
+
+html.dark-mode .queue-radio {
+  color: #cbd5e1;
+}
+
+html.dark-mode .queue-search-wrap input,
+html.dark-mode .queue-sort-wrap select,
+html.dark-mode .bulk-actions-bar select,
+html.dark-mode .bulk-date-input {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+html.dark-mode .bulk-actions-bar {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-mode .queue-table thead th {
+  color: #94a3b8;
+}
+
+html.dark-mode .queue-table tbody tr:nth-child(even) td {
+  background: #111827;
+}
+
+html.dark-mode .queue-table tbody tr:nth-child(odd) td {
+  background: #0f172a;
+}
+
+html.dark-mode .queue-table tbody tr:hover td {
+  background: #1f2937;
+}
+
+html.dark-mode .queue-table tbody td {
+  box-shadow: inset 0 -1px 0 #1f2937;
+}
+
+html.dark-mode .queue-table .queue-preview-cell strong {
+  color: #f8fafc;
+}
+
+html.dark-mode .queue-date-cell strong {
+  color: #f1f5f9;
+}
+
+html.dark-mode .queue-platform-chip {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+  color: #60a5fa;
+}
+
+html.dark-mode .icon-action {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #93c5fd;
+}
+
+html.dark-mode .icon-action:hover {
+  background: rgba(37, 99, 235, 0.35);
+  color: #ffffff;
 }

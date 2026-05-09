@@ -16,6 +16,7 @@ public record DashboardView(
         int successTimelineAxisMax,
         int successTimelineAxisMid,
         int successTimelineAxisMin,
+        DashboardNextPublishView nextPublish,
         List<PostView> recentPosts,
         List<PostView> allPosts
 ) {}

@@ -16,30 +16,22 @@
         <div th:replace="~{fragments/layout/sidebar :: sidebar('dashboard')}"></div>
 
         <main class="dashboard-main">
-            <div class="status-stack" th:if="${message != null or error != null}">
-                <div class="status success" th:if="${message != null}" th:text="${message}"></div>
-                <div class="status error" th:if="${error != null}" th:text="${error}"></div>
+            <div id="page-messages" style="display: none;"
+                 th:data-raw-msg="${message}"
+                 th:data-raw-err="${error}"
+                 th:data-post-deleted="#{post.msg.deleted}"
+                 th:data-post-created="#{post.msg.created}"
+                 th:data-post-updated="#{post.msg.updated}"
+                 th:data-post-queued="#{post.msg.queued}"
+                 th:data-post-notfound="#{post.msg.notFound}">
             </div>
 
-            <section class="stats-grid">
-                <article class="stat-card">
-                    <h3 th:text="#{dash.totalPosts}">Total Posts</h3>
-                    <p class="stat-value" th:text="${dashboard.stats.totalPosts}">0</p>
-                    <span class="stat-sub" th:text="#{dash.allStatuses}">All statuses</span>
-                </article>
-                <article class="stat-card">
-                    <h3 th:text="#{dash.scheduledCard}">Scheduled</h3>
-                    <p class="stat-value" th:text="${dashboard.stats.scheduledPosts}">0</p>
-                    <span class="stat-sub" th:text="#{dash.readyInQueue}">Ready in queue</span>
-                </article>
-                <article class="stat-card">
-                    <h3 th:text="#{dash.successRate}">Success Rate</h3>
-                    <p class="stat-value" th:text="${#numbers.formatDecimal(dashboard.stats.successRate, 1, 1)} + '%'">0%</p>
-                    <span class="stat-sub" th:text="#{dash.publishedVsFailed}">Published vs failed</span>
-                </article>
-            <article class="stat-card stat-statuses">
-                <h3 th:text="#{dash.statusBreakdown}">Status Breakdown</h3>
-                <div class="status-donut-wrap">
+            <section class="board-grid">
+                <article class="panel stat-statuses stats-panel">
+                    <div class="panel-head">
+                        <h3 th:text="#{dash.statistics}">Statistics</h3>
+                    </div>
+                    <div class="status-donut-wrap">
                         <div class="status-donut"
                              th:style="'background:' + ${dashboard.statusDonutGradient}"></div>
                         <div class="status-donut-meta">
@@ -62,21 +54,20 @@
                         </div>
                     </div>
                 </article>
-            </section>
 
-            <section class="board-grid">
                 <article class="panel chart-panel">
                     <div class="panel-head">
-                        <h3 th:text="#{dash.postingActivity}">Posting Activity (Last 7 Days)</h3>
+                        <h3 th:text="#{dash.postingActivityTitle}">Posting Activity</h3>
+                        <span class="stat-sub" th:text="#{dash.last7Days}">Last 7 Days</span>
                     </div>
                     <div class="bar-chart">
-                        <div class="bar-item" th:each="day : ${dashboard.activityDays}">
+                        <div class="bar-item" th:each="day : ${dashboard.activityDays}"
+                             th:style="'--bar-height:' + ${(day.total == 0 ? 12 : day.publishedHeight + day.scheduledHeight + day.failedHeight)} + '%'">
                             <div class="bar-column">
-                                <span class="bar"
-                                      th:style="'height:' + ${(day.total == 0 ? 12 : day.publishedHeight + day.scheduledHeight + day.failedHeight)} + '%'"></span>
+                                <span class="bar-count" th:text="${day.total}">0</span>
+                                <span class="bar" style="height: var(--bar-height)"></span>
                             </div>
                             <span class="bar-label" th:text="${#messages.msg('day.' + day.day)}">Mon</span>
-                            <span class="bar-count" th:text="${day.total}">0</span>
                         </div>
                     </div>
                 </article>
@@ -127,7 +118,6 @@
                                           th:style="'bottom:' + ${point.rateY + 8} + '%'"
                                           th:text="${point.label + ' — ' + point.successRate + '%'}">May 05 — 100%</span>
                                     <span class="success-week-label"
-                                          th:if="${point.showLabel}"
                                           th:text="${point.shortLabel}">05/01</span>
                                 </div>
                             </div>
@@ -167,6 +157,53 @@
                             </div>
                         </article>
                         <p class="empty-hint" th:if="${#lists.isEmpty(dashboard.recentPosts)}" th:text="#{dash.noPostsYet}">No posts yet. Create your first one.</p>
+                    </div>
+                </article>
+
+                <article class="panel next-publish-panel">
+                    <div class="panel-head">
+                        <h3 th:text="#{dash.nextPublish}">Next Publish</h3>
+                    </div>
+                    <div th:if="${dashboard.nextPublish != null}" class="next-publish-content">
+                        <div class="next-publish-top">
+                            <span class="next-publish-countdown"
+                                  th:classappend="${dashboard.nextPublish.overdue()} ? ' overdue' : ''"
+                                  th:text="${dashboard.nextPublish.overdue() ? #messages.msg('dash.nextPublishOverdue') + ' ' + dashboard.nextPublish.countdownValue() : #messages.msg('dash.nextPublishIn') + ' ' + dashboard.nextPublish.countdownValue()}">
+                                In 30m
+                            </span>
+                        </div>
+                        <div class="next-publish-grid">
+                            <div class="next-publish-meta-row">
+                                <span class="next-label" th:text="#{dash.nextPublishWhen}">Дата</span>
+                                <span class="next-value" th:text="${#temporals.format(dashboard.nextPublish.scheduledAt(), 'dd.MM.yyyy HH:mm')}">24.05.2026 16:51</span>
+                            </div>
+                            <div class="next-publish-meta-row">
+                                <span class="next-label" th:text="#{dash.nextPublishStatus}">Статус</span>
+                                <span class="status-badge scheduled" th:text="#{status.SCHEDULED}">SCHEDULED</span>
+                            </div>
+                            <div class="next-publish-meta-row">
+                                <span class="next-label" th:text="#{dash.nextPublishPlatforms}">Платформи</span>
+                                <div class="next-publish-platforms">
+                                    <span class="next-platform-chip"
+                                          th:each="platform : ${dashboard.nextPublish.platforms()}"
+                                          th:text="${#messages.msg('platform.' + platform)}">Telegram</span>
+                                    <span class="next-platform-chip"
+                                          th:if="${#lists.isEmpty(dashboard.nextPublish.platforms())}"
+                                          th:text="#{queue.unspecified}">Unspecified</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="next-publish-meta-row next-message-row">
+                            <span class="next-label" th:text="#{dash.nextPublishContent}">Повідомлення</span>
+                            <div class="next-message-value">
+                                <strong th:text="${dashboard.nextPublish.title()}">Post title</strong>
+                                <p th:text="${dashboard.nextPublish.excerpt()}">Post excerpt</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${dashboard.nextPublish == null}" class="next-publish-empty">
+                        <p th:text="#{dash.nextPublishEmpty}">No scheduled posts yet.</p>
+                        <p class="next-publish-empty-hint" th:text="#{dash.nextPublishEmptyHint}">Create a scheduled post in Post Creator to see it here.</p>
                     </div>
                 </article>
             </section>
