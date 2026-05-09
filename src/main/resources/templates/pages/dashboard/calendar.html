@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title th:text="#{cal.title} + ' - Social Publish'">Content Calendar - Social Publish</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/calendar.css">
+    <link rel="stylesheet" href="/css/toasts.css">
+    <link rel="stylesheet" href="/css/dark.css">
+</head>
+<body class="dashboard-page" th:attr="data-user-id=${user.id}">
+<div class="app-layout">
+    <div th:replace="~{fragments/layout/navbar :: navbar}"></div>
+    <div class="dashboard-shell">
+        <div th:replace="~{fragments/layout/sidebar :: sidebar('calendar')}"></div>
+
+        <main class="dashboard-main">
+            <div class="calendar-header">
+                <div class="calendar-legend">
+                    <span class="legend-item"><span class="legend-swatch" id="legendDraft"></span> <span th:text="#{status.DRAFT}">Draft</span></span>
+                    <span class="legend-item"><span class="legend-swatch" id="legendScheduled"></span> <span th:text="#{status.SCHEDULED}">Scheduled</span></span>
+                    <span class="legend-item"><span class="legend-swatch" id="legendPublished"></span> <span th:text="#{status.PUBLISHED}">Published</span></span>
+                    <span class="legend-item"><span class="legend-swatch" id="legendFailed"></span> <span th:text="#{status.FAILED}">Failed</span></span>
+                </div>
+                <a class="btn-link" href="/posts/new" th:text="#{dash.createPost}">Create Post</a>
+            </div>
+
+            <section class="panel calendar-panel">
+                <div class="calendar-toolbar">
+                    <div class="calendar-nav">
+                        <button id="calPrev" class="cal-nav-btn" aria-label="Previous">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <h3 id="calTitle" class="cal-title">May 2026</h3>
+                        <button id="calNext" class="cal-nav-btn" aria-label="Next">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+                    <div class="calendar-view-switcher">
+                        <button class="view-btn active" data-view="dayGridMonth" th:text="#{cal.month}">Month</button>
+                        <button class="view-btn" data-view="timeGridWeek" th:text="#{cal.week}">Week</button>
+                        <button class="view-btn" data-view="listWeek" th:text="#{cal.list}">List</button>
+                        <button id="calToday" class="view-btn view-btn-today" th:text="#{cal.today}">Today</button>
+                    </div>
+                </div>
+                <div id="calendarRoot"></div>
+            </section>
+
+            <div id="eventPopover" class="event-popover is-hidden">
+                <div class="event-popover-header">
+                    <strong id="popoverTitle"></strong>
+                    <button id="popoverClose" class="popover-close" aria-label="Close">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="event-popover-body">
+                    <p id="popoverExcerpt" class="popover-excerpt"></p>
+                    <div class="popover-meta">
+                        <span class="popover-meta-label" th:text="#{cal.status}">Status</span>
+                        <span id="popoverStatus" class="status-badge"></span>
+                    </div>
+                    <div class="popover-meta">
+                        <span class="popover-meta-label" th:text="#{cal.platforms}">Platforms</span>
+                        <span id="popoverPlatforms" class="popover-platforms"></span>
+                    </div>
+                    <div class="popover-meta">
+                        <span class="popover-meta-label" th:text="#{cal.time}">Time</span>
+                        <span id="popoverTime"></span>
+                    </div>
+                    <div class="popover-reschedule">
+                        <label class="popover-meta-label" for="popoverDateInput" th:text="#{cal.moveTo}">Move to</label>
+                        <input type="datetime-local" id="popoverDateInput" class="popover-date-input">
+                    </div>
+                </div>
+                <div class="event-popover-footer">
+                    <button id="popoverReschedule" class="popover-action-btn" th:text="#{cal.reschedule}">Reschedule</button>
+                    <a id="popoverEdit" href="#" class="popover-action-btn popover-action-secondary" th:text="#{dash.table.edit}">Edit</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<script src="/js/calendar.js"></script>
+</body>
+</html>
