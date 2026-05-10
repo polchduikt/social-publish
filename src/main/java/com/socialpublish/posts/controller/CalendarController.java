@@ -57,6 +57,16 @@ public class CalendarController {
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
+    @org.springframework.web.bind.annotation.DeleteMapping("/api/calendar/events/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> deleteEvent(
+            @CurrentUser CurrentUserView currentUser,
+            @PathVariable UUID id
+    ) {
+        postService.deletePost(currentUser.id(), id);
+        return ResponseEntity.ok(Map.of("status", "deleted"));
+    }
+
     private Map<String, Object> toCalendarEvent(PostView post) {
         String color = switch (post.status()) {
             case DRAFT -> "#94a3b8";

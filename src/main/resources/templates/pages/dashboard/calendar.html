@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf.token}">
@@ -79,13 +80,18 @@
                 <div class="event-popover-footer">
                     <button id="popoverReschedule" class="popover-action-btn" th:text="#{cal.reschedule}">Reschedule</button>
                     <a id="popoverEdit" href="#" class="popover-action-btn popover-action-secondary" th:text="#{dash.table.edit}">Edit</a>
+                    <button id="popoverDelete" class="popover-action-btn popover-action-danger" th:text="#{dash.table.delete}">Delete</button>
                 </div>
             </div>
         </main>
     </div>
 </div>
 <div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
+<script src="/js/notifications.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 <script src="/js/calendar.js"></script>
 </body>
 </html>
+

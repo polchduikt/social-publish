@@ -216,6 +216,9 @@
   cursor: pointer;
   transition: transform 0.1s ease, box-shadow 0.15s ease;
   margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fc .fc-event:hover {
@@ -227,6 +230,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
+}
+
+.fc .fc-event-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc .fc-daygrid-event-harness {
+  overflow: hidden;
 }
 
 .fc .fc-daygrid-event-dot {
@@ -242,6 +256,41 @@
   font-weight: 700;
   color: #2563eb;
   padding: 2px 4px;
+}
+
+.fc .fc-popover {
+  border-radius: 10px;
+  border: 1px solid #dce4f1;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  max-width: 260px;
+}
+
+.fc .fc-popover .fc-popover-header {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fc .fc-popover .fc-popover-body {
+  padding: 4px 6px 8px;
+}
+
+.fc .fc-popover .fc-event {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.fc .fc-popover .fc-event-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc .fc-popover .fc-daygrid-event-harness {
+  overflow: hidden;
 }
 
 .fc .fc-timegrid-slot {
@@ -442,6 +491,18 @@
 .popover-action-btn:not(a) {
   cursor: pointer;
   border: none;
+}
+
+.popover-action-danger {
+  background: transparent;
+  border: 1px solid #fca5a5 !important;
+  color: #ef4444;
+}
+
+.popover-action-danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .popover-reschedule {
@@ -646,4 +707,30 @@ html.dark-mode .popover-date-input {
   background: #0d1730;
   border-color: var(--dm-border);
   color: var(--dm-text-strong);
+}
+
+html.dark-mode .popover-action-danger {
+  background: transparent;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171;
+}
+
+html.dark-mode .popover-action-danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+html.dark-mode .fc .fc-popover {
+  background: var(--dm-surface-2);
+  border-color: var(--dm-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .fc .fc-popover-header {
+  background: var(--dm-surface-3);
+  color: var(--dm-text-strong);
+}
+
+html.dark-mode .fc .fc-daygrid-more-link {
+  color: var(--dm-accent);
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Social Publish</title>
@@ -291,5 +292,46 @@
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
 <script src="/js/notifications.js"></script>
+<script>
+(function() {
+    var PAGE_SIZE = 20;
+    var table = document.querySelector('.posts-panel .posts-table tbody');
+    if (!table) return;
+    var rows = Array.from(table.querySelectorAll('tr[data-post-id]'));
+    if (rows.length <= PAGE_SIZE) return;
+
+    var shown = PAGE_SIZE;
+    rows.forEach(function(row, i) {
+        if (i >= PAGE_SIZE) row.style.display = 'none';
+    });
+
+    var footer = document.createElement('div');
+    footer.className = 'posts-show-more-wrap';
+    var btn = document.createElement('button');
+    btn.className = 'btn-secondary btn-sm posts-show-more-btn';
+    btn.textContent = rows.length - shown > PAGE_SIZE
+        ? 'Show more (' + (rows.length - shown) + ')'
+        : 'Show all (' + (rows.length - shown) + ')';
+    footer.appendChild(btn);
+    table.closest('.posts-table-wrap').after(footer);
+
+    btn.addEventListener('click', function() {
+        var next = Math.min(shown + PAGE_SIZE, rows.length);
+        for (var i = shown; i < next; i++) {
+            rows[i].style.display = '';
+        }
+        shown = next;
+        if (shown >= rows.length) {
+            footer.remove();
+        } else {
+            var remaining = rows.length - shown;
+            btn.textContent = remaining > PAGE_SIZE
+                ? 'Show more (' + remaining + ')'
+                : 'Show all (' + remaining + ')';
+        }
+    });
+})();
+</script>
 </body>
 </html>
+

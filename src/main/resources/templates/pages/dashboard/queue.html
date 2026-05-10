@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="#{queue.title} + ' - ' + #{nav.title}">Content Queue - Social Publish</title>
@@ -47,7 +48,7 @@
                 </article>
                 <article class="queue-metric-card next-post-card">
                     <h3 th:text="#{queue.stats.nextPost}">Next post in</h3>
-                    <p th:if="${queue.nextScheduledAt != null}" th:text="${queue.nextPostInMinutes()} + 'm'">-</p>
+                    <p th:if="${queue.nextScheduledAt != null}" th:text="${queue.nextPostCountdown()}">-</p>
                     <p th:if="${queue.nextScheduledAt == null}">-</p>
                     <span th:if="${queue.nextScheduledAt != null}"
                           th:text="${#temporals.format(queue.nextScheduledLocalDateTime(), 'MMM dd, HH:mm')}">-</span>
@@ -258,3 +259,4 @@
 <script src="/js/notifications.js"></script>
 </body>
 </html>
+

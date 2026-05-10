@@ -344,6 +344,8 @@
   padding: 8px 14px;
   font-size: 14px;
   font-weight: 700;
+  text-decoration: none;
+  color: #0f172a;
 }
 
 .stats-grid {
@@ -574,6 +576,16 @@
   margin: 6px 0 0;
   color: #64748b;
   font-size: 13px;
+}
+
+.posts-show-more-wrap {
+  text-align: center;
+  padding: 16px;
+  border-top: 1px solid #eef2f7;
+}
+
+.posts-show-more-btn {
+  min-width: 120px;
 }
 
 .row-actions {

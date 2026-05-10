@@ -13,23 +13,28 @@
     </div>
 
     <div class="navbar-right">
-        <div class="lang-switcher">
-            <button class="lang-btn">
-                <span th:text="${#locale.language == 'uk' ? 'UK' : 'EN'}">EN</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <div class="notif-bell" th:if="${user != null}">
+            <button id="notifToggle" class="btn-icon" aria-label="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                <span id="notifCount" class="notif-count" style="display:none">0</span>
             </button>
-            <div class="lang-dropdown">
-                <a href="?lang=en" class="lang-option" th:classappend="${#locale.language != 'uk'} ? 'active'">English</a>
-                <a href="?lang=uk" class="lang-option" th:classappend="${#locale.language == 'uk'} ? 'active'">Українська</a>
+            <div id="notifDropdown" class="notif-dropdown is-hidden">
+                <div class="notif-dropdown-header">
+                    <strong th:text="#{notif.title}">Notifications</strong>
+                    <button id="notifClear" class="notif-clear-btn" th:text="#{notif.clearAll}">Clear all</button>
+                </div>
+                <div id="notifList" class="notif-list">
+                    <div class="notif-empty" th:text="#{notif.empty}">No new notifications</div>
+                </div>
             </div>
         </div>
-
-        <button id="theme-toggle" class="btn-icon" aria-label="Toggle dark mode">
-            <svg class="sun-icon" style="display: none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <div class="profile-chip" th:if="${user != null}" th:text="${user.fullName}">Profile</div>
+        <a href="/settings" class="profile-chip" th:if="${user != null}" th:text="${user.fullName}">Profile</a>
         <a href="/login" class="btn-primary" th:unless="${user != null}" th:text="#{nav.login}">Login</a>
     </div>
+    <script th:inline="javascript">
+        window.csrfToken = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+        window.csrfHeader = /*[[${_csrf != null ? _csrf.headerName : ''}]]*/ '';
+    </script>
     <script src="/js/theme-toggle.js"></script>
 </nav>
+

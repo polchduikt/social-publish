@@ -1,9 +1,4 @@
 (function () {
-    var theme = localStorage.getItem("theme") || "light";
-    if (theme === "dark") {
-        document.documentElement.classList.add("dark-mode");
-    }
-
     document.addEventListener("DOMContentLoaded", function () {
         var btn = document.getElementById("theme-toggle");
         if (!btn) return;

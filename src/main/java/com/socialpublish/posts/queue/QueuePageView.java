@@ -29,6 +29,28 @@ public record QueuePageView(
         return minutes == 0 ? 1 : minutes;
     }
 
+    public String nextPostCountdown() {
+        if (nextScheduledAt == null) {
+            return "-";
+        }
+        Duration duration = Duration.between(Instant.now(), nextScheduledAt);
+        Duration absolute = duration.abs();
+
+        long days = absolute.toDays();
+        long hours = absolute.toHoursPart();
+        long minutes = absolute.toMinutesPart();
+
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) {
+            sb.append(days).append("d ");
+        }
+        if (hours > 0 || days > 0) {
+            sb.append(hours).append("h ");
+        }
+        sb.append(minutes).append("m");
+        return sb.toString().trim();
+    }
+
     public LocalDateTime nextScheduledLocalDateTime() {
         if (nextScheduledAt == null) {
             return null;

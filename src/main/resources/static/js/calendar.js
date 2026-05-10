@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
         editable: true,
         dayMaxEvents: 3,
         eventDisplay: 'block',
+        forceEventDuration: true,
+        defaultTimedEventDuration: '00:30:00',
+        nextDayThreshold: '00:00:00',
         events: '/api/calendar/events',
         eventTimeFormat: {
             hour: '2-digit',
@@ -95,6 +98,12 @@ document.addEventListener('DOMContentLoaded', function () {
         calendar.refetchEvents();
     });
 
+    document.getElementById('popoverDelete').addEventListener('click', function () {
+        if (!activeEventId) return;
+        deleteEvent(activeEventId);
+        hidePopover();
+    });
+
     document.addEventListener('click', function (e) {
         if (!popover.contains(e.target) && !e.target.closest('.fc-event')) {
             hidePopover();
@@ -149,6 +158,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('popoverReschedule').style.display = canReschedule ? '' : 'none';
         document.querySelector('.popover-reschedule').style.display = canReschedule ? '' : 'none';
 
+        var canDelete = props.status !== 'PUBLISHED' && props.status !== 'PUBLISHING';
+        document.getElementById('popoverDelete').style.display = canDelete ? '' : 'none';
+
         var rect = targetEl.getBoundingClientRect();
         var popW = 300;
         var popH = 340;
@@ -194,6 +206,21 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(function () {
             if (revert) revert();
+        });
+    }
+
+    function deleteEvent(eventId) {
+        var headers = {};
+        headers[csrfHeader] = csrfToken;
+
+        fetch('/api/calendar/events/' + eventId, {
+            method: 'DELETE',
+            headers: headers
+        })
+        .then(function (res) {
+            if (res.ok) {
+                calendar.refetchEvents();
+            }
         });
     }
 });
