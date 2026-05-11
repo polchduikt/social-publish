@@ -4,7 +4,6 @@ import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.exception.PostValidationException;
 import org.springframework.stereotype.Component;
-
 import java.util.Map;
 import java.util.Set;
 

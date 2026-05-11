@@ -5,26 +5,33 @@ import com.socialpublish.integrations.reddit.entity.RedditSettingsEntity;
 import com.socialpublish.integrations.reddit.repository.RedditSettingsRepository;
 import com.socialpublish.posts.entity.Post;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-
+import com.socialpublish.integrations.reddit.dto.RedditSubmitResponse;
+import com.socialpublish.integrations.reddit.dto.RedditTokenResponse;
 import java.util.Base64;
-import java.util.Map;
 import java.util.UUID;
+import com.socialpublish.publishing.entity.Platform;
+import com.socialpublish.publishing.service.PlatformPublisher;
 
 @Service
 @RequiredArgsConstructor
-public class RedditPublisherService {
+public class RedditPublisherService implements PlatformPublisher {
 
     private final RedditSettingsRepository settingsRepository;
     private final RedditOAuthProperties properties;
     private final RestClient restClient = RestClient.create();
 
+    @Override
+    public Platform getPlatform() {
+        return Platform.REDDIT;
+    }
+
+    @Override
     public void publish(Post post) {
         UUID userId = post.getOwner().getId();
         RedditSettingsEntity settings = settingsRepository.findByUserId(userId)
@@ -45,16 +52,16 @@ public class RedditPublisherService {
         body.add("text", post.getContent());
 
         try {
-            Map<String, Object> response = restClient.post()
+            RedditSubmitResponse response = restClient.post()
                     .uri("https://oauth.reddit.com/api/submit")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                     .header(HttpHeaders.USER_AGENT, properties.getUserAgent())
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(body)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+                    .body(RedditSubmitResponse.class);
 
-            if (response != null && response.containsKey("success") && response.get("success").equals(Boolean.FALSE)) {
+            if (response != null && Boolean.FALSE.equals(response.success())) {
                  throw new RuntimeException("Reddit API returned failure: " + response);
             }
         } catch (Exception e) {
@@ -75,17 +82,17 @@ public class RedditPublisherService {
                 (properties.getClientId() + ":" + properties.getClientSecret()).getBytes()
         );
 
-        Map<String, Object> response = restClient.post()
+        RedditTokenResponse response = restClient.post()
                 .uri("https://www.reddit.com/api/v1/access_token")
                 .header(HttpHeaders.AUTHORIZATION, authHeader)
                 .header(HttpHeaders.USER_AGENT, properties.getUserAgent())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(body)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(RedditTokenResponse.class);
 
-        if (response != null && response.containsKey("access_token")) {
-            String newAccessToken = (String) response.get("access_token");
+        if (response != null && response.accessToken() != null) {
+            String newAccessToken = response.accessToken();
             settings.setAccessToken(newAccessToken);
             settingsRepository.save(settings);
             return newAccessToken;

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head><link rel="icon" type="image/png" href="/images/logo.png">
     <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,25 +32,27 @@
                     <div class="panel-head">
                         <h3 th:text="#{dash.statistics}">Statistics</h3>
                     </div>
-                    <div class="status-donut-wrap">
-                        <div class="status-donut"
-                             th:style="'background:' + ${dashboard.statusDonutGradient}"></div>
-                        <div class="status-donut-meta">
-                            <strong th:text="${dashboard.stats.totalPosts}">0</strong>
-                            <span th:text="#{dash.allStatuses}">All statuses</span>
-                        </div>
-                    </div>
-                    <div class="status-progress-list">
-                        <div class="status-progress-row" th:each="slice : ${dashboard.statusSlices}">
-                            <div class="status-progress-head">
-                                <span class="status-dot" th:classappend="${' ' + slice.cssClass()}"></span>
-                                <span class="status-name" th:text="${#strings.toUpperCase(#messages.msg(slice.labelKey))}">STATUS</span>
-                                <strong th:text="${slice.count}">0</strong>
+                    <div class="stat-statuses-body">
+                        <div class="status-donut-wrap">
+                            <div class="status-donut"
+                                 th:style="'background:' + ${dashboard.statusDonutGradient}"></div>
+                            <div class="status-donut-meta">
+                                <strong th:text="${dashboard.stats.totalPosts}">0</strong>
+                                <span th:text="#{dash.allStatuses}">All statuses</span>
                             </div>
-                            <div class="status-progress-track">
-                                <span class="status-progress-fill"
-                                      th:classappend="${' ' + slice.cssClass()}"
-                                      th:style="'width:' + ${slice.percent} + '%'"></span>
+                        </div>
+                        <div class="status-progress-list">
+                            <div class="status-progress-row" th:each="slice : ${dashboard.statusSlices}">
+                                <div class="status-progress-head">
+                                    <span class="status-dot" th:classappend="${' ' + slice.cssClass()}"></span>
+                                    <span class="status-name" th:text="${#strings.toUpperCase(#messages.msg(slice.labelKey))}">STATUS</span>
+                                    <strong th:text="${slice.count}">0</strong>
+                                </div>
+                                <div class="status-progress-track">
+                                    <span class="status-progress-fill"
+                                          th:classappend="${' ' + slice.cssClass()}"
+                                          th:style="'width:' + ${slice.percent} + '%'"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -138,12 +140,7 @@
                                  th:attr="data-post-id=${post.id}">
                             <div class="recent-row">
                                 <div class="recent-left">
-                                    <span class="recent-platform-avatar" th:classappend="${' ' + #strings.toLowerCase(primaryPlatform)}">
-                                        <span th:if="${primaryPlatform == 'TELEGRAM'}">TG</span>
-                                        <span th:if="${primaryPlatform == 'DISCORD'}">DS</span>
-                                        <span th:if="${primaryPlatform == 'REDDIT'}">RD</span>
-                                        <span th:if="${primaryPlatform != 'TELEGRAM' and primaryPlatform != 'DISCORD' and primaryPlatform != 'REDDIT'}">--</span>
-                                    </span>
+                                    <div th:replace="~{fragments/ui/icons :: platform-icon(${primaryPlatform}, '')}"></div>
                                     <div class="recent-title-wrap">
                                         <strong th:text="${post.title}">Post title</strong>
                                         <p th:text="${post.excerpt()}">Excerpt</p>
@@ -153,8 +150,8 @@
                             </div>
                             <div class="recent-footer">
                                 <span class="status-badge"
-                                      th:classappend="${#strings.toLowerCase(post.status.name())}"
-                                      th:text="${#messages.msg('status.' + post.status.name())}">DRAFT</span>
+                                      th:classappend="${#strings.toLowerCase(post.status)}"
+                                      th:text="${#messages.msg('status.' + post.status)}">DRAFT</span>
                             </div>
                         </article>
                         <p class="empty-hint" th:if="${#lists.isEmpty(dashboard.recentPosts)}" th:text="#{dash.noPostsYet}">No posts yet. Create your first one.</p>
@@ -185,9 +182,9 @@
                             <div class="next-publish-meta-row">
                                 <span class="next-label" th:text="#{dash.nextPublishPlatforms}">Платформи</span>
                                 <div class="next-publish-platforms">
-                                    <span class="next-platform-chip"
-                                          th:each="platform : ${dashboard.nextPublish.platforms()}"
-                                          th:text="${#messages.msg('platform.' + platform)}">Telegram</span>
+                                    <th:block th:each="platform : ${dashboard.nextPublish.platforms()}">
+                                        <div th:replace="~{fragments/ui/icons :: platform-icon(${platform}, 'sm')}"></div>
+                                    </th:block>
                                     <span class="next-platform-chip"
                                           th:if="${#lists.isEmpty(dashboard.nextPublish.platforms())}"
                                           th:text="#{queue.unspecified}">Unspecified</span>
@@ -233,8 +230,8 @@
                             </td>
                             <td>
                                 <span class="status-badge"
-                                      th:classappend="${#strings.toLowerCase(post.status.name())}"
-                                      th:text="${#messages.msg('status.' + post.status.name())}">DRAFT</span>
+                                      th:classappend="${#strings.toLowerCase(post.status)}"
+                                      th:text="${#messages.msg('status.' + post.status)}">DRAFT</span>
                             </td>
                             <td th:text="${post.scheduledAt != null ? #temporals.format(post.scheduledAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
                             <td th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">-</td>

@@ -58,54 +58,18 @@
   gap: 12px;
 }
 
-.account-icon {
+.account-card .platform-icon-box {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
   flex-shrink: 0;
 }
 
-.telegram-icon {
-  background: #e0f2fe;
-  color: #0088cc;
+.account-card .platform-icon-box svg {
+  width: 24px;
+  height: 24px;
 }
 
-.discord-icon {
-  background: #eef2ff;
-  color: #5865f2;
-}
-
-.reddit-icon {
-  background: #fff1f0;
-  color: #ff4500;
-}
-
-.tiktok-icon {
-  background: #f0fdf4;
-  color: #000000;
-}
-
-.youtube-icon {
-  background: #fef2f2;
-  color: #ff0000;
-}
-
-.instagram-icon {
-  background: #fff1f2;
-  color: #e1306c;
-}
-
-.x-icon {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.whatsapp-icon {
-  background: #ecfdf5;
-  color: #25d366;
-}
 
 .account-info {
   flex: 1;
@@ -199,20 +163,6 @@
   }
 }
 
-.linkedin-icon {
-  background: #eef2ff;
-  color: #0a66c2;
-}
-
-.pinterest-icon {
-  background: #fff1f2;
-  color: #bd081c;
-}
-
-.viber-icon {
-  background: #f4f4f5;
-  color: #7d52cc;
-}
 
 .btn-reddit {
   display: inline-block;

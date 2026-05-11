@@ -3,9 +3,14 @@ package com.socialpublish.common.web;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import java.util.List;
+import java.util.Locale;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -22,21 +27,21 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public org.springframework.web.servlet.LocaleResolver localeResolver() {
-        org.springframework.web.servlet.i18n.SessionLocaleResolver resolver = new org.springframework.web.servlet.i18n.SessionLocaleResolver();
-        resolver.setDefaultLocale(java.util.Locale.ENGLISH);
+    public LocaleResolver localeResolver() {
+        SessionLocaleResolver resolver = new SessionLocaleResolver();
+        resolver.setDefaultLocale(Locale.ENGLISH);
         return resolver;
     }
 
     @Bean
-    public org.springframework.web.servlet.i18n.LocaleChangeInterceptor localeChangeInterceptor() {
-        org.springframework.web.servlet.i18n.LocaleChangeInterceptor interceptor = new org.springframework.web.servlet.i18n.LocaleChangeInterceptor();
+    public LocaleChangeInterceptor localeChangeInterceptor() {
+        LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
         interceptor.setParamName("lang");
         return interceptor;
     }
 
     @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+    public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
     }
 }

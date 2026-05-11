@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head><link rel="icon" type="image/png" href="/images/logo.png">
     <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,8 +62,8 @@
                 <a th:each="s : ${statusOptions}"
                    th:href="@{/queue(status=${s},search=${filters.search},tag=${filters.tag},platform=${filters.platform},type=${filters.type},dateRange=${filters.dateRange},sort=${filters.sort},size=${filters.size})}"
                    class="filter-pill"
-                   th:classappend="${filters.status != null and filters.status.name() == s.name()} ? 'active'"
-                   th:text="${#messages.msg('status.' + s.name())}">STATUS</a>
+                   th:classappend="${filters.status != null and filters.status == s} ? 'active'"
+                   th:text="${#messages.msg('status.' + s)}">STATUS</a>
             </div>
 
             <div class="queue-layout">
@@ -155,7 +155,7 @@
                                     <td>
                                         <div class="queue-platform-list">
                                             <th:block th:each="p : ${post.platformList()}">
-                                                <span class="queue-platform-chip" th:text="${#messages.msg('platform.' + p)}">Platform</span>
+                                                <div th:replace="~{fragments/ui/icons :: platform-icon(${p}, 'sm')}"></div>
                                             </th:block>
                                         </div>
                                         <span th:if="${#lists.isEmpty(post.platformList())}" class="queue-platform-chip text-muted-slate" th:text="#{queue.unspecified}">
@@ -171,8 +171,8 @@
                                     </td>
                                     <td>
                                     <span class="status-badge"
-                                          th:classappend="${#strings.toLowerCase(post.status.name())}"
-                                          th:text="${#messages.msg('status.' + post.status.name())}">DRAFT</span>
+                                          th:classappend="${#strings.toLowerCase(post.status)}"
+                                          th:text="${#messages.msg('status.' + post.status)}">DRAFT</span>
                                     </td>
                                     <td>
                                         <div class="row-actions">
@@ -220,9 +220,12 @@
 
                         <div class="queue-filter-group">
                             <h4 th:text="#{queue.filters.byPlatform}">By platform</h4>
-                            <label th:each="option : ${platformOptions}" class="queue-radio">
+                            <label th:each="option : ${platformOptions}"
+                                   th:if="${option.name() != 'REDDIT' and option.name() != 'WHATSAPP'}"
+                                   class="queue-radio">
                                 <input type="radio" name="platform" th:value="${option.name()}"
                                        th:checked="${filters.platform.name() == option.name()}">
+                                <div th:if="${option.name() != 'ALL'}" th:replace="~{fragments/ui/icons :: platform-icon(${option.name()}, 'sm')}" style="margin-right: 8px;"></div>
                                 <span th:text="${#messages.msg('platform.' + option.name())}">All</span>
                             </label>
                         </div>

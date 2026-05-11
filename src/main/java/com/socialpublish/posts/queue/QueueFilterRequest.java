@@ -1,6 +1,5 @@
 package com.socialpublish.posts.queue;
 
-import com.socialpublish.posts.entity.PostStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +10,7 @@ public class QueueFilterRequest {
     private static final int DEFAULT_SIZE = 10;
     private static final int MAX_SIZE = 100;
 
-    private PostStatus status;
+    private String status;
     private String search;
     private String tag;
     private QueuePlatformFilter platform = QueuePlatformFilter.ALL;

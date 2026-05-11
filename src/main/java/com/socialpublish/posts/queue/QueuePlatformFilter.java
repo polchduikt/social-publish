@@ -4,5 +4,9 @@ public enum QueuePlatformFilter {
     ALL,
     TELEGRAM,
     DISCORD,
-    REDDIT
+    REDDIT,
+    WHATSAPP,
+    LINKEDIN,
+    SLACK,
+    NOTION
 }

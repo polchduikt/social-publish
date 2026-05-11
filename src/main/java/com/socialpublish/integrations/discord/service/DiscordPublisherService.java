@@ -5,25 +5,28 @@ import com.socialpublish.integrations.discord.repository.DiscordSettingsReposito
 import com.socialpublish.integrations.exception.IntegrationException;
 import com.socialpublish.media.entity.PostMedia;
 import com.socialpublish.posts.entity.Post;
+import com.socialpublish.publishing.entity.Platform;
+import com.socialpublish.publishing.service.PlatformPublisher;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class DiscordPublisherService {
-
-    private static final Logger log = LoggerFactory.getLogger(DiscordPublisherService.class);
+public class DiscordPublisherService implements PlatformPublisher {
 
     private final DiscordSettingsRepository settingsRepository;
     private final DiscordClientService discordClientService;
 
+    @Override
+    public Platform getPlatform() {
+        return Platform.DISCORD;
+    }
 
-
+    @Override
     public void publish(Post post) {
         UUID userId = post.getOwner().getId();
         DiscordSettingsEntity settings = settingsRepository.findByUserId(userId)

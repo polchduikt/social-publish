@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head><link rel="icon" type="image/png" href="/images/logo.png">
     <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,7 @@
     <article class="preview-card">
         <div class="preview-top">
             <span class="status-badge"
-                  th:classappend="${#strings.toLowerCase(post.status.name())}"
+                  th:classappend="${#strings.toLowerCase(post.status)}"
                   th:text="${post.status}">DRAFT</span>
             <span th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}">-</span>
         </div>

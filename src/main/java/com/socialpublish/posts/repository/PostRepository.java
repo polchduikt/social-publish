@@ -4,7 +4,6 @@ import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

@@ -14,6 +14,17 @@
   --panel-border: rgba(148, 163, 184, 0.3);
 }
 
+.brand-logo {
+  height: 36px;
+  width: auto;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.brand-link:hover .brand-logo {
+  transform: scale(1.05);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -516,6 +527,15 @@ textarea {
   max-height: 350px;
 }
 
+.notif-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notif-list::-webkit-scrollbar-thumb {
+  background: #c0cddd;
+  border-radius: 999px;
+}
+
 .notif-empty {
   padding: 32px 16px;
   text-align: center;
@@ -592,4 +612,102 @@ textarea {
 
 .notif-read {
   opacity: 0.55;
+}
+
+.platform-icon-box {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+  color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.platform-icon-box svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.platform-icon-box.telegram {
+  background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);
+}
+.platform-icon-box.telegram svg {
+  width: 20px;
+  height: 20px;
+}
+
+.platform-icon-box.discord {
+  background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+}
+
+.platform-icon-box.slack {
+  background: white;
+  color: #4A154B;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.platform-icon-box.linkedin {
+  background: #0077B5;
+}
+
+.platform-icon-box.reddit {
+  background: #FF4500;
+}
+
+.platform-icon-box.notion {
+  background: white;
+  color: black;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.platform-icon-box.whatsapp {
+  background: #25D366;
+}
+
+.platform-icon-box.tiktok {
+  background: black;
+}
+
+.platform-icon-box.viber {
+  background: #7360f2;
+}
+.platform-icon-box.viber svg {
+  width: 20px;
+  height: 20px;
+}
+
+.platform-icon-box.youtube {
+  background: #ff0000;
+}
+
+.platform-icon-box.instagram {
+  background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+}
+
+.platform-icon-box.x {
+  background: #000000;
+}
+
+.platform-icon-box.pinterest {
+  background: #bd081c;
+}
+
+.platform-icon-box.sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.platform-icon-box.sm svg {
+  width: 16px;
+  height: 16px;
+}
+.platform-icon-box.sm.telegram svg,
+.platform-icon-box.sm.viber svg {
+  width: 16px;
+  height: 16px;
 }

@@ -4,6 +4,7 @@ import com.socialpublish.auth.dto.RegisterRequest;
 import com.socialpublish.auth.entity.AuthProvider;
 import com.socialpublish.auth.entity.Role;
 import com.socialpublish.auth.entity.User;
+import com.socialpublish.auth.exception.UserAlreadyExistsException;
 import com.socialpublish.auth.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,11 +25,11 @@ public class AuthService {
     }
 
     @Transactional
-    public User register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
         String normalizedEmail = request.getEmail().trim().toLowerCase();
 
         if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new IllegalArgumentException("User with this email already exists");
+            throw new UserAlreadyExistsException("User with this email already exists");
         }
 
         User user = new User();
@@ -39,6 +40,6 @@ public class AuthService {
         user.setRole(Role.USER);
         user.setPasswordLoginEnabled(true);
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 }

@@ -1,40 +1,29 @@
 package com.socialpublish.notifications.service;
 
 import com.socialpublish.notifications.dto.PostNotification;
+import com.socialpublish.notifications.dto.NotificationItemResponse;
 import com.socialpublish.notifications.entity.Notification;
 import com.socialpublish.notifications.repository.NotificationRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.socialpublish.notifications.mapper.NotificationMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
-
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationRepository notificationRepository;
-
-    public NotificationService(SimpMessagingTemplate messagingTemplate,
-                               NotificationRepository notificationRepository) {
-        this.messagingTemplate = messagingTemplate;
-        this.notificationRepository = notificationRepository;
-    }
+    private final NotificationMapper notificationMapper;
 
     public void sendPostUpdate(UUID userId, PostNotification notification) {
-        Notification entity = new Notification(
-                userId,
-                notification.postId(),
-                notification.title(),
-                notification.message(),
-                notification.type(),
-                notification.status()
-        );
+        Notification entity = notificationMapper.toEntity(userId, notification);
         notificationRepository.save(entity);
         String destination = "/topic/user." + userId;
         messagingTemplate.convertAndSend(destination, notification);
@@ -42,8 +31,8 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public List<Notification> getUserNotifications(UUID userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    public List<NotificationItemResponse> getUserNotifications(UUID userId) {
+        return notificationMapper.toResponses(notificationRepository.findByUserIdOrderByCreatedAtDesc(userId));
     }
 
     @Transactional(readOnly = true)

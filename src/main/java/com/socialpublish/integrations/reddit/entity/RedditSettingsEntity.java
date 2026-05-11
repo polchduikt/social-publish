@@ -5,12 +5,15 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.UUID;
+import com.socialpublish.integrations.entity.BaseIntegrationSettings;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "integration_reddit_settings")
+@Table(name = "reddit_settings")
 @Getter
 @Setter
-public class RedditSettingsEntity {
+@EntityListeners(AuditingEntityListener.class)
+public class RedditSettingsEntity implements BaseIntegrationSettings {
     @Id
     @GeneratedValue
     private UUID id;

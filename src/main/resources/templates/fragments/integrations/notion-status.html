@@ -1,0 +1,4 @@
+<div xmlns:th="http://www.thymeleaf.org">
+    <div th:if="${errorMessage}" class="status error" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="status success" th:text="${successMessage}"></div>
+</div>

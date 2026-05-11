@@ -1,28 +1,23 @@
 package com.socialpublish.integrations.telegram.service;
 
 import com.socialpublish.integrations.exception.IntegrationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class TelegramClientService {
 
-    private static final Logger log = LoggerFactory.getLogger(TelegramClientService.class);
     private static final String API_BASE = "https://api.telegram.org/bot";
-
     private final RestClient restClient;
-
-    public TelegramClientService() {
-        this.restClient = RestClient.create();
-    }
 
     public void sendMessage(String botToken, String chatId, String text) {
         String url = API_BASE + botToken + "/sendMessage";

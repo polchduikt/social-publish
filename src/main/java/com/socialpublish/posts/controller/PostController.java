@@ -4,10 +4,8 @@ import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
-import com.socialpublish.integrations.service.IntegrationStatusService;
 import com.socialpublish.posts.dto.PostUpsertRequest;
 import com.socialpublish.posts.dto.PostView;
-import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.exception.PostNotFoundException;
 import com.socialpublish.posts.exception.PostValidationException;
 import com.socialpublish.posts.exception.UnauthorizedPostAccessException;
@@ -22,8 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.socialpublish.posts.dto.CreatePostTemplateRequest;
-
+import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,15 +30,15 @@ public class PostController {
 
     private final PostService postService;
     private final HtmxSupport htmxSupport;
-    private final IntegrationStatusService integrationStatusService;
+    private final PostFormSupport postFormSupport;
     private final PostTemplateService postTemplateService;
 
     @GetMapping("/posts/new")
-    public String createPostPage(@CurrentUser CurrentUserView currentUser, 
+    public String createPostPage(@CurrentUser CurrentUserView currentUser,
                                  @RequestParam(name = "templateId", required = false) UUID templateId,
                                  Model model) {
         PostUpsertRequest request = new PostUpsertRequest();
-        
+
         if (templateId != null) {
             try {
                 var template = postTemplateService.getTemplate(currentUser.id(), templateId);
@@ -50,8 +47,8 @@ public class PostController {
             } catch (Exception ignored) {
             }
         }
-        
-        populateFormModel(model, currentUser, "create", null, request);
+
+        postFormSupport.populateFormModel(model, currentUser, "create", null, request);
         return "pages/posts/form";
     }
 
@@ -78,15 +75,17 @@ public class PostController {
             } else {
                 postService.createPost(currentUser.id(), postRequest, mediaFiles);
             }
+
+            String message = immediatePublish ? "Post queued for publishing" : "Post created";
+            String redirectUrl = UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("message", message)
+                    .build().toUriString();
+
             if (isHtmx) {
-                htmxSupport.redirectTo(response, immediatePublish
-                        ? "/dashboard?message=Post+queued+for+publishing"
-                        : "/dashboard?message=Post+created");
+                htmxSupport.redirectTo(response, redirectUrl);
                 return "fragments/posts/form-status :: status";
             }
-            return immediatePublish
-                    ? "redirect:/dashboard?message=Post+queued+for+publishing"
-                    : "redirect:/dashboard?message=Post+created";
+            return "redirect:" + redirectUrl;
         } catch (PostValidationException ex) {
             return renderFormError(model, currentUser, "create", null, ex.getMessage(), isHtmx);
         } catch (UnauthorizedPostAccessException ex) {
@@ -99,12 +98,14 @@ public class PostController {
         try {
             PostUpsertRequest request = postService.getEditRequest(currentUser.id(), postId);
             PostView postView = postService.getPostView(currentUser.id(), postId);
-            populateFormModel(model, currentUser, "edit", postId, request);
+            postFormSupport.populateFormModel(model, currentUser, "edit", postId, request);
             model.addAttribute("existingMedia", postView.media());
-            model.addAttribute("statuses", PostStatus.values());
+            model.addAttribute("statuses", List.of("DRAFT", "SCHEDULED", "PUBLISHING", "PUBLISHED", "RETRYING", "FAILED", "CANCELLED"));
             return "pages/posts/form";
         } catch (PostNotFoundException ex) {
-            return "redirect:/dashboard?error=Post+not+found";
+            return "redirect:" + UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("error", "Post not found")
+                    .build().toUriString();
         }
     }
 
@@ -133,19 +134,23 @@ public class PostController {
             } else {
                 postService.updatePost(currentUser.id(), postId, postRequest, mediaFiles, removeMediaPublicIds);
             }
+
+            String message = immediatePublish ? "Post queued for publishing" : "Post updated";
+            String redirectUrl = UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("message", message)
+                    .build().toUriString();
+
             if (isHtmx) {
-                htmxSupport.redirectTo(response, immediatePublish
-                        ? "/dashboard?message=Post+queued+for+publishing"
-                        : "/dashboard?message=Post+updated");
+                htmxSupport.redirectTo(response, redirectUrl);
                 return "fragments/posts/form-status :: status";
             }
-            return immediatePublish
-                    ? "redirect:/dashboard?message=Post+queued+for+publishing"
-                    : "redirect:/dashboard?message=Post+updated";
+            return "redirect:" + redirectUrl;
         } catch (PostValidationException ex) {
             return renderFormError(model, currentUser, "edit", postId, ex.getMessage(), isHtmx);
         } catch (PostNotFoundException ex) {
-            return "redirect:/dashboard?error=Post+not+found";
+            return "redirect:" + UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("error", "Post not found")
+                    .build().toUriString();
         }
     }
 
@@ -153,9 +158,13 @@ public class PostController {
     public String deletePost(@CurrentUser CurrentUserView currentUser, @PathVariable("id") UUID postId) {
         try {
             postService.deletePost(currentUser.id(), postId);
-            return "redirect:/dashboard?message=Post+deleted";
+            return "redirect:" + UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("message", "Post deleted")
+                    .build().toUriString();
         } catch (PostNotFoundException ex) {
-            return "redirect:/dashboard?error=Post+not+found";
+            return "redirect:" + UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("error", "Post not found")
+                    .build().toUriString();
         }
     }
 
@@ -173,56 +182,9 @@ public class PostController {
             model.addAttribute("from", from == null || from.isBlank() ? "/" : from);
             return "pages/posts/preview";
         } catch (PostNotFoundException ex) {
-            return "redirect:/dashboard?error=Post+not+found";
-        }
-    }
-
-    @PostMapping("/posts/templates")
-    @ResponseBody
-    public org.springframework.http.ResponseEntity<Void> saveTemplate(
-            @CurrentUser CurrentUserView user,
-            @RequestParam("templateName") String templateName,
-            @RequestParam(name = "platforms", required = false) List<String> platforms,
-            @RequestParam("content") String content
-    ) {
-        CreatePostTemplateRequest req = new CreatePostTemplateRequest(
-                templateName,
-                content,
-                platforms != null ? String.join(",", platforms) : ""
-        );
-        postTemplateService.createTemplate(user.id(), req);
-        return org.springframework.http.ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/posts/templates/{id}")
-    public String deleteTemplate(
-            @CurrentUser CurrentUserView user,
-            @PathVariable("id") UUID id,
-            Model model
-    ) {
-        postTemplateService.deleteTemplate(user.id(), id);
-        model.addAttribute("templates", postTemplateService.getUserTemplates(user.id()));
-        model.addAttribute("openTemplates", true);
-        return "fragments/posts/templates :: templates-list";
-    }
-
-    private void populateFormModel(Model model, CurrentUserView user, String mode, UUID postId, PostUpsertRequest request) {
-        model.addAttribute("user", user);
-        model.addAttribute("mode", mode);
-        if (request != null) {
-            model.addAttribute("postRequest", request);
-        }
-        if (!model.containsAttribute("existingMedia")) {
-            model.addAttribute("existingMedia", List.of());
-        }
-        model.addAttribute("statuses", PostStatus.userSettable());
-        model.addAttribute("telegramConnected", integrationStatusService.isTelegramConnected(user.id()));
-        model.addAttribute("discordConnected", integrationStatusService.isDiscordConnected(user.id()));
-        model.addAttribute("redditConnected", integrationStatusService.isRedditConnected(user.id()));
-        model.addAttribute("templates", postTemplateService.getUserTemplates(user.id()));
-
-        if (postId != null) {
-            model.addAttribute("postId", postId);
+            return "redirect:" + UriComponentsBuilder.fromPath("/dashboard")
+                    .queryParam("error", "Post not found")
+                    .build().toUriString();
         }
     }
 
@@ -238,7 +200,7 @@ public class PostController {
         if (isHtmx) {
             return "fragments/posts/form-status :: status";
         }
-        populateFormModel(model, currentUser, mode, postId, (PostUpsertRequest) model.asMap().get("postRequest"));
+        postFormSupport.populateFormModel(model, currentUser, mode, postId, (PostUpsertRequest) model.asMap().get("postRequest"));
         if (postId != null) {
             try {
                 model.addAttribute("existingMedia", postService.getPostView(currentUser.id(), postId).media());

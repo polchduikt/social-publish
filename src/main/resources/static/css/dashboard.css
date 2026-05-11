@@ -673,20 +673,31 @@
 }
 
 .stat-statuses {
-  display: grid;
-  gap: 10px;
-  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 550px);
+}
+
+.stat-statuses-body {
+  display: flex;
+  align-items: center;
+  gap: 32px;
 }
 
 .status-donut-wrap {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  flex-shrink: 0;
+  min-width: 100px;
 }
 
 .status-donut {
-  width: 66px;
-  height: 66px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   position: relative;
   flex-shrink: 0;
@@ -695,16 +706,21 @@
 .status-donut::after {
   content: "";
   position: absolute;
-  inset: 11px;
+  inset: 18px;
   border-radius: 50%;
   background: #ffffff;
   border: 1px solid #dce4f1;
 }
 
+.status-donut-meta {
+  text-align: center;
+}
+
 .status-donut-meta strong {
   display: block;
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
+  margin-bottom: 4px;
 }
 
 .status-donut-meta span {
@@ -715,6 +731,7 @@
 .status-progress-list {
   display: grid;
   gap: 8px;
+  flex: 1;
 }
 
 .status-progress-head {

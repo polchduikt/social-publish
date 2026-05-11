@@ -1,6 +1,7 @@
 package com.socialpublish.auth.controller;
 
 import com.socialpublish.auth.dto.RegisterRequest;
+import com.socialpublish.auth.exception.UserAlreadyExistsException;
 import com.socialpublish.auth.service.AuthService;
 import com.socialpublish.auth.service.AuthenticatedUserService;
 import com.socialpublish.common.web.HtmxSupport;
@@ -69,7 +70,7 @@ public class RegisterController {
                 return "fragments/auth/register-status";
             }
             return "redirect:/login?registered=true";
-        } catch (IllegalArgumentException ex) {
+        } catch (UserAlreadyExistsException ex) {
             if (!isHtmxRequest) {
                 return "redirect:/register?error=true";
             }

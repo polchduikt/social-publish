@@ -31,8 +31,8 @@ public class QueueWebSupport {
     public String buildRedirectUrl(QueueFilterRequest filters) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/queue");
 
-        if (filters.getStatus() != null) {
-            builder.queryParam("status", filters.getStatus().name());
+        if (filters.getStatus() != null && !filters.getStatus().isBlank()) {
+            builder.queryParam("status", filters.getStatus());
         }
         if (filters.hasSearch()) {
             builder.queryParam("search", filters.normalizedSearch());

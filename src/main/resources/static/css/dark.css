@@ -583,6 +583,10 @@ html.dark-mode .notif-clear-btn:hover {
   background: rgba(79, 131, 255, 0.12) !important;
 }
 
+html.dark-mode .notif-list::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
 html.dark-mode .notif-item {
   border-bottom-color: var(--dm-border-soft);
 }

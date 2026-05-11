@@ -4,15 +4,12 @@ import com.socialpublish.publishing.service.PublishingService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.UUID;
 
+@Slf4j
 public class PublishPostJob implements Job {
-
-    private static final Logger log = LoggerFactory.getLogger(PublishPostJob.class);
 
     @Autowired
     private PublishingService publishingService;

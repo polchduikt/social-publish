@@ -12,7 +12,6 @@ import com.socialpublish.posts.queue.QueuePostTypeFilter;
 import com.socialpublish.posts.queue.QueueService;
 import com.socialpublish.posts.queue.QueueSortOption;
 import com.socialpublish.posts.queue.QueueWebSupport;
-import com.socialpublish.posts.entity.PostStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -35,8 +34,8 @@ public class QueueController {
     private final QueueWebSupport queueWebSupport;
 
     @ModelAttribute("statusOptions")
-    public PostStatus[] statusOptions() {
-        return PostStatus.values();
+    public List<String> statusOptions() {
+        return List.of("DRAFT", "SCHEDULED", "PUBLISHING", "PUBLISHED", "RETRYING", "FAILED", "CANCELLED");
     }
 
     @ModelAttribute("platformOptions")

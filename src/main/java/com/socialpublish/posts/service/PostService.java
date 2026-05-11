@@ -12,22 +12,24 @@ import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.exception.PostNotFoundException;
 import com.socialpublish.posts.exception.PostValidationException;
 import com.socialpublish.posts.exception.UnauthorizedPostAccessException;
+import com.socialpublish.posts.mapper.PostMapper;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.publishing.service.PublishingProducer;
 import com.socialpublish.scheduling.service.PostSchedulerService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -39,38 +41,26 @@ public class PostService {
     private final PublishingProducer publishingProducer;
     private final NotificationService notificationService;
     private final PostMediaSyncService postMediaSyncService;
+    private final PostMapper postMapper;
 
     @Transactional(readOnly = true)
     public PostView getPostView(UUID ownerId, UUID postId) {
-        return PostView.fromWithMedia(requireOwnedPost(ownerId, postId));
+        return postMapper.toView(requireOwnedPost(ownerId, postId));
     }
 
     @Transactional(readOnly = true)
     public List<PostView> getQueuePosts(UUID ownerId, PostStatus statusFilter) {
         if (statusFilter != null) {
             return postRepository.findByOwnerIdAndStatusOrderByUpdatedAtDesc(ownerId, statusFilter)
-                    .stream().map(PostView::from).toList();
+                    .stream().map(postMapper::toView).toList();
         }
         return postRepository.findByOwnerIdOrderByUpdatedAtDesc(ownerId)
-                .stream().map(PostView::from).toList();
+                .stream().map(postMapper::toView).toList();
     }
 
     @Transactional(readOnly = true)
     public PostUpsertRequest getEditRequest(UUID ownerId, UUID postId) {
-        Post post = requireOwnedPost(ownerId, postId);
-        PostUpsertRequest request = new PostUpsertRequest();
-        request.setContent(post.getContent());
-        request.setStatus(post.getStatus());
-        request.setScheduledAt(
-                post.getScheduledAt() == null
-                        ? null
-                        : post.getScheduledAt().atZone(ZoneId.systemDefault()).toLocalDateTime()
-        );
-        request.setFailedReason(post.getFailedReason());
-        if (post.getPlatforms() != null && !post.getPlatforms().isBlank()) {
-            request.setPlatforms(Arrays.asList(post.getPlatforms().split(",")));
-        }
-        return request;
+        return postMapper.toUpsertRequest(requireOwnedPost(ownerId, postId));
     }
 
     @Transactional
@@ -81,20 +71,21 @@ public class PostService {
     @Transactional
     public PostView createPost(UUID ownerId, PostUpsertRequest request, List<MultipartFile> mediaFiles) {
         User owner = userRepository.findById(ownerId).orElseThrow(UnauthorizedPostAccessException::new);
-        Post post = new Post();
+        Post post = postMapper.toEntity(request);
         post.setOwner(owner);
         post.setStatus(PostStatus.DRAFT);
-        applyCommonFields(post, request);
+        post.setTitle(buildTitleFromContent(post.getContent()));
+        
         postMediaSyncService.syncMedia(post, ownerId, mediaFiles, List.of());
 
-        PostStatus targetStatus = request.getStatus() == null ? PostStatus.DRAFT : request.getStatus();
+        PostStatus targetStatus = request.getStatus() == null || request.getStatus().isBlank() ? PostStatus.DRAFT : PostStatus.valueOf(request.getStatus());
         if (targetStatus != PostStatus.DRAFT) {
             applyUserTransition(post, targetStatus, request);
         }
 
         Post saved = postRepository.save(post);
         handleScheduling(saved);
-        return PostView.from(saved);
+        return postMapper.toView(saved);
     }
 
     @Transactional
@@ -105,17 +96,18 @@ public class PostService {
     @Transactional
     public PostView createPostAndPublishNow(UUID ownerId, PostUpsertRequest request, List<MultipartFile> mediaFiles) {
         User owner = userRepository.findById(ownerId).orElseThrow(UnauthorizedPostAccessException::new);
-        Post post = new Post();
+        Post post = postMapper.toEntity(request);
         post.setOwner(owner);
         post.setStatus(PostStatus.DRAFT);
-        applyCommonFields(post, request);
+        post.setTitle(buildTitleFromContent(post.getContent()));
+        
         postMediaSyncService.syncMedia(post, ownerId, mediaFiles, List.of());
 
         prepareForImmediatePublish(post, request);
 
         Post saved = postRepository.save(post);
         dispatchImmediatePublishing(saved);
-        return PostView.from(saved);
+        return postMapper.toView(saved);
     }
 
     @Transactional
@@ -136,7 +128,7 @@ public class PostService {
         applyCommonFields(post, request);
         postMediaSyncService.syncMedia(post, ownerId, mediaFiles, removeMediaPublicIds);
 
-        PostStatus targetStatus = request.getStatus() == null ? post.getStatus() : request.getStatus();
+        PostStatus targetStatus = request.getStatus() == null || request.getStatus().isBlank() ? post.getStatus() : PostStatus.valueOf(request.getStatus());
         if (targetStatus != post.getStatus()) {
             applyUserTransition(post, targetStatus, request);
         } else if (targetStatus == PostStatus.SCHEDULED) {
@@ -145,7 +137,7 @@ public class PostService {
 
         Post saved = postRepository.save(post);
         handleSchedulingChange(saved, oldStatus);
-        return PostView.from(saved);
+        return postMapper.toView(saved);
     }
 
     @Transactional
@@ -173,7 +165,7 @@ public class PostService {
             postSchedulerService.cancelScheduledPost(saved.getId());
         }
         dispatchImmediatePublishing(saved);
-        return PostView.from(saved);
+        return postMapper.toView(saved);
     }
 
     @Transactional
@@ -252,7 +244,7 @@ public class PostService {
         postMediaSyncService.copyMedia(source, duplicate, ownerId);
 
         Post saved = postRepository.save(duplicate);
-        return PostView.from(saved);
+        return postMapper.toView(saved);
     }
 
     @Transactional
@@ -400,7 +392,7 @@ public class PostService {
         UUID userId = post.getOwner().getId();
         String title = post.getTitle();
 
-        notificationService.sendPostUpdate(userId, PostNotification.publishing(postId, title));
+        notificationService.sendPostUpdate(userId, new PostNotification(postId, title, "PUBLISHING", "Publishing...", "info", Instant.now()));
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override

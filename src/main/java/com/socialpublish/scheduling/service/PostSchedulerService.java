@@ -10,24 +10,20 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.TriggerBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class PostSchedulerService {
 
-    private static final Logger log = LoggerFactory.getLogger(PostSchedulerService.class);
     private static final String JOB_GROUP = "post-publishing";
 
     private final Scheduler scheduler;
-
-    public PostSchedulerService(Scheduler scheduler) {
-        this.scheduler = scheduler;
-    }
 
     public void schedulePost(Post post) {
         try {

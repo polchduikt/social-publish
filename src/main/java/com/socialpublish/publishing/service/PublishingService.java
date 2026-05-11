@@ -1,37 +1,38 @@
 package com.socialpublish.publishing.service;
 
-import com.socialpublish.integrations.telegram.service.TelegramPublisherService;
-import com.socialpublish.integrations.discord.service.DiscordPublisherService;
-import com.socialpublish.integrations.reddit.service.RedditPublisherService;
-
 import com.socialpublish.notifications.dto.PostNotification;
 import com.socialpublish.notifications.service.NotificationService;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.posts.service.PostStatusMachine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.socialpublish.publishing.entity.Platform;
+import com.socialpublish.publishing.event.PostScheduledEvent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PublishingService {
 
-    private static final Logger log = LoggerFactory.getLogger(PublishingService.class);
-
     private final PostRepository postRepository;
     private final PostStatusMachine statusMachine;
     private final PublishingProducer publishingProducer;
-    private final TelegramPublisherService telegramPublisherService;
-    private final DiscordPublisherService discordPublisherService;
-    private final RedditPublisherService redditPublisherService;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final List<PlatformPublisher> publishers;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -51,17 +52,16 @@ public class PublishingService {
         postRepository.save(post);
 
         notificationService.sendPostUpdate(post.getOwner().getId(),
-                PostNotification.publishing(postId, post.getTitle()));
+                new PostNotification(postId, post.getTitle(), "PUBLISHING", "Publishing...", "info", Instant.now()));
 
-        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
-                new org.springframework.transaction.support.TransactionSynchronization() {
-                    @Override
-                    public void afterCommit() {
-                        publishingProducer.sendPublishRequest(postId);
-                        log.info("Post {} transitioned to PUBLISHING and sent to RabbitMQ", postId);
-                    }
-                }
-        );
+        eventPublisher.publishEvent(new PostScheduledEvent(postId));
+        log.info("Post {} transitioned to PUBLISHING and event published", postId);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onPostScheduled(PostScheduledEvent event) {
+        publishingProducer.sendPublishRequest(event.postId());
+        log.info("Post {} sent to RabbitMQ after commit", event.postId());
     }
 
     @Transactional
@@ -82,14 +82,14 @@ public class PublishingService {
         if (post.getStatus() == PostStatus.RETRYING) {
             statusMachine.transition(post, PostStatus.PUBLISHING);
             notificationService.sendPostUpdate(userId,
-                    PostNotification.publishing(postId, post.getTitle()));
+                    new PostNotification(postId, post.getTitle(), "PUBLISHING", "Publishing...", "info", Instant.now()));
         }
 
         try {
             doPublish(post);
             markPublished(post);
             notificationService.sendPostUpdate(userId,
-                    PostNotification.published(postId, post.getTitle()));
+                    new PostNotification(postId, post.getTitle(), "PUBLISHED", "Published", "success", Instant.now()));
         } catch (Exception ex) {
             log.error("Publishing failed for post {}: {}", postId, ex.getMessage());
             handleFailure(post, ex.getMessage(), attempt);
@@ -97,51 +97,49 @@ public class PublishingService {
     }
 
     private void doPublish(Post post) {
-        String platforms = post.getPlatforms();
-        if (platforms == null || platforms.isBlank()) {
+        Set<Platform> requestedPlatforms = parsePlatforms(post.getPlatforms());
+        if (requestedPlatforms.isEmpty()) {
             throw new RuntimeException("No platforms selected for publishing");
         }
 
         boolean anyPublished = false;
         StringBuilder errors = new StringBuilder();
 
-        if (platforms.contains("TELEGRAM")) {
-            try {
-                telegramPublisherService.publish(post);
-                anyPublished = true;
-            } catch (Exception ex) {
-                log.warn("Telegram publishing failed for post {}: {}", post.getId(), ex.getMessage());
-                errors.append("Telegram: ").append(ex.getMessage());
+        for (PlatformPublisher publisher : publishers) {
+            if (requestedPlatforms.contains(publisher.getPlatform())) {
+                try {
+                    publisher.publish(post);
+                    anyPublished = true;
+                } catch (Exception ex) {
+                    log.warn("{} publishing failed for post {}: {}", publisher.getPlatform(), post.getId(), ex.getMessage());
+                    if (!errors.isEmpty()) errors.append("; ");
+                    errors.append(publisher.getPlatform()).append(": ").append(ex.getMessage());
+                }
             }
         }
-
-        if (platforms.contains("DISCORD")) {
-            try {
-                discordPublisherService.publish(post);
-                anyPublished = true;
-            } catch (Exception ex) {
-                log.warn("Discord publishing failed for post {}: {}", post.getId(), ex.getMessage());
-                if (!errors.isEmpty()) errors.append("; ");
-                errors.append("Discord: ").append(ex.getMessage());
-            }
-        }
-
-        if (platforms.contains("REDDIT")) {
-            try {
-                redditPublisherService.publish(post);
-                anyPublished = true;
-            } catch (Exception ex) {
-                log.warn("Reddit publishing failed for post {}: {}", post.getId(), ex.getMessage());
-                if (!errors.isEmpty()) errors.append("; ");
-                errors.append("Reddit: ").append(ex.getMessage());
-            }
-        }
-
-
 
         if (!anyPublished) {
             throw new RuntimeException(errors.toString());
         }
+    }
+
+    private Set<Platform> parsePlatforms(String platformsStr) {
+        if (platformsStr == null || platformsStr.isBlank()) {
+            return Set.of();
+        }
+        return Arrays.stream(platformsStr.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> {
+                    try {
+                        return Platform.valueOf(s);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Unknown platform: {}", s);
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     private void markPublished(Post post) {
@@ -163,7 +161,7 @@ public class PublishingService {
             publishingProducer.sendRetryRequest(post.getId(), attempt + 1);
 
             notificationService.sendPostUpdate(userId,
-                    PostNotification.retrying(post.getId(), post.getTitle(), attempt, post.getMaxRetries()));
+                    new PostNotification(post.getId(), post.getTitle(), "RETRYING", "Retrying... (" + attempt + "/" + post.getMaxRetries() + ")", "warning", Instant.now()));
         } else {
             statusMachine.transition(post, PostStatus.FAILED);
             post.setRetryCount(attempt);
@@ -171,7 +169,7 @@ public class PublishingService {
             postRepository.save(post);
 
             notificationService.sendPostUpdate(userId,
-                    PostNotification.failed(post.getId(), post.getTitle(), reason));
+                    new PostNotification(post.getId(), post.getTitle(), "FAILED", "Failed - " + reason, "error", Instant.now()));
         }
     }
 }

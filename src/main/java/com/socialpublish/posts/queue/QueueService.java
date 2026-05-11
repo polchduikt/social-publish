@@ -6,6 +6,7 @@ import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.exception.PostNotFoundException;
 import com.socialpublish.posts.exception.PostValidationException;
 import com.socialpublish.posts.exception.UnauthorizedPostAccessException;
+import com.socialpublish.posts.mapper.PostMapper;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.posts.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +32,7 @@ public class QueueService {
 
     private final PostRepository postRepository;
     private final PostService postService;
+    private final PostMapper postMapper;
 
     @Transactional(readOnly = true)
     public QueuePageView getQueue(UUID ownerId, QueueFilterRequest filter) {
@@ -42,7 +43,7 @@ public class QueueService {
         long totalFiltered = filteredPosts.size();
         List<PostView> posts = filteredPosts.stream()
                 .limit(filter.getSize())
-                .map(PostView::fromWithMedia)
+                .map(postMapper::toView)
                 .toList();
         boolean hasMore = totalFiltered > posts.size();
         int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, 100);
@@ -108,8 +109,8 @@ public class QueueService {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("owner").get("id"), ownerId));
 
-            if (filter.getStatus() != null) {
-                predicates.add(cb.equal(root.get("status"), filter.getStatus()));
+            if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
+                predicates.add(cb.equal(root.get("status"), PostStatus.valueOf(filter.getStatus())));
             }
 
             if (filter.hasSearch()) {

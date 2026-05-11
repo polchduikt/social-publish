@@ -5,23 +5,28 @@ import com.socialpublish.integrations.telegram.repository.TelegramSettingsReposi
 import com.socialpublish.integrations.exception.IntegrationException;
 import com.socialpublish.media.entity.PostMedia;
 import com.socialpublish.posts.entity.Post;
+import com.socialpublish.publishing.entity.Platform;
+import com.socialpublish.publishing.service.PlatformPublisher;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class TelegramPublisherService {
-
-    private static final Logger log = LoggerFactory.getLogger(TelegramPublisherService.class);
+public class TelegramPublisherService implements PlatformPublisher {
 
     private final TelegramSettingsRepository settingsRepository;
     private final TelegramClientService telegramClientService;
 
+    @Override
+    public Platform getPlatform() {
+        return Platform.TELEGRAM;
+    }
+
+    @Override
     public void publish(Post post) {
         UUID userId = post.getOwner().getId();
         TelegramSettingsEntity settings = settingsRepository.findByUserId(userId)
