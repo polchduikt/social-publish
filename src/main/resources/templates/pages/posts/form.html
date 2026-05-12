@@ -274,6 +274,12 @@
                                     data-preview-platform="telegram" th:text="#{platform.TELEGRAM}">Telegram</button>
                                 <button type="button" class="preview-platform-tab" data-preview-platform="discord"
                                     th:text="#{platform.DISCORD}">Discord</button>
+                                <button type="button" class="preview-platform-tab" data-preview-platform="slack"
+                                    th:text="#{platform.SLACK}">Slack</button>
+                                <button type="button" class="preview-platform-tab" data-preview-platform="linkedin"
+                                    th:text="#{platform.LINKEDIN}">LinkedIn</button>
+                                <button type="button" class="preview-platform-tab" data-preview-platform="notion"
+                                    th:text="#{platform.NOTION}">Notion</button>
                             </div>
                             <div class="preview-box">
                                 <div class="preview-canvas preview-canvas-telegram" id="previewTelegram">
@@ -322,6 +328,44 @@
                                     <div id="previewDiscordContent" class="preview-text"
                                         th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
                                     <div class="preview-media-strip" id="previewDiscordMedia"></div>
+                                </div>
+
+                                <div class="preview-canvas preview-canvas-slack is-hidden" id="previewSlack">
+                                    <div class="preview-slack-header">
+                                        <span class="preview-slack-avatar">SP</span>
+                                        <div class="preview-slack-meta">
+                                            <span class="preview-slack-name">Social Publish</span>
+                                            <span class="preview-slack-app" th:text="#{post.botBadge}">APP</span>
+                                            <span class="preview-slack-time">16:07</span>
+                                        </div>
+                                    </div>
+                                    <div id="previewSlackContent" class="preview-text slack-text"
+                                        th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
+                                    <div class="preview-media-strip" id="previewSlackMedia"></div>
+                                </div>
+
+                                <div class="preview-canvas preview-canvas-linkedin is-hidden" id="previewLinkedin">
+                                    <div class="preview-linkedin-header">
+                                        <span class="preview-linkedin-avatar">SP</span>
+                                        <div class="preview-linkedin-meta">
+                                            <span class="preview-linkedin-name">Social Publish</span>
+                                            <span class="preview-linkedin-sub" th:text="#{post.channelPreview}">Company Page</span>
+                                            <span class="preview-linkedin-time" th:text="#{post.todayAt}">Today</span>
+                                        </div>
+                                    </div>
+                                    <div id="previewLinkedinContent" class="preview-text linkedin-text"
+                                        th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
+                                    <div class="preview-media-large" id="previewLinkedinMedia"></div>
+                                </div>
+
+                                <div class="preview-canvas preview-canvas-notion is-hidden" id="previewNotion">
+                                    <div class="preview-notion-header">
+                                        <div class="preview-notion-icon">📄</div>
+                                        <h2 class="preview-notion-title">Untitled</h2>
+                                    </div>
+                                    <div id="previewNotionContent" class="preview-text notion-text"
+                                        th:text="#{post.previewPlaceholder}">Your content will appear here...</div>
+                                    <div class="preview-media-grid" id="previewNotionMedia"></div>
                                 </div>
                             </div>
                         </section>

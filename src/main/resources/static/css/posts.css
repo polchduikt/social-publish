@@ -542,6 +542,7 @@
 
 .preview-platform-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -870,6 +871,192 @@
 .preview-canvas-discord .preview-media-strip {
   margin-left: 46px;
   max-width: 90%;
+}
+
+/* Slack Preview */
+.preview-canvas-slack {
+    background: #1a1d21;
+    border-color: #35373b;
+    padding: 12px;
+}
+
+.preview-slack-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.preview-slack-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e01e5a;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.preview-slack-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.preview-slack-name {
+    color: #f8f8f8;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.preview-slack-app {
+    background: #35373b;
+    color: #ababad;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 3px;
+    padding: 1px 4px;
+    text-transform: uppercase;
+}
+
+.preview-slack-time {
+    color: #ababad;
+    font-size: 12px;
+}
+
+.slack-text {
+    color: #d1d2d3;
+    margin-left: 48px;
+    font-size: 15px;
+    line-height: 1.46668;
+    margin-bottom: 8px;
+}
+
+.preview-canvas-slack .preview-media-strip {
+    margin-left: 48px;
+    max-width: 500px;
+}
+
+/* LinkedIn Preview */
+.preview-canvas-linkedin {
+    background: #ffffff;
+    border-color: #e0e0e0;
+    padding: 16px;
+}
+
+.preview-linkedin-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.preview-linkedin-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0077b5;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.preview-linkedin-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-linkedin-name {
+    color: rgba(0,0,0,0.9);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.preview-linkedin-sub {
+    color: rgba(0,0,0,0.6);
+    font-size: 12px;
+}
+
+.preview-linkedin-time {
+    color: rgba(0,0,0,0.6);
+    font-size: 12px;
+}
+
+.linkedin-text {
+    color: rgba(0,0,0,0.9);
+    font-size: 14px;
+    line-height: 1.42857;
+    margin-bottom: 12px;
+}
+
+.preview-media-large {
+    margin: 0 -16px -16px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.preview-media-large img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    display: block;
+}
+
+.preview-canvas-notion {
+    background: #ffffff;
+    padding: 40px 60px;
+    color: #37352f;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.preview-notion-header {
+    margin-bottom: 20px;
+}
+
+.preview-notion-icon {
+    font-size: 78px;
+    margin-bottom: 10px;
+    margin-left: -5px;
+}
+
+.preview-notion-title {
+    font-size: 40px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    color: #37352f;
+}
+
+.notion-text {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #37352f;
+    margin-bottom: 24px;
+}
+
+.preview-canvas-notion .preview-media-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.preview-canvas-notion .preview-media-card {
+    border: none;
+    border-radius: 0;
+}
+
+.preview-canvas-notion .preview-media-card img {
+    border-radius: 0;
+    height: auto;
+    max-height: 500px;
 }
 
 .btn-schedule {

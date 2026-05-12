@@ -15,10 +15,21 @@
     var charCount = document.getElementById("charCount");
     var previewTelegramContent = document.getElementById("previewTelegramContent");
     var previewDiscordContent = document.getElementById("previewDiscordContent");
+    var previewSlackContent = document.getElementById("previewSlackContent");
+    var previewLinkedinContent = document.getElementById("previewLinkedinContent");
+    var previewNotionContent = document.getElementById("previewNotionContent");
+
     var previewTelegramMedia = document.getElementById("previewTelegramMedia");
     var previewDiscordMedia = document.getElementById("previewDiscordMedia");
+    var previewSlackMedia = document.getElementById("previewSlackMedia");
+    var previewLinkedinMedia = document.getElementById("previewLinkedinMedia");
+    var previewNotionMedia = document.getElementById("previewNotionMedia");
+
     var previewTelegramCard = document.getElementById("previewTelegram");
     var previewDiscordCard = document.getElementById("previewDiscord");
+    var previewSlackCard = document.getElementById("previewSlack");
+    var previewLinkedinCard = document.getElementById("previewLinkedin");
+    var previewNotionCard = document.getElementById("previewNotion");
     var toolbar = document.getElementById("formatToolbar");
     var featureHint = document.getElementById("featureHint");
     var mediaInput = document.getElementById("mediaFiles");
@@ -264,31 +275,38 @@
 
         previewTelegramMedia.innerHTML = combinedHtml;
         previewDiscordMedia.innerHTML = combinedHtml;
+        if (previewSlackMedia) previewSlackMedia.innerHTML = combinedHtml;
+        if (previewLinkedinMedia) previewLinkedinMedia.innerHTML = combinedHtml;
+        if (previewNotionMedia) previewNotionMedia.innerHTML = combinedHtml;
     }
 
     function updatePreview() {
-        if (previewTelegramContent) {
-            previewTelegramContent.innerHTML = renderMarkdownForPreview(content.value);
-        }
-        if (previewDiscordContent) {
-            previewDiscordContent.innerHTML = renderMarkdownForPreview(content.value);
-        }
+        var html = renderMarkdownForPreview(content.value);
+        if (previewTelegramContent) previewTelegramContent.innerHTML = html;
+        if (previewDiscordContent) previewDiscordContent.innerHTML = html;
+        if (previewSlackContent) previewSlackContent.innerHTML = html;
+        if (previewLinkedinContent) previewLinkedinContent.innerHTML = html;
+        if (previewNotionContent) previewNotionContent.innerHTML = html;
+
         renderPreviewMedia();
         if (charCount) charCount.textContent = content.value.length;
     }
 
     function resolvePreviewMode() {
         var selected = getSelectedPlatforms();
-        if (selected.indexOf("DISCORD") !== -1) {
-            return "discord";
-        }
+        if (selected.indexOf("DISCORD") !== -1) return "discord";
+        if (selected.indexOf("SLACK") !== -1) return "slack";
+        if (selected.indexOf("LINKEDIN") !== -1) return "linkedin";
+        if (selected.indexOf("NOTION") !== -1) return "notion";
         return "telegram";
     }
 
     function setPreviewMode(mode) {
-        var showDiscord = mode === "discord";
-        if (previewTelegramCard) previewTelegramCard.classList.toggle("is-hidden", showDiscord);
-        if (previewDiscordCard) previewDiscordCard.classList.toggle("is-hidden", !showDiscord);
+        if (previewTelegramCard) previewTelegramCard.classList.toggle("is-hidden", mode !== "telegram");
+        if (previewDiscordCard) previewDiscordCard.classList.toggle("is-hidden", mode !== "discord");
+        if (previewSlackCard) previewSlackCard.classList.toggle("is-hidden", mode !== "slack");
+        if (previewLinkedinCard) previewLinkedinCard.classList.toggle("is-hidden", mode !== "linkedin");
+        if (previewNotionCard) previewNotionCard.classList.toggle("is-hidden", mode !== "notion");
 
         document.querySelectorAll(".preview-platform-tab").forEach(function (tab) {
             tab.classList.toggle("is-active", tab.dataset.previewPlatform === mode);
