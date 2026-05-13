@@ -56,25 +56,39 @@
                         <section class="panel platform-panel">
                             <h3 class="panel-title" th:text="#{post.platforms}">Select Platforms</h3>
                             <div class="platform-chips">
-                                <label class="platform-chip"
-                                    th:classappend="${telegramConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                    <input type="checkbox" name="platforms" value="TELEGRAM"
-                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'TELEGRAM')}"
-                                        th:disabled="${!telegramConnected}" />
+                                <th:block th:if="${integrations.telegram().configured()}">
+                                    <label class="platform-chip platform-connected" th:each="account : ${integrations.telegram().accounts()}" th:if="${account.enabled()}">
+                                        <input type="checkbox" name="platforms" th:value="${'TELEGRAM:' + account.id()}"
+                                            th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'TELEGRAM:' + account.id())}" />
+                                        <span class="platform-chip-inner">
+                                            <div th:replace="~{fragments/ui/icons :: platform-icon('TELEGRAM', 'sm')}"></div>
+                                            <span th:text="${account.label() != null and !account.label().isEmpty() ? account.label() : 'Telegram'}">Telegram</span>
+                                        </span>
+                                    </label>
+                                </th:block>
+                                <label class="platform-chip platform-disconnected" th:if="${!integrations.telegram().configured()}">
+                                    <input type="checkbox" disabled />
                                     <span class="platform-chip-inner">
                                         <div th:replace="~{fragments/ui/icons :: platform-icon('TELEGRAM', 'sm')}"></div>
-                                        <span th:text="#{platform.TELEGRAM}">Telegram</span>
+                                        <span>Telegram</span>
                                     </span>
                                 </label>
 
-                                <label class="platform-chip"
-                                    th:classappend="${discordConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                    <input type="checkbox" name="platforms" value="DISCORD"
-                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'DISCORD')}"
-                                        th:disabled="${!discordConnected}" />
+                                <th:block th:if="${integrations.discord().configured()}">
+                                    <label class="platform-chip platform-connected" th:each="account : ${integrations.discord().accounts()}" th:if="${account.enabled()}">
+                                        <input type="checkbox" name="platforms" th:value="${'DISCORD:' + account.id()}"
+                                            th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'DISCORD:' + account.id())}" />
+                                        <span class="platform-chip-inner">
+                                            <div th:replace="~{fragments/ui/icons :: platform-icon('DISCORD', 'sm')}"></div>
+                                            <span th:text="${account.label() != null and !account.label().isEmpty() ? account.label() : 'Discord'}">Discord</span>
+                                        </span>
+                                    </label>
+                                </th:block>
+                                <label class="platform-chip platform-disconnected" th:if="${!integrations.discord().configured()}">
+                                    <input type="checkbox" disabled />
                                     <span class="platform-chip-inner">
                                         <div th:replace="~{fragments/ui/icons :: platform-icon('DISCORD', 'sm')}"></div>
-                                        <span th:text="#{platform.DISCORD}">Discord</span>
+                                        <span>Discord</span>
                                     </span>
                                 </label>
 
@@ -89,25 +103,39 @@
                                     </span>
                                 </label>
 
-                                <label class="platform-chip"
-                                    th:classappend="${slackConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                    <input type="checkbox" name="platforms" value="SLACK"
-                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'SLACK')}"
-                                        th:disabled="${!slackConnected}" />
+                                <th:block th:if="${integrations.slack().configured()}">
+                                    <label class="platform-chip platform-connected" th:each="account : ${integrations.slack().accounts()}" th:if="${account.enabled()}">
+                                        <input type="checkbox" name="platforms" th:value="${'SLACK:' + account.id()}"
+                                            th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'SLACK:' + account.id())}" />
+                                        <span class="platform-chip-inner">
+                                            <div th:replace="~{fragments/ui/icons :: platform-icon('SLACK', 'sm')}"></div>
+                                            <span th:text="${account.label() != null and !account.label().isEmpty() ? account.label() : 'Slack'}">Slack</span>
+                                        </span>
+                                    </label>
+                                </th:block>
+                                <label class="platform-chip platform-disconnected" th:if="${!integrations.slack().configured()}">
+                                    <input type="checkbox" disabled />
                                     <span class="platform-chip-inner">
                                         <div th:replace="~{fragments/ui/icons :: platform-icon('SLACK', 'sm')}"></div>
-                                        <span th:text="#{platform.SLACK}">Slack</span>
+                                        <span>Slack</span>
                                     </span>
                                 </label>
 
-                                <label class="platform-chip"
-                                    th:classappend="${notionConnected} ? 'platform-connected' : 'platform-disconnected'">
-                                    <input type="checkbox" name="platforms" value="NOTION"
-                                        th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'NOTION')}"
-                                        th:disabled="${!notionConnected}" />
+                                <th:block th:if="${integrations.notion().configured()}">
+                                    <label class="platform-chip platform-connected" th:each="account : ${integrations.notion().accounts()}" th:if="${account.enabled()}">
+                                        <input type="checkbox" name="platforms" th:value="${'NOTION:' + account.id()}"
+                                            th:checked="${postRequest.platforms != null and #lists.contains(postRequest.platforms, 'NOTION:' + account.id())}" />
+                                        <span class="platform-chip-inner">
+                                            <div th:replace="~{fragments/ui/icons :: platform-icon('NOTION', 'sm')}"></div>
+                                            <span th:text="${account.label() != null and !account.label().isEmpty() ? account.label() : 'Notion'}">Notion</span>
+                                        </span>
+                                    </label>
+                                </th:block>
+                                <label class="platform-chip platform-disconnected" th:if="${!integrations.notion().configured()}">
+                                    <input type="checkbox" disabled />
                                     <span class="platform-chip-inner">
                                         <div th:replace="~{fragments/ui/icons :: platform-icon('NOTION', 'sm')}"></div>
-                                        <span th:text="#{platform.NOTION}">Notion</span>
+                                        <span>Notion</span>
                                     </span>
                                 </label>
 

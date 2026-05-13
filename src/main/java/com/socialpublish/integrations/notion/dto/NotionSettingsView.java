@@ -1,14 +1,18 @@
 package com.socialpublish.integrations.notion.dto;
 
-import lombok.Builder;
+import java.util.List;
 import java.util.UUID;
 
-@Builder
 public record NotionSettingsView(
-    UUID id,
-    String apiToken,
-    String databaseId,
-    boolean enabled,
-    boolean configured
+    List<NotionAccountView> accounts,
+    boolean configured,
+    boolean enabled
 ) {
+    public record NotionAccountView(
+        UUID id,
+        String apiToken,
+        String databaseId,
+        String label,
+        boolean enabled
+    ) {}
 }

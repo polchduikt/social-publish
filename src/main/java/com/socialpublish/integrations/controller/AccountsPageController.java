@@ -2,13 +2,22 @@ package com.socialpublish.integrations.controller;
 
 import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
+import com.socialpublish.integrations.discord.dto.DiscordSettingsListRequest;
 import com.socialpublish.integrations.discord.dto.DiscordSettingsRequest;
 import com.socialpublish.integrations.linkedin.dto.LinkedInSettingsRequest;
+import com.socialpublish.integrations.notion.dto.NotionSettingsListRequest;
 import com.socialpublish.integrations.notion.dto.NotionSettingsRequest;
 import com.socialpublish.integrations.reddit.dto.RedditSettingsRequest;
 import com.socialpublish.integrations.service.IntegrationStatusService;
+import com.socialpublish.integrations.slack.dto.SlackSettingsListRequest;
 import com.socialpublish.integrations.slack.dto.SlackSettingsRequest;
+import com.socialpublish.integrations.telegram.dto.TelegramSettingsListRequest;
 import com.socialpublish.integrations.telegram.dto.TelegramSettingsRequest;
+import com.socialpublish.integrations.discord.service.DiscordService;
+import com.socialpublish.integrations.notion.service.NotionService;
+import com.socialpublish.integrations.slack.service.SlackService;
+import com.socialpublish.integrations.telegram.service.TelegramService;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +28,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AccountsPageController {
 
     private final IntegrationStatusService integrationStatusService;
+    private final TelegramService telegramService;
+    private final DiscordService discordService;
+    private final SlackService slackService;
+    private final NotionService notionService;
 
     @GetMapping("/accounts")
     public String accountsPage(@CurrentUser CurrentUserView currentUser, Model model) {
@@ -38,7 +51,7 @@ public class AccountsPageController {
     public String telegramSetupPage(@CurrentUser CurrentUserView currentUser, Model model) {
         model.addAttribute("user", currentUser);
         model.addAttribute("telegramSettings", integrationStatusService.getTelegramView(currentUser.id()));
-        model.addAttribute("settingsRequest", new TelegramSettingsRequest());
+        model.addAttribute("settingsRequest", telegramService.getSettingsRequest(currentUser.id()));
         return "pages/accounts/telegram";
     }
 
@@ -46,7 +59,7 @@ public class AccountsPageController {
     public String discordSetupPage(@CurrentUser CurrentUserView currentUser, Model model) {
         model.addAttribute("user", currentUser);
         model.addAttribute("discordSettings", integrationStatusService.getDiscordView(currentUser.id()));
-        model.addAttribute("discordSettingsRequest", new DiscordSettingsRequest());
+        model.addAttribute("discordSettingsRequest", discordService.getSettingsRequest(currentUser.id()));
         return "pages/accounts/discord";
     }
 
@@ -62,7 +75,7 @@ public class AccountsPageController {
     public String slackSetupPage(@CurrentUser CurrentUserView currentUser, Model model) {
         model.addAttribute("user", currentUser);
         model.addAttribute("slackSettings", integrationStatusService.getSlackView(currentUser.id()));
-        model.addAttribute("slackSettingsRequest", new SlackSettingsRequest());
+        model.addAttribute("slackSettingsRequest", slackService.getSettingsRequest(currentUser.id()));
         return "pages/accounts/slack";
     }
 
@@ -70,7 +83,7 @@ public class AccountsPageController {
     public String notionSetupPage(@CurrentUser CurrentUserView currentUser, Model model) {
         model.addAttribute("user", currentUser);
         model.addAttribute("notionSettings", integrationStatusService.getNotionView(currentUser.id()));
-        model.addAttribute("notionSettingsRequest", new NotionSettingsRequest());
+        model.addAttribute("notionSettingsRequest", notionService.getSettingsRequest(currentUser.id()));
         return "pages/accounts/notion";
     }
 

@@ -85,6 +85,7 @@ public class RedditService extends BaseIntegrationService<RedditSettingsEntity, 
     public void updateSettings(UUID userId, RedditSettingsRequest request) {
         settingsRepository.findByUserId(userId).ifPresent(settings -> {
             settings.setDefaultSubreddit(request.getDefaultSubreddit());
+            settings.setLabel(request.getLabel() != null ? request.getLabel().trim() : "");
             settings.setEnabled(request.isEnabled());
             settingsRepository.save(settings);
         });

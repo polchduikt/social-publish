@@ -27,10 +27,11 @@ public class SlackPublisherService implements PlatformPublisher {
     }
 
     @Override
-    public void publish(Post post) {
+    public void publish(Post post, UUID targetId) {
         UUID userId = post.getOwner().getId();
-        SlackSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .orElseThrow(() -> new IntegrationException("Slack not configured for user " + userId));
+        SlackSettingsEntity settings = settingsRepository.findById(targetId)
+                .filter(s -> s.getUser().getId().equals(userId))
+                .orElseThrow(() -> new IntegrationException("Slack not configured for user " + userId + " or account " + targetId));
 
         if (!settings.isEnabled()) {
             throw new IntegrationException("Slack integration is disabled");

@@ -30,11 +30,7 @@ public class PostTemplateWebController {
             @RequestParam(name = "platforms", required = false) List<String> platforms,
             @RequestParam("content") String content
     ) {
-        CreatePostTemplateRequest req = new CreatePostTemplateRequest(
-                templateName,
-                content,
-                platforms != null ? String.join(",", platforms) : ""
-        );
+        CreatePostTemplateRequest req = new CreatePostTemplateRequest(templateName, content, platforms);
         postTemplateService.createTemplate(user.id(), req);
         return ResponseEntity.ok().build();
     }

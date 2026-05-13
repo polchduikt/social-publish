@@ -19,22 +19,17 @@
 
     <div class="dashboard-shell">
         <div th:replace="~{fragments/layout/sidebar :: sidebar('accounts')}"></div>
-
         <main class="dashboard-main">
-
         <div class="status-stack" th:if="${param.message != null or param.error != null}">
             <div class="status success" th:if="${param.message != null}" th:text="${param.message[0]}"></div>
             <div class="status error" th:if="${param.error != null}" th:text="${param.error[0]}"></div>
         </div>
-
-
         <h3 class="category-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
             <span th:text="#{acc.messengers}">Messengers</span>
         </h3>
         <div class="accounts-grid">
 
-            <!-- Active Messengers First -->
             <div class="account-card" th:classappend="${telegramSettings.configured() and telegramSettings.enabled() ? 'account-connected' : ''}">
                 <div class="account-card-header">
                     <div th:replace="~{fragments/ui/icons :: platform-icon('TELEGRAM', '')}"></div>
@@ -119,7 +114,7 @@
                 </div>
             </div>
 
-            <!-- Coming Soon Messengers -->
+
             <div class="account-card account-disabled">
                 <div class="account-card-header">
                     <div th:replace="~{fragments/ui/icons :: platform-icon('WHATSAPP', '')}"></div>
@@ -154,7 +149,7 @@
         </h3>
         <div class="accounts-grid">
 
-            <!-- Active Social Networks First -->
+
             <div class="account-card" th:classappend="${linkedinSettings.configured() and linkedinSettings.enabled() ? 'account-connected' : ''}">
                 <div class="account-card-header">
                     <div th:replace="~{fragments/ui/icons :: platform-icon('LINKEDIN', '')}"></div>
@@ -176,18 +171,26 @@
                 </div>
             </div>
 
-            <!-- Coming Soon Social Networks -->
-            <div class="account-card account-disabled">
+
+            <div class="account-card" th:classappend="${redditSettings.configured() and redditSettings.enabled() ? 'account-connected' : ''}">
                 <div class="account-card-header">
                     <div th:replace="~{fragments/ui/icons :: platform-icon('REDDIT', '')}"></div>
                     <div class="account-info">
-                        <strong>Reddit</strong>
+                        <strong th:text="${redditSettings.configured() ? 'Reddit API' : 'Reddit'}">Reddit</strong>
                         <span th:text="#{acc.redditApi}">Reddit API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
+                    <div class="account-status-dot" th:classappend="${redditSettings.configured() and redditSettings.enabled() ? 'online' : 'offline'}">
+                        <span class="dot"></span>
+                        <span th:text="${redditSettings.configured() and redditSettings.enabled() ? #messages.msg('acc.status.online') : #messages.msg('acc.status.disconnected')}">Status</span>
+                    </div>
                 </div>
-                <div class="account-card-body"><p th:text="#{acc.redditDesc}">Connect Reddit to start publishing.</p></div>
-                <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
+                <div class="account-card-body">
+                    <p th:if="${redditSettings.configured()}" th:text="#{acc.redditApiReady}">Connected and ready.</p>
+                    <p th:unless="${redditSettings.configured()}" th:text="#{acc.redditDesc}">Connect Reddit to start publishing.</p>
+                </div>
+                <div class="account-card-footer">
+                    <a href="/accounts/reddit" class="action-link"><span th:text="#{acc.manage}">Manage</span> &#x2192;</a>
+                </div>
             </div>
 
             <div class="account-card account-disabled">
@@ -249,14 +252,14 @@
                         <strong>Pinterest</strong>
                         <span th:text="#{acc.pinterestApi}">Pinterest API</span>
                     </div>
-                    <div class="account-status-dot offline"><span class="dot"></span><span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
+                    <div class="account-status-dot offline"><span class="dot"></span>
+                        <span th:text="#{acc.status.comingSoon}">Coming Soon</span></div>
                 </div>
                 <div class="account-card-body"><p th:text="#{acc.pinterestDesc}">Pin images and videos directly to your boards.</p></div>
                 <div class="account-card-footer"><span class="action-link disabled" th:text="#{acc.manage}">Manage &#x2192;</span></div>
             </div>
 
         </div>
-
         </div>
 
         </main>

@@ -7,7 +7,13 @@ import com.socialpublish.integrations.notion.repository.NotionSettingsRepository
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import com.socialpublish.integrations.service.BaseIntegrationService;
+import com.socialpublish.integrations.notion.dto.NotionSettingsListRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -20,22 +26,65 @@ public class NotionService extends BaseIntegrationService<NotionSettingsEntity, 
         super(settingsRepository, userRepository);
         this.notionClient = notionClient;
     }
-
-    @Transactional
-    public void saveSettings(UUID userId, NotionSettingsRequest request) {
-        NotionSettingsEntity settings = findOrCreate(userId, NotionSettingsEntity::new);
-
-        String dbId = extractDatabaseId(request.getDatabaseId().trim());
-
-        settings.setApiToken(request.getApiToken().trim());
-        settings.setDatabaseId(dbId);
-        settings.setEnabled(request.isEnabled());
-        settingsRepository.save(settings);
+    @Transactional(readOnly = true)
+    public NotionSettingsListRequest getSettingsRequest(UUID userId) {
+        List<NotionSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
+        NotionSettingsListRequest request = new NotionSettingsListRequest();
+        request.setAccounts(entities.stream().map(entity -> {
+            NotionSettingsRequest req = new NotionSettingsRequest();
+            req.setId(entity.getId());
+            req.setApiToken(maskToken(entity.getApiToken()));
+            req.setDatabaseId(entity.getDatabaseId());
+            req.setLabel(entity.getLabel());
+            req.setEnabled(entity.isEnabled());
+            return req;
+        }).collect(Collectors.toList()));
+        return request;
     }
 
-    public void testEntry(UUID userId, String testMessage) {
-        NotionSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Notion is not configured"));
+    private String maskToken(String token) {
+        if (token == null || token.length() <= 8) return token == null ? "" : token;
+        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
+    }
+
+    @Transactional
+    public void saveSettings(UUID userId, NotionSettingsListRequest requestList) {
+        List<NotionSettingsEntity> existing = settingsRepository.findAllByUserId(userId);
+        Map<UUID, NotionSettingsEntity> existingMap = existing.stream()
+                .collect(Collectors.toMap(NotionSettingsEntity::getId, Function.identity()));
+
+        List<NotionSettingsEntity> toSave = new ArrayList<>();
+
+        if (requestList.getAccounts() != null) {
+            for (NotionSettingsRequest req : requestList.getAccounts()) {
+                NotionSettingsEntity entity;
+                if (req.getId() != null && existingMap.containsKey(req.getId())) {
+                    entity = existingMap.get(req.getId());
+                    existingMap.remove(req.getId());
+                } else {
+                    entity = new NotionSettingsEntity();
+                    entity.setUser(userRepository.getReferenceById(userId));
+                }
+                
+                String dbId = extractDatabaseId(req.getDatabaseId().trim());
+                String rawToken = req.getApiToken();
+                if (rawToken != null && !rawToken.isBlank() && !rawToken.contains("...")) {
+                    entity.setApiToken(rawToken.trim());
+                }
+                entity.setDatabaseId(dbId);
+                entity.setLabel(req.getLabel() != null ? req.getLabel().trim() : "");
+                entity.setEnabled(req.getEnabled() != null ? req.getEnabled() : false);
+                toSave.add(entity);
+            }
+        }
+
+        settingsRepository.deleteAll(existingMap.values());
+        settingsRepository.saveAll(toSave);
+    }
+
+    public void testEntry(UUID targetAccountId, String testMessage) {
+        NotionSettingsEntity settings = settingsRepository.findById(targetAccountId)
+                .orElseThrow(() -> new RuntimeException("Notion account not found"));
         if (!settings.isEnabled()) {
             throw new RuntimeException("Notion is disabled");
         }

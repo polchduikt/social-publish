@@ -4,7 +4,7 @@ import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
-import com.socialpublish.integrations.slack.dto.SlackSettingsRequest;
+import com.socialpublish.integrations.slack.dto.SlackSettingsListRequest;
 import com.socialpublish.integrations.slack.service.SlackService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class SlackController {
     @PostMapping("/accounts/slack")
     public String saveSlack(
             @CurrentUser CurrentUserView currentUser,
-            @Valid @ModelAttribute("slackSettingsRequest") SlackSettingsRequest request,
+            @Valid @ModelAttribute("slackSettingsRequest") SlackSettingsListRequest requestList,
             BindingResult bindingResult,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
@@ -45,7 +46,7 @@ public class SlackController {
         }
 
         try {
-            slackService.saveSettings(currentUser.id(), request);
+            slackService.saveSettings(currentUser.id(), requestList);
 
             String successUrl = UriComponentsBuilder.fromPath("/accounts")
                     .queryParam("message", "Slack connected successfully")
@@ -67,7 +68,7 @@ public class SlackController {
 
     @PostMapping("/accounts/slack/test")
     public String testSlack(
-            @CurrentUser CurrentUserView currentUser,
+            @RequestParam(name = "targetAccountId") UUID targetAccountId,
             @RequestParam(name = "testMessage", defaultValue = "Hello from Social Publish!") String testMessage,
             HttpServletRequest httpRequest,
             Model model
@@ -75,7 +76,7 @@ public class SlackController {
         boolean isHtmx = htmxSupport.isHtmxRequest(httpRequest);
 
         try {
-            slackService.testMessage(currentUser.id(), testMessage);
+            slackService.testMessage(targetAccountId, testMessage);
             model.addAttribute("successMessage", "Test message sent successfully!");
             if (isHtmx) return "fragments/integrations/slack-status";
             return "redirect:" + UriComponentsBuilder.fromPath("/accounts")

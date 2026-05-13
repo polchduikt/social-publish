@@ -4,7 +4,7 @@ import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
-import com.socialpublish.integrations.telegram.dto.TelegramSettingsRequest;
+import com.socialpublish.integrations.telegram.dto.TelegramSettingsListRequest;
 import com.socialpublish.integrations.telegram.service.TelegramService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class TelegramAccountsController {
     @PostMapping("/accounts/telegram")
     public String saveTelegram(
             @CurrentUser CurrentUserView currentUser,
-            @Valid @ModelAttribute("settingsRequest") TelegramSettingsRequest request,
+            @Valid @ModelAttribute("settingsRequest") TelegramSettingsListRequest requestList,
             BindingResult bindingResult,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
@@ -45,7 +46,7 @@ public class TelegramAccountsController {
         }
 
         try {
-            telegramService.saveSettings(currentUser.id(), request);
+            telegramService.saveSettings(currentUser.id(), requestList);
 
             String successUrl = UriComponentsBuilder.fromPath("/accounts")
                     .queryParam("message", "Telegram connected successfully")
@@ -67,7 +68,7 @@ public class TelegramAccountsController {
 
     @PostMapping("/accounts/telegram/test")
     public String testTelegram(
-            @CurrentUser CurrentUserView currentUser,
+            @RequestParam(name = "targetAccountId") UUID targetAccountId,
             @RequestParam(name = "testMessage", defaultValue = "Hello from Social Publish!") String testMessage,
             HttpServletRequest httpRequest,
             Model model
@@ -75,7 +76,7 @@ public class TelegramAccountsController {
         boolean isHtmx = htmxSupport.isHtmxRequest(httpRequest);
 
         try {
-            telegramService.testMessage(currentUser.id(), testMessage);
+            telegramService.testMessage(targetAccountId, testMessage);
             model.addAttribute("successMessage", "Test message sent successfully!");
             if (isHtmx) return "fragments/integrations/telegram-status";
             return "redirect:" + UriComponentsBuilder.fromPath("/accounts")

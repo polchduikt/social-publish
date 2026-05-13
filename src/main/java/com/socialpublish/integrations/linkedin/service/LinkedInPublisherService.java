@@ -10,7 +10,6 @@ import com.socialpublish.publishing.service.PlatformPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -28,10 +27,17 @@ public class LinkedInPublisherService implements PlatformPublisher {
     }
 
     @Override
-    public void publish(Post post) {
+    public void publish(Post post, UUID targetId) {
         UUID userId = post.getOwner().getId();
-        LinkedInSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .orElseThrow(() -> new IntegrationException("LinkedIn not configured for user " + userId));
+        LinkedInSettingsEntity settings;
+        if (targetId != null) {
+            settings = settingsRepository.findById(targetId)
+                    .filter(s -> s.getUser().getId().equals(userId))
+                    .orElseThrow(() -> new IntegrationException("LinkedIn not configured for user " + userId + " or account " + targetId));
+        } else {
+            settings = settingsRepository.findByUserId(userId)
+                    .orElseThrow(() -> new IntegrationException("LinkedIn not configured for user " + userId));
+        }
 
         if (!settings.isEnabled()) {
             throw new IntegrationException("LinkedIn integration is disabled");

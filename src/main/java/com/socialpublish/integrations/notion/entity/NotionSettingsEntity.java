@@ -9,7 +9,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.UUID;
-
 import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 
 @Entity
@@ -23,8 +22,8 @@ public class NotionSettingsEntity implements BaseIntegrationSettings {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false, length = 500)
@@ -32,6 +31,9 @@ public class NotionSettingsEntity implements BaseIntegrationSettings {
 
     @Column(nullable = false, length = 200)
     private String databaseId;
+
+    @Column(nullable = true)
+    private String label;
 
     @Column(nullable = false)
     private boolean enabled = true;

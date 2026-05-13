@@ -2,6 +2,7 @@ package com.socialpublish.posts.service;
 
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.repository.UserRepository;
+import com.socialpublish.posts.dto.PostUpsertRequest;
 import com.socialpublish.posts.dto.CreatePostTemplateRequest;
 import com.socialpublish.posts.dto.PostTemplateDto;
 import com.socialpublish.posts.entity.PostTemplate;
@@ -37,7 +38,7 @@ public class PostTemplateService {
         template.setOwner(user);
         template.setTemplateName(request.templateName());
         template.setContent(request.content());
-        template.setPlatforms(request.platforms() != null ? request.platforms() : "");
+        template.setPlatforms(request.platforms() != null ? String.join(",", request.platforms()) : "");
 
         PostTemplate saved = postTemplateRepository.save(template);
         return toDto(saved);
@@ -53,6 +54,24 @@ public class PostTemplateService {
         }
 
         return toDto(template);
+    }
+    @Transactional(readOnly = true)
+    public PostUpsertRequest createUpsertRequest(UUID userId, UUID templateId) {
+        PostTemplate template = postTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new IllegalArgumentException("Template not found"));
+
+        if (!template.getOwner().getId().equals(userId)) {
+            throw new IllegalStateException("You don't own this template");
+        }
+
+        PostUpsertRequest request = new PostUpsertRequest();
+        request.setContent(template.getContent());
+        if (template.getPlatforms() != null && !template.getPlatforms().isBlank()) {
+            request.setPlatforms(List.of(template.getPlatforms().split(",")));
+        } else {
+            request.setPlatforms(List.of());
+        }
+        return request;
     }
 
     @Transactional

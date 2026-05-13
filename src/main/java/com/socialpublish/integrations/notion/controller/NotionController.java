@@ -4,7 +4,7 @@ import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
-import com.socialpublish.integrations.notion.dto.NotionSettingsRequest;
+import com.socialpublish.integrations.notion.dto.NotionSettingsListRequest;
 import com.socialpublish.integrations.notion.service.NotionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class NotionController {
     @PostMapping("/accounts/notion")
     public String saveNotion(
             @CurrentUser CurrentUserView currentUser,
-            @Valid @ModelAttribute("notionSettingsRequest") NotionSettingsRequest request,
+            @Valid @ModelAttribute("notionSettingsRequest") NotionSettingsListRequest requestList,
             BindingResult bindingResult,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
@@ -42,7 +43,7 @@ public class NotionController {
         }
 
         try {
-            notionService.saveSettings(currentUser.id(), request);
+            notionService.saveSettings(currentUser.id(), requestList);
 
             if (isHtmx) {
                 htmxSupport.redirectTo(httpResponse, "/accounts?message=Notion+connected+successfully");
@@ -58,7 +59,7 @@ public class NotionController {
 
     @PostMapping("/accounts/notion/test")
     public String testNotion(
-            @CurrentUser CurrentUserView currentUser,
+            @RequestParam(name = "targetAccountId") UUID targetAccountId,
             @RequestParam(name = "testMessage", defaultValue = "Hello from Social Publish!") String testMessage,
             HttpServletRequest httpRequest,
             Model model
@@ -66,7 +67,7 @@ public class NotionController {
         boolean isHtmx = htmxSupport.isHtmxRequest(httpRequest);
 
         try {
-            notionService.testEntry(currentUser.id(), testMessage);
+            notionService.testEntry(targetAccountId, testMessage);
             model.addAttribute("successMessage", "Test page created in Notion!");
             if (isHtmx) return "fragments/integrations/notion-status";
             return "redirect:/accounts?message=Test+successful";

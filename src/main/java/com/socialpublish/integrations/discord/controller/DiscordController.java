@@ -5,6 +5,7 @@ import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
 import com.socialpublish.integrations.discord.dto.DiscordSettingsRequest;
+import com.socialpublish.integrations.discord.dto.DiscordSettingsListRequest;
 import com.socialpublish.integrations.discord.service.DiscordService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +17,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class DiscordController {
     @PostMapping("/accounts/discord")
     public String saveDiscord(
             @CurrentUser CurrentUserView currentUser,
-            @Valid @ModelAttribute("discordSettingsRequest") DiscordSettingsRequest request,
+            @Valid @ModelAttribute("discordSettingsRequest") DiscordSettingsListRequest requestList,
             BindingResult bindingResult,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
@@ -42,7 +44,7 @@ public class DiscordController {
         }
 
         try {
-            discordService.saveSettings(currentUser.id(), request);
+            discordService.saveSettings(currentUser.id(), requestList);
 
             if (isHtmx) {
                 htmxSupport.redirectTo(httpResponse, "/accounts?message=Discord+connected+successfully");
@@ -58,7 +60,7 @@ public class DiscordController {
 
     @PostMapping("/accounts/discord/test")
     public String testDiscord(
-            @CurrentUser CurrentUserView currentUser,
+            @RequestParam(name = "targetAccountId") UUID targetAccountId,
             @RequestParam(name = "testMessage", defaultValue = "Hello from Social Publish!") String testMessage,
             HttpServletRequest httpRequest,
             Model model
@@ -66,7 +68,7 @@ public class DiscordController {
         boolean isHtmx = htmxSupport.isHtmxRequest(httpRequest);
 
         try {
-            discordService.testMessage(currentUser.id(), testMessage);
+            discordService.testMessage(targetAccountId, testMessage);
             model.addAttribute("successMessage", "Test message sent successfully!");
             if (isHtmx) return "fragments/integrations/discord-status";
             return "redirect:/accounts?message=Test+message+sent";

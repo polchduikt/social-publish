@@ -10,6 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 import com.socialpublish.integrations.service.BaseIntegrationService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import com.socialpublish.integrations.telegram.dto.TelegramSettingsListRequest;
 
 @Service
 public class TelegramService extends BaseIntegrationService<TelegramSettingsEntity, TelegramSettingsRepository> {
@@ -21,19 +27,68 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
         this.telegramClient = telegramClient;
     }
 
-    @Transactional
-    public void saveSettings(UUID userId, TelegramSettingsRequest request) {
-        TelegramSettingsEntity settings = findOrCreate(userId, TelegramSettingsEntity::new);
-
-        settings.setBotToken(request.getBotToken().trim());
-        settings.setChatId(request.getChatId().trim());
-        settings.setEnabled(request.isEnabled());
-        settingsRepository.save(settings);
+    @Transactional(readOnly = true)
+    public TelegramSettingsListRequest getSettingsRequest(UUID userId) {
+        List<TelegramSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
+        TelegramSettingsListRequest request = new TelegramSettingsListRequest();
+        request.setAccounts(entities.stream().map(entity -> {
+            TelegramSettingsRequest req = new TelegramSettingsRequest();
+            req.setId(entity.getId());
+            req.setBotToken(maskToken(entity.getBotToken()));
+            req.setChatId(maskToken(entity.getChatId()));
+            req.setLabel(entity.getLabel());
+            req.setEnabled(entity.isEnabled());
+            return req;
+        }).collect(Collectors.toList()));
+        return request;
     }
 
-    public void testMessage(UUID userId, String testMessage) {
-        TelegramSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Telegram is not configured"));
+    private String maskToken(String token) {
+        if (token == null || token.length() <= 8) return token == null ? "" : token;
+        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
+    }
+
+    @Transactional
+    public void saveSettings(UUID userId, TelegramSettingsListRequest requestList) {
+        List<TelegramSettingsEntity> existing = settingsRepository.findAllByUserId(userId);
+        Map<UUID, TelegramSettingsEntity> existingMap = existing.stream()
+                .collect(Collectors.toMap(TelegramSettingsEntity::getId, Function.identity()));
+
+        List<TelegramSettingsEntity> toSave = new ArrayList<>();
+
+        if (requestList.getAccounts() != null) {
+            for (TelegramSettingsRequest req : requestList.getAccounts()) {
+                TelegramSettingsEntity entity;
+                if (req.getId() != null && existingMap.containsKey(req.getId())) {
+                    entity = existingMap.get(req.getId());
+                    existingMap.remove(req.getId());
+                } else {
+                    entity = new TelegramSettingsEntity();
+                    entity.setUser(userRepository.getReferenceById(userId));
+                }
+                String rawToken = req.getBotToken();
+                if (rawToken != null && !rawToken.isBlank() && !rawToken.contains("...")) {
+                    entity.setBotToken(rawToken.trim());
+                }
+                String chatId = req.getChatId().trim();
+                // Auto-prepend '-' for numeric IDs that don't start with '@' or '-'
+                if (!chatId.startsWith("-") && !chatId.startsWith("@") && chatId.matches("\\d+")) {
+                    chatId = "-" + chatId;
+                }
+                entity.setChatId(chatId);
+                
+                entity.setLabel(req.getLabel() != null ? req.getLabel().trim() : "");
+                entity.setEnabled(req.getEnabled() != null ? req.getEnabled() : false);
+                toSave.add(entity);
+            }
+        }
+        settingsRepository.deleteAll(existingMap.values());
+        settingsRepository.saveAll(toSave);
+    }
+
+    public void testMessage(UUID targetAccountId, String testMessage) {
+        TelegramSettingsEntity settings = settingsRepository.findById(targetAccountId)
+                .orElseThrow(() -> new RuntimeException("Telegram account not found"));
         if (!settings.isEnabled()) {
             throw new RuntimeException("Telegram is disabled");
         }

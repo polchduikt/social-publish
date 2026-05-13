@@ -27,10 +27,11 @@ public class NotionPublisherService implements PlatformPublisher {
     }
 
     @Override
-    public void publish(Post post) {
+    public void publish(Post post, UUID targetId) {
         UUID userId = post.getOwner().getId();
-        NotionSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .orElseThrow(() -> new IntegrationException("Notion not configured for user " + userId));
+        NotionSettingsEntity settings = settingsRepository.findById(targetId)
+                .filter(s -> s.getUser().getId().equals(userId))
+                .orElseThrow(() -> new IntegrationException("Notion not configured for user " + userId + " or account " + targetId));
 
         if (!settings.isEnabled()) {
             throw new IntegrationException("Notion integration is disabled");

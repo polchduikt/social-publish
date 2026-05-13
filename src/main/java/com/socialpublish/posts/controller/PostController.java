@@ -37,16 +37,9 @@ public class PostController {
     public String createPostPage(@CurrentUser CurrentUserView currentUser,
                                  @RequestParam(name = "templateId", required = false) UUID templateId,
                                  Model model) {
-        PostUpsertRequest request = new PostUpsertRequest();
-
-        if (templateId != null) {
-            try {
-                var template = postTemplateService.getTemplate(currentUser.id(), templateId);
-                request.setContent(template.content());
-                request.setPlatforms(template.platforms() != null ? List.of(template.platforms().split(",")) : List.of());
-            } catch (Exception ignored) {
-            }
-        }
+        PostUpsertRequest request = (templateId != null)
+                ? postTemplateService.createUpsertRequest(currentUser.id(), templateId)
+                : new PostUpsertRequest();
 
         postFormSupport.populateFormModel(model, currentUser, "create", null, request);
         return "pages/posts/form";

@@ -32,11 +32,19 @@ public class RedditPublisherService implements PlatformPublisher {
     }
 
     @Override
-    public void publish(Post post) {
+    public void publish(Post post, UUID targetId) {
         UUID userId = post.getOwner().getId();
-        RedditSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .filter(RedditSettingsEntity::isEnabled)
-                .orElseThrow(() -> new RuntimeException("Reddit integration not configured or disabled"));
+        RedditSettingsEntity settings;
+        if (targetId != null) {
+            settings = settingsRepository.findById(targetId)
+                    .filter(s -> s.getUser().getId().equals(userId))
+                    .filter(RedditSettingsEntity::isEnabled)
+                    .orElseThrow(() -> new RuntimeException("Reddit integration not configured or disabled for account " + targetId));
+        } else {
+            settings = settingsRepository.findByUserId(userId)
+                    .filter(RedditSettingsEntity::isEnabled)
+                    .orElseThrow(() -> new RuntimeException("Reddit integration not configured or disabled"));
+        }
 
         String accessToken = getValidAccessToken(settings);
 

@@ -21,8 +21,10 @@ import com.socialpublish.integrations.telegram.repository.TelegramSettingsReposi
 import com.socialpublish.integrations.dto.UserIntegrationsView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,31 +38,27 @@ public class IntegrationStatusService {
     private final LinkedInSettingsRepository linkedinSettingsRepository;
 
     public boolean isTelegramConnected(UUID userId) {
-        return telegramSettingsRepository.findByUserId(userId)
-                .map(settings -> settings.isEnabled()
-                        && settings.getBotToken() != null
-                        && !settings.getBotToken().isBlank())
-                .orElse(false);
+        List<TelegramSettingsEntity> accounts = telegramSettingsRepository.findAllByUserId(userId);
+        return accounts.stream().anyMatch(settings -> settings.isEnabled()
+                && settings.getBotToken() != null
+                && !settings.getBotToken().isBlank());
     }
 
     public TelegramSettingsView getTelegramView(UUID userId) {
-        return telegramSettingsRepository.findByUserId(userId)
-                .map(this::toTelegramView)
-                .orElse(new TelegramSettingsView("", "", false, false));
+        List<TelegramSettingsEntity> accounts = telegramSettingsRepository.findAllByUserId(userId);
+        return toTelegramView(accounts);
     }
 
     public boolean isDiscordConnected(UUID userId) {
-        return discordSettingsRepository.findByUserId(userId)
-                .map(settings -> settings.isEnabled()
-                        && settings.getWebhookUrl() != null
-                        && !settings.getWebhookUrl().isBlank())
-                .orElse(false);
+        List<DiscordSettingsEntity> accounts = discordSettingsRepository.findAllByUserId(userId);
+        return accounts.stream().anyMatch(settings -> settings.isEnabled()
+                && settings.getWebhookUrl() != null
+                && !settings.getWebhookUrl().isBlank());
     }
 
     public DiscordSettingsView getDiscordView(UUID userId) {
-        return discordSettingsRepository.findByUserId(userId)
-                .map(this::toDiscordView)
-                .orElse(new DiscordSettingsView(false, false, ""));
+        List<DiscordSettingsEntity> accounts = discordSettingsRepository.findAllByUserId(userId);
+        return toDiscordView(accounts);
     }
 
     public boolean isRedditConnected(UUID userId) {
@@ -74,35 +72,31 @@ public class IntegrationStatusService {
     public RedditSettingsView getRedditView(UUID userId) {
         return redditSettingsRepository.findByUserId(userId)
                 .map(this::toRedditView)
-                .orElse(new RedditSettingsView(false, false, ""));
+                .orElse(new RedditSettingsView(false, false, "", ""));
     }
 
     public boolean isSlackConnected(UUID userId) {
-        return slackSettingsRepository.findByUserId(userId)
-                .map(settings -> settings.isEnabled()
-                        && settings.getWebhookUrl() != null
-                        && !settings.getWebhookUrl().isBlank())
-                .orElse(false);
+        List<SlackSettingsEntity> accounts = slackSettingsRepository.findAllByUserId(userId);
+        return accounts.stream().anyMatch(settings -> settings.isEnabled()
+                && settings.getWebhookUrl() != null
+                && !settings.getWebhookUrl().isBlank());
     }
 
     public SlackSettingsView getSlackView(UUID userId) {
-        return slackSettingsRepository.findByUserId(userId)
-                .map(this::toSlackView)
-                .orElse(new SlackSettingsView(false, false, ""));
+        List<SlackSettingsEntity> accounts = slackSettingsRepository.findAllByUserId(userId);
+        return toSlackView(accounts);
     }
 
     public boolean isNotionConnected(UUID userId) {
-        return notionSettingsRepository.findByUserId(userId)
-                .map(settings -> settings.isEnabled()
-                        && settings.getApiToken() != null
-                        && !settings.getApiToken().isBlank())
-                .orElse(false);
+        List<NotionSettingsEntity> accounts = notionSettingsRepository.findAllByUserId(userId);
+        return accounts.stream().anyMatch(settings -> settings.isEnabled()
+                && settings.getApiToken() != null
+                && !settings.getApiToken().isBlank());
     }
 
     public NotionSettingsView getNotionView(UUID userId) {
-        return notionSettingsRepository.findByUserId(userId)
-                .map(this::toNotionView)
-                .orElse(NotionSettingsView.builder().configured(false).enabled(false).build());
+        List<NotionSettingsEntity> accounts = notionSettingsRepository.findAllByUserId(userId);
+        return toNotionView(accounts);
     }
 
     public boolean isLinkedInConnected(UUID userId) {
@@ -130,37 +124,85 @@ public class IntegrationStatusService {
                 .build();
     }
 
-    private TelegramSettingsView toTelegramView(TelegramSettingsEntity entity) {
-        return new TelegramSettingsView(
-                maskToken(entity.getBotToken()),
-                maskToken(entity.getChatId()),
-                entity.isEnabled(),
-                true
-        );
+    private TelegramSettingsView toTelegramView(List<TelegramSettingsEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return new TelegramSettingsView(Collections.emptyList(), false, false);
+        }
+        
+        List<TelegramSettingsView.TelegramAccountView> accounts = entities.stream()
+                .map(entity -> new TelegramSettingsView.TelegramAccountView(
+                        entity.getId(),
+                        maskToken(entity.getBotToken()),
+                        maskToken(entity.getChatId()),
+                        entity.getLabel() == null ? "" : entity.getLabel(),
+                        entity.isEnabled()
+                )).collect(Collectors.toList());
+                
+        boolean enabled = accounts.stream().anyMatch(TelegramSettingsView.TelegramAccountView::enabled);
+        return new TelegramSettingsView(accounts, true, enabled);
     }
 
-    private DiscordSettingsView toDiscordView(DiscordSettingsEntity entity) {
-        return new DiscordSettingsView(true, entity.isEnabled(), maskWebhook(entity.getWebhookUrl()));
+    private DiscordSettingsView toDiscordView(List<DiscordSettingsEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return new DiscordSettingsView(Collections.emptyList(), false, false);
+        }
+        
+        List<DiscordSettingsView.DiscordAccountView> accounts = entities.stream()
+                .map(entity -> new DiscordSettingsView.DiscordAccountView(
+                        entity.getId(),
+                        maskWebhook(entity.getWebhookUrl()),
+                        entity.getLabel() == null ? "" : entity.getLabel(),
+                        entity.isEnabled()
+                )).collect(Collectors.toList());
+                
+        boolean enabled = accounts.stream().anyMatch(DiscordSettingsView.DiscordAccountView::enabled);
+        return new DiscordSettingsView(accounts, true, enabled);
     }
 
     private RedditSettingsView toRedditView(RedditSettingsEntity entity) {
         boolean configured = entity.getRefreshToken() != null && !entity.getRefreshToken().isBlank();
         String subreddit = entity.getDefaultSubreddit() == null ? "" : entity.getDefaultSubreddit();
-        return new RedditSettingsView(configured, entity.isEnabled(), subreddit);
+        return new RedditSettingsView(
+                configured,
+                entity.isEnabled(),
+                subreddit,
+                entity.getLabel() == null ? "" : entity.getLabel()
+        );
     }
 
-    private SlackSettingsView toSlackView(SlackSettingsEntity entity) {
-        return new SlackSettingsView(true, entity.isEnabled(), maskWebhook(entity.getWebhookUrl()));
+    private SlackSettingsView toSlackView(List<SlackSettingsEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return new SlackSettingsView(Collections.emptyList(), false, false);
+        }
+        
+        List<SlackSettingsView.SlackAccountView> accounts = entities.stream()
+                .map(entity -> new SlackSettingsView.SlackAccountView(
+                        entity.getId(),
+                        maskWebhook(entity.getWebhookUrl()),
+                        entity.getLabel() == null ? "" : entity.getLabel(),
+                        entity.isEnabled()
+                )).collect(Collectors.toList());
+                
+        boolean enabled = accounts.stream().anyMatch(SlackSettingsView.SlackAccountView::enabled);
+        return new SlackSettingsView(accounts, true, enabled);
     }
 
-    private NotionSettingsView toNotionView(NotionSettingsEntity entity) {
-        return NotionSettingsView.builder()
-                .id(entity.getId())
-                .apiToken(maskToken(entity.getApiToken()))
-                .databaseId(entity.getDatabaseId())
-                .enabled(entity.isEnabled())
-                .configured(true)
-                .build();
+    private NotionSettingsView toNotionView(List<NotionSettingsEntity> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return new NotionSettingsView(Collections.emptyList(), false, false);
+        }
+        
+        List<NotionSettingsView.NotionAccountView> accounts = entities.stream()
+                .map(entity -> new NotionSettingsView.NotionAccountView(
+                        entity.getId(),
+                        maskToken(entity.getApiToken()),
+                        entity.getDatabaseId(),
+                        entity.getLabel() == null ? "" : entity.getLabel(),
+                        entity.isEnabled()
+                )).collect(Collectors.toList());
+                
+        boolean enabled = accounts.stream().anyMatch(NotionSettingsView.NotionAccountView::enabled);
+        return new NotionSettingsView(accounts, true, enabled);
     }
 
     private LinkedInSettingsView toLinkedInView(LinkedInSettingsEntity entity) {

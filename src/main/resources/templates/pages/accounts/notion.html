@@ -4,13 +4,14 @@
     <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="#{acc.notionConfig} + ' — Social Publish'">notion Settings — Social Publish</title>
+    <title th:text="#{acc.notionConfig} + ' — Social Publish'">Notion Settings — Social Publish</title>
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/integrations.css">
     <link rel="stylesheet" href="/css/toasts.css">
     <link rel="stylesheet" href="/css/dark.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="/js/accounts.js"></script>
 </head>
 <body class="dashboard-page" th:attr="data-user-id=${user.id}">
 <div class="app-layout">
@@ -30,91 +31,159 @@
                 <a href="/accounts" class="breadcrumb-link" th:text="'&larr; ' + #{acc.backToAccounts}">&larr; Back to Accounts</a>
             </div>
 
-            <section class="panel setup-panel">
-                <div class="card-header">
-                    <h3 th:text="#{acc.notionConfig}">notion Bot Configuration</h3>
-                    <span class="step-badge" th:text="${notionSettings.configured() ? #messages.msg('acc.connectedStatus') : #messages.msg('acc.setupRequired')}">Status</span>
+            <div class="integration-container">
+                <div class="integration-header">
+                    <h2 th:text="#{acc.notionConfig}">Notion API Configuration</h2>
+                    <div class="status-pill" th:if="${notionSettings.configured() and notionSettings.enabled()}">
+                        <span class="dot"></span>
+                        <span th:text="#{acc.status.online}">CONNECTED</span>
+                    </div>
                 </div>
 
-                <div class="integration-grid">
-                    <div>
-                        <div class="setup-steps">
-                            <div class="setup-step">
-                                <span class="step-num">1</span>
-                                <div>
-                                    <strong th:text="#{acc.notionStep1Title}">Integration</strong>
-                                    <p th:utext="#{acc.notionStep1Desc}">Create an internal integration at <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></p>
+                <div class="integration-main-grid">
+                    <div class="integration-column">
+                        <div class="config-card">
+                            <h4 th:text="#{acc.setupInstructions}">Setup Instructions</h4>
+                            <div class="setup-list">
+                                <div class="setup-item">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <strong th:text="#{acc.notionStep1Title}">Create Integration</strong>
+                                        <p th:utext="#{acc.notionStep1Desc}">Create an internal integration at notion.so/my-integrations</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="setup-step">
-                                <span class="step-num">2</span>
-                                <div>
-                                    <strong th:text="#{acc.notionStep2Title}">Token</strong>
-                                    <p th:utext="#{acc.notionStep2Desc}">Copy the Internal Integration Token provided by Notion</p>
+                                <div class="setup-item">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <strong th:text="#{acc.notionStep2Title}">Token</strong>
+                                        <p th:utext="#{acc.notionStep2Desc}">Copy the Internal Integration Token provided by Notion</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="setup-step">
-                                <span class="step-num">3</span>
-                                <div>
-                                    <strong th:text="#{acc.notionStep3Title}">Share</strong>
-                                    <p th:utext="#{acc.notionStep3Desc}">Open your database and share it with the created integration</p>
+                                <div class="setup-item">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <strong th:text="#{acc.notionStep3Title}">Share</strong>
+                                        <p th:utext="#{acc.notionStep3Desc}">Open your database and share it with the created integration</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <form th:action="@{/accounts/notion}" method="post"
-                              hx-post="/accounts/notion" hx-target="#notion-status" hx-swap="innerHTML"
-                              class="integration-form">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <div class="field">
-                                <label for="apiToken" th:text="#{acc.apiToken}">API Token</label>
-                                <input type="password" id="apiToken" name="apiToken" required autocomplete="off"
-                                       th:placeholder="${notionSettings.configured() ? notionSettings.apiToken() : 'secret_...'}"/>
-                            </div>
-                            <div class="field">
-                                <label for="databaseId" th:text="#{acc.databaseId}">Database ID</label>
-                                <input type="text" id="databaseId" name="databaseId" required
-                                       th:value="${notionSettings.configured() ? notionSettings.databaseId() : ''}"
-                                       th:placeholder="${#messages.msg('acc.databaseIdPlaceholder')}"/>
-                            </div>
-                            <div id="notion-status"></div>
-                            <div class="field checkbox-field">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="enabled" value="true"
-                                           th:checked="${!notionSettings.configured() or notionSettings.enabled()}" />
-                                    <span th:text="#{acc.enableIntegration}">Enable integration</span>
-                                </label>
-                            </div>
-                            <div id="tg-status"></div>
-                            <button type="submit" th:text="#{acc.saveConfig}">Save Configuration</button>
-                        </form>
+                        <div class="config-card">
+                            <h4 th:text="#{acc.connectionDetails}">Connection Details</h4>
+                            <form th:action="@{/accounts/notion}" method="post" th:object="${notionSettingsRequest}"
+                                  hx-post="/accounts/notion" hx-target="#notion-status" hx-swap="innerHTML">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                
+                                <div id="account-rows-container">
+                                    <div class="account-row-box" th:each="account, stat : ${notionSettings.accounts()}">
+                                        <input type="hidden" th:name="|accounts[${stat.index}].id|" th:value="${account.id()}" />
+                                        <div class="checkbox-wrapper">
+                                            <label th:for="|enabled_${stat.index}|" th:text="#{acc.enabled}">Enabled</label>
+                                            <input type="checkbox" th:id="|enabled_${stat.index}|" th:field="*{accounts[__${stat.index}__].enabled}" />
+                                        </div>
+                                        
+                                        <div class="account-row-fields" style="grid-template-columns: 1fr 1.5fr 1fr;">
+                                            <div class="field-with-label">
+                                                <label th:for="|label_${stat.index}|" th:text="#{acc.label}">Account Label</label>
+                                                <input type="text" th:id="|label_${stat.index}|" th:name="|accounts[${stat.index}].label|" required
+                                                       th:value="${account.label()}" th:placeholder="#{acc.labelPlaceholder}"/>
+                                            </div>
+                                            <div class="field-with-label">
+                                                <label th:for="|apiToken_${stat.index}|" th:text="#{acc.apiToken}">API Token</label>
+                                                <input type="password" th:id="|apiToken_${stat.index}|" th:name="|accounts[${stat.index}].apiToken|" autocomplete="off"
+                                                       th:value="${account.apiToken()}"/>
+                                            </div>
+                                            <div class="field-with-label">
+                                                <label th:for="|databaseId_${stat.index}|" th:text="#{acc.databaseId}">Database ID</label>
+                                                <input type="text" th:id="|databaseId_${stat.index}|" th:name="|accounts[${stat.index}].databaseId|" required
+                                                       th:value="${account.databaseId()}" th:placeholder="#{acc.notionPlaceholderDbId}"/>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        </button>
+                                    </div>
+                                    <div th:if="${!notionSettings.configured()}" class="account-row-box">
+                                        <div class="checkbox-wrapper">
+                                            <label for="enabled_0" th:text="#{acc.enabled}">Enabled</label>
+                                            <input type="checkbox" id="enabled_0" name="accounts[0].enabled" value="true" checked />
+                                            <input type="hidden" name="_accounts[0].enabled" value="on" />
+                                        </div>
+                                        
+                                        <div class="account-row-fields" style="grid-template-columns: 1fr 1.5fr 1fr;">
+                                            <div class="field-with-label">
+                                                <label for="label_0" th:text="#{acc.label}">Account Label</label>
+                                                <input type="text" id="label_0" name="accounts[0].label" required th:placeholder="#{acc.labelPlaceholder}" value="Primary Notion"/>
+                                            </div>
+                                            <div class="field-with-label">
+                                                <label for="apiToken_0" th:text="#{acc.apiToken}">API Token</label>
+                                                <input type="password" id="apiToken_0" name="accounts[0].apiToken" required autocomplete="off" th:placeholder="#{acc.notionPlaceholderToken}"/>
+                                            </div>
+                                            <div class="field-with-label">
+                                                <label for="databaseId_0" th:text="#{acc.databaseId}">Database ID</label>
+                                                <input type="text" id="databaseId_0" name="accounts[0].databaseId" required th:placeholder="#{acc.notionPlaceholderDbId}"/>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn-add-account" onclick="addNewAccountRow('notion')">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                    <span th:text="#{acc.addAccount}">Add Another Account</span>
+                                </button>
+
+                                <div id="notion-status" class="mt-16"></div>
+                                
+                                <div class="card-actions">
+                                    <button type="button" class="btn-disconnect-all" th:if="${notionSettings.configured()}"
+                                            th:attr="onclick='if(confirm(\'' + #{acc.disconnectConfirm} + '\')) document.getElementById(\'disconnect-notion-form\').submit();'"
+                                            th:text="#{acc.disconnectBot}">Disconnect All Databases</button>
+                                    <div th:unless="${notionSettings.configured()}"></div>
+                                    <button type="submit" class="btn-save" th:text="#{acc.saveConfigs}">Save Configurations</button>
+                                </div>
+                            </form>
+                            
+                            <form th:if="${notionSettings.configured()}" id="disconnect-notion-form" th:action="@{/accounts/notion/disconnect}" method="post" style="display:none">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            </form>
+                        </div>
                     </div>
 
-                    <div th:if="${notionSettings.configured()}">
-                        <div th:if="${notionSettings.enabled()}">
-                            <h4 class="mb-12" th:text="#{acc.sendTestMessage}">Send Test Message</h4>
+                    <div class="integration-column">
+                        <div class="config-card">
+                            <h4 th:text="#{acc.sendTestMessage}">Send Test Message</h4>
                             <form th:action="@{/accounts/notion/test}" method="post"
                                   hx-post="/accounts/notion/test" hx-target="#test-status" hx-swap="innerHTML">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                <div class="field">
-                                    <textarea id="testMessage" name="testMessage" rows="3" th:placeholder="#{acc.testPlaceholder}" th:text="#{acc.testPlaceholder}">Hello from Social Publish!</textarea>
+                                
+                                <div class="form-group" th:if="${notionSettings.configured()}">
+                                    <label th:text="#{acc.targetAccount}">Target Account</label>
+                                    <select name="targetAccountId" class="form-select">
+                                        <option th:each="account : ${notionSettings.accounts()}" 
+                                                th:value="${account.id()}" 
+                                                th:text="${account.label()}">Account</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label th:text="#{acc.message}">Message</label>
+                                    <textarea id="testMessage" name="testMessage" rows="5" th:placeholder="#{acc.testPlaceholder}">Hello from Social Publish!</textarea>
                                 </div>
                                 <div id="test-status"></div>
-                                <button type="submit" class="btn-test">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                <button type="submit" class="btn-test" th:disabled="${!notionSettings.configured() or !notionSettings.enabled()}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
                                     <span th:text="#{acc.sendTest}">Send Test</span>
                                 </button>
                             </form>
                         </div>
-                        
-                        <form th:action="@{/accounts/notion/disconnect}" method="post" class="mt-12"
-                              th:attr="onsubmit='return confirm(\'' + #{acc.deleteConfirm} + '\');'">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <button type="submit" class="btn-danger btn-danger-outline" th:text="#{acc.disconnectNotion}">Disconnect Notion API</button>
-                        </form>
                     </div>
                 </div>
-            </section>
+            </div>
         </main>
     </div>
 </div>
@@ -124,5 +193,3 @@
 <script src="/js/notifications.js"></script>
 </body>
 </html>
-
-

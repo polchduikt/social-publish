@@ -31,5 +31,8 @@ public class RedditSettingsEntity implements BaseIntegrationSettings {
     @Column(name = "default_subreddit")
     private String defaultSubreddit;
 
+    @Column(nullable = true)
+    private String label;
+
     private boolean enabled = true;
 }

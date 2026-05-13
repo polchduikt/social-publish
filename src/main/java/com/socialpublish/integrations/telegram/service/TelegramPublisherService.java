@@ -27,10 +27,11 @@ public class TelegramPublisherService implements PlatformPublisher {
     }
 
     @Override
-    public void publish(Post post) {
+    public void publish(Post post, UUID targetId) {
         UUID userId = post.getOwner().getId();
-        TelegramSettingsEntity settings = settingsRepository.findByUserId(userId)
-                .orElseThrow(() -> new IntegrationException("Telegram not configured for user " + userId));
+        TelegramSettingsEntity settings = settingsRepository.findById(targetId)
+                .filter(s -> s.getUser().getId().equals(userId))
+                .orElseThrow(() -> new IntegrationException("Telegram not configured for user " + userId + " or account " + targetId));
 
         if (!settings.isEnabled()) {
             throw new IntegrationException("Telegram integration is disabled");

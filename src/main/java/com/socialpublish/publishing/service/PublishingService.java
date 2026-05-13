@@ -8,6 +8,13 @@ import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.posts.service.PostStatusMachine;
 import com.socialpublish.publishing.entity.Platform;
 import com.socialpublish.publishing.event.PostScheduledEvent;
+import com.socialpublish.integrations.exception.IntegrationException;
+import com.socialpublish.integrations.telegram.repository.TelegramSettingsRepository;
+import com.socialpublish.integrations.discord.repository.DiscordSettingsRepository;
+import com.socialpublish.integrations.slack.repository.SlackSettingsRepository;
+import com.socialpublish.integrations.notion.repository.NotionSettingsRepository;
+import com.socialpublish.integrations.linkedin.repository.LinkedInSettingsRepository;
+import com.socialpublish.integrations.reddit.repository.RedditSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,7 +25,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,6 +39,12 @@ public class PublishingService {
     private final NotificationService notificationService;
     private final ApplicationEventPublisher eventPublisher;
     private final List<PlatformPublisher> publishers;
+    private final TelegramSettingsRepository telegramRepository;
+    private final DiscordSettingsRepository discordRepository;
+    private final SlackSettingsRepository slackRepository;
+    private final NotionSettingsRepository notionRepository;
+    private final LinkedInSettingsRepository linkedinRepository;
+    private final RedditSettingsRepository redditRepository;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -96,24 +108,37 @@ public class PublishingService {
         }
     }
 
+    private record PlatformTarget(Platform platform, UUID targetId) {}
+
     private void doPublish(Post post) {
-        Set<Platform> requestedPlatforms = parsePlatforms(post.getPlatforms());
-        if (requestedPlatforms.isEmpty()) {
+        List<PlatformTarget> targets = parsePlatforms(post.getPlatforms());
+        if (targets.isEmpty()) {
             throw new RuntimeException("No platforms selected for publishing");
         }
 
         boolean anyPublished = false;
         StringBuilder errors = new StringBuilder();
 
-        for (PlatformPublisher publisher : publishers) {
-            if (requestedPlatforms.contains(publisher.getPlatform())) {
-                try {
-                    publisher.publish(post);
-                    anyPublished = true;
-                } catch (Exception ex) {
-                    log.warn("{} publishing failed for post {}: {}", publisher.getPlatform(), post.getId(), ex.getMessage());
-                    if (!errors.isEmpty()) errors.append("; ");
-                    errors.append(publisher.getPlatform()).append(": ").append(ex.getMessage());
+        for (PlatformTarget target : targets) {
+            UUID effectiveTargetId = target.targetId();
+            
+            for (PlatformPublisher publisher : publishers) {
+                if (target.platform() == publisher.getPlatform()) {
+                    try {
+                        if (effectiveTargetId == null) {
+                            effectiveTargetId = findDefaultTargetId(post.getOwner().getId(), target.platform());
+                            if (effectiveTargetId == null) {
+                                throw new IntegrationException(target.platform() + " not configured or no enabled accounts found");
+                            }
+                        }
+                        
+                        publisher.publish(post, effectiveTargetId);
+                        anyPublished = true;
+                    } catch (Exception ex) {
+                        log.warn("{} publishing failed for post {}: {}", publisher.getPlatform(), post.getId(), ex.getMessage());
+                        if (!errors.isEmpty()) errors.append("; ");
+                        errors.append(publisher.getPlatform()).append(": ").append(ex.getMessage());
+                    }
                 }
             }
         }
@@ -123,23 +148,43 @@ public class PublishingService {
         }
     }
 
-    private Set<Platform> parsePlatforms(String platformsStr) {
+    private List<PlatformTarget> parsePlatforms(String platformsStr) {
         if (platformsStr == null || platformsStr.isBlank()) {
-            return Set.of();
+            return List.of();
         }
         return Arrays.stream(platformsStr.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .map(s -> {
                     try {
-                        return Platform.valueOf(s);
-                    } catch (IllegalArgumentException e) {
-                        log.warn("Unknown platform: {}", s);
+                        if (s.contains(":")) {
+                            String[] parts = s.split(":");
+                            return new PlatformTarget(Platform.valueOf(parts[0]), UUID.fromString(parts[1]));
+                        } else {
+                            return new PlatformTarget(Platform.valueOf(s), null);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Unknown platform or invalid target format: {}", s);
                         return null;
                     }
                 })
                 .filter(java.util.Objects::nonNull)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
+    }
+
+    private UUID findDefaultTargetId(UUID userId, Platform platform) {
+        return switch (platform) {
+            case TELEGRAM -> telegramRepository.findAllByUserId(userId).stream()
+                    .filter(s -> s.isEnabled()).map(s -> s.getId()).findFirst().orElse(null);
+            case DISCORD -> discordRepository.findAllByUserId(userId).stream()
+                    .filter(s -> s.isEnabled()).map(s -> s.getId()).findFirst().orElse(null);
+            case SLACK -> slackRepository.findAllByUserId(userId).stream()
+                    .filter(s -> s.isEnabled()).map(s -> s.getId()).findFirst().orElse(null);
+            case NOTION -> notionRepository.findAllByUserId(userId).stream()
+                    .filter(s -> s.isEnabled()).map(s -> s.getId()).findFirst().orElse(null);
+            case LINKEDIN -> linkedinRepository.findByUserId(userId).map(s -> s.getId()).orElse(null);
+            case REDDIT -> redditRepository.findByUserId(userId).map(s -> s.getId()).orElse(null);
+        };
     }
 
     private void markPublished(Post post) {
