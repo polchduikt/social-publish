@@ -91,13 +91,23 @@
                                             </div>
                                             <div class="field-with-label">
                                                 <label th:for="|botToken_${stat.index}|" th:text="#{acc.botToken}">Bot Token</label>
-                                                <input type="password" th:id="|botToken_${stat.index}|" th:name="|accounts[${stat.index}].botToken|" autocomplete="off"
-                                                       th:value="${account.botToken()}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" th:id="|botToken_${stat.index}|" th:name="|accounts[${stat.index}].botToken|" autocomplete="off"
+                                                           th:value="${account.botToken()}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="field-with-label">
                                                 <label th:for="|chatId_${stat.index}|" th:text="#{acc.chatId}">Chat ID</label>
-                                                <input type="text" th:id="|chatId_${stat.index}|" th:name="|accounts[${stat.index}].chatId|" required
-                                                       th:value="${account.chatId()}" th:placeholder="#{acc.tgPlaceholderChatId}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" th:id="|chatId_${stat.index}|" th:name="|accounts[${stat.index}].chatId|" required
+                                                           th:value="${account.chatId()}" th:placeholder="#{acc.tgPlaceholderChatId}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -119,11 +129,21 @@
                                             </div>
                                             <div class="field-with-label">
                                                 <label for="botToken_0" th:text="#{acc.botToken}">Bot Token</label>
-                                                <input type="password" id="botToken_0" name="accounts[0].botToken" required autocomplete="off" th:placeholder="#{acc.tgPlaceholderToken}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" id="botToken_0" name="accounts[0].botToken" required autocomplete="off" th:placeholder="#{acc.tgPlaceholderToken}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="field-with-label">
                                                 <label for="chatId_0" th:text="#{acc.chatId}">Chat ID</label>
-                                                <input type="text" id="chatId_0" name="accounts[0].chatId" required th:placeholder="#{acc.tgPlaceholderChatId}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" id="chatId_0" name="accounts[0].chatId" required th:placeholder="#{acc.tgPlaceholderChatId}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                         <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">

@@ -132,8 +132,8 @@ public class IntegrationStatusService {
         List<TelegramSettingsView.TelegramAccountView> accounts = entities.stream()
                 .map(entity -> new TelegramSettingsView.TelegramAccountView(
                         entity.getId(),
-                        maskToken(entity.getBotToken()),
-                        maskToken(entity.getChatId()),
+                        entity.getBotToken(),
+                        entity.getChatId(),
                         entity.getLabel() == null ? "" : entity.getLabel(),
                         entity.isEnabled()
                 )).collect(Collectors.toList());
@@ -150,7 +150,7 @@ public class IntegrationStatusService {
         List<DiscordSettingsView.DiscordAccountView> accounts = entities.stream()
                 .map(entity -> new DiscordSettingsView.DiscordAccountView(
                         entity.getId(),
-                        maskWebhook(entity.getWebhookUrl()),
+                        entity.getWebhookUrl(),
                         entity.getLabel() == null ? "" : entity.getLabel(),
                         entity.isEnabled()
                 )).collect(Collectors.toList());
@@ -178,7 +178,7 @@ public class IntegrationStatusService {
         List<SlackSettingsView.SlackAccountView> accounts = entities.stream()
                 .map(entity -> new SlackSettingsView.SlackAccountView(
                         entity.getId(),
-                        maskWebhook(entity.getWebhookUrl()),
+                        entity.getWebhookUrl(),
                         entity.getLabel() == null ? "" : entity.getLabel(),
                         entity.isEnabled()
                 )).collect(Collectors.toList());
@@ -195,7 +195,7 @@ public class IntegrationStatusService {
         List<NotionSettingsView.NotionAccountView> accounts = entities.stream()
                 .map(entity -> new NotionSettingsView.NotionAccountView(
                         entity.getId(),
-                        maskToken(entity.getApiToken()),
+                        entity.getApiToken(),
                         entity.getDatabaseId(),
                         entity.getLabel() == null ? "" : entity.getLabel(),
                         entity.isEnabled()
@@ -208,32 +208,11 @@ public class IntegrationStatusService {
     private LinkedInSettingsView toLinkedInView(LinkedInSettingsEntity entity) {
         return LinkedInSettingsView.builder()
                 .id(entity.getId())
-                .accessToken(maskLinkedInToken(entity.getAccessToken()))
+                .accessToken(entity.getAccessToken())
                 .authorUrn(entity.getAuthorUrn())
                 .expiresAt(entity.getExpiresAt())
                 .enabled(entity.isEnabled())
                 .configured(true)
                 .build();
-    }
-
-    private String maskToken(String token) {
-        if (token == null || token.length() <= 8) {
-            return token == null ? "" : token;
-        }
-        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
-    }
-
-    private String maskWebhook(String url) {
-        if (url == null || url.length() < 20) {
-            return url == null ? "" : url;
-        }
-        return url.substring(0, 15) + "..." + url.substring(url.length() - 5);
-    }
-
-    private String maskLinkedInToken(String token) {
-        if (token == null || token.length() < 10) {
-            return "***";
-        }
-        return token.substring(0, 6) + "..." + token.substring(token.length() - 6);
     }
 }

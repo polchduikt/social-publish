@@ -77,6 +77,20 @@ public class Post {
     @OrderBy("sortOrder ASC")
     private List<PostMedia> media = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean recurring = false;
+
+    @Column(length = 50)
+    private String recurringDays;
+
+    @Column(length = 5)
+    private String recurringTime;
+
+    private Instant recurringEndDate;
+
+    @Column(name = "parent_recurring_id")
+    private UUID parentRecurringId;
+
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;

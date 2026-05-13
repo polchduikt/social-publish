@@ -34,8 +34,8 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
         request.setAccounts(entities.stream().map(entity -> {
             TelegramSettingsRequest req = new TelegramSettingsRequest();
             req.setId(entity.getId());
-            req.setBotToken(maskToken(entity.getBotToken()));
-            req.setChatId(maskToken(entity.getChatId()));
+            req.setBotToken(entity.getBotToken());
+            req.setChatId(entity.getChatId());
             req.setLabel(entity.getLabel());
             req.setEnabled(entity.isEnabled());
             return req;
@@ -70,12 +70,13 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
                 if (rawToken != null && !rawToken.isBlank() && !rawToken.contains("...")) {
                     entity.setBotToken(rawToken.trim());
                 }
-                String chatId = req.getChatId().trim();
-                // Auto-prepend '-' for numeric IDs that don't start with '@' or '-'
-                if (!chatId.startsWith("-") && !chatId.startsWith("@") && chatId.matches("\\d+")) {
-                    chatId = "-" + chatId;
+                String rawChatId = req.getChatId().trim();
+                if (!rawChatId.contains("...")) {
+                    if (!rawChatId.startsWith("-") && !rawChatId.startsWith("@") && rawChatId.matches("\\d+")) {
+                        rawChatId = "-" + rawChatId;
+                    }
+                    entity.setChatId(rawChatId);
                 }
-                entity.setChatId(chatId);
                 
                 entity.setLabel(req.getLabel() != null ? req.getLabel().trim() : "");
                 entity.setEnabled(req.getEnabled() != null ? req.getEnabled() : false);

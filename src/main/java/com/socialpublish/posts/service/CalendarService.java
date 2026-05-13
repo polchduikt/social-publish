@@ -37,9 +37,7 @@ public class CalendarService {
         String start = post.scheduledAt() != null
                 ? post.scheduledAt().toString()
                 : post.createdAt().toString();
-        String platformLabel = post.platformList() == null || post.platformList().isEmpty()
-                ? ""
-                : String.join(", ", post.platformList());
+        String platformLabel = formatPlatformList(post.platformList());
 
         CalendarEventExtendedPropsResponse extendedProps = new CalendarEventExtendedPropsResponse(
                 post.status(),
@@ -68,5 +66,16 @@ public class CalendarService {
             case FAILED -> "#ef4444";
             case CANCELLED -> "#6b7280";
         };
+    }
+
+    private String formatPlatformList(List<String> platformList) {
+        if (platformList == null || platformList.isEmpty()) {
+            return "";
+        }
+        return platformList.stream()
+                .map(p -> p.contains(":") ? p.split(":")[0] : p)
+                .map(p -> p.substring(0, 1).toUpperCase() + p.substring(1).toLowerCase())
+                .distinct()
+                .collect(java.util.stream.Collectors.joining(", "));
     }
 }

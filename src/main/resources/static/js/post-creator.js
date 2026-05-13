@@ -11,6 +11,27 @@
         defaultMinute: new Date().getMinutes()
     });
 
+    flatpickr("#recurringEndDate", {
+        dateFormat: "Y-m-d\\TH:i",
+        altInput: true,
+        altFormat: "Y-m-d",
+        minDate: "today"
+    });
+
+    var recurringOptions = document.getElementById("recurringOptions");
+    var singleScheduleField = document.getElementById("singleScheduleField");
+
+    window.updateScheduleMode = function(isRecurring) {
+        if (isRecurring) {
+            recurringOptions.classList.remove("is-hidden");
+            if (singleScheduleField) singleScheduleField.classList.add("is-hidden");
+        } else {
+            recurringOptions.classList.add("is-hidden");
+            if (singleScheduleField) singleScheduleField.classList.remove("is-hidden");
+        }
+        saveDraftDebounced();
+    };
+
     var content = document.getElementById("content");
     var charCount = document.getElementById("charCount");
     var maxCharCount = document.getElementById("maxCharCount");
@@ -749,7 +770,6 @@
     });
 
     document.addEventListener("htmx:beforeRequest", function (evt) {
-        // Clear draft when starting any post-related action
         if (evt.detail.elt && (evt.detail.elt.closest("form.creator-layout") || evt.detail.elt.id === "btnConfirmSaveTemplate")) {
             if (saveDraftDebounced && saveDraftDebounced.cancel) {
                 saveDraftDebounced.cancel();

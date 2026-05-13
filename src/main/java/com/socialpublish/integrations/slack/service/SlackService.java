@@ -33,17 +33,12 @@ public class SlackService extends BaseIntegrationService<SlackSettingsEntity, Sl
         request.setAccounts(entities.stream().map(entity -> {
             SlackSettingsRequest req = new SlackSettingsRequest();
             req.setId(entity.getId());
-            req.setWebhookUrl(maskWebhook(entity.getWebhookUrl()));
+            req.setWebhookUrl(entity.getWebhookUrl());
             req.setLabel(entity.getLabel());
             req.setEnabled(entity.isEnabled());
             return req;
         }).collect(Collectors.toList()));
         return request;
-    }
-
-    private String maskWebhook(String url) {
-        if (url == null || url.length() < 20) return url == null ? "" : url;
-        return url.substring(0, 15) + "..." + url.substring(url.length() - 5);
     }
 
     @Transactional

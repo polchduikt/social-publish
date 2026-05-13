@@ -49,11 +49,21 @@ function addNewAccountRow(platform) {
                     </div>
                     <div class="field-with-label">
                         <label for="botToken_${nextIndex}">Bot Token</label>
-                        <input type="password" id="botToken_${nextIndex}" name="accounts[${nextIndex}].botToken" required autocomplete="off" placeholder="123456:ABC-DEF..."/>
+                        <div class="field-with-button">
+                            <input type="password" id="botToken_${nextIndex}" name="accounts[${nextIndex}].botToken" required autocomplete="off" placeholder="123456:ABC-DEF..."/>
+                            <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="field-with-label">
                         <label for="chatId_${nextIndex}">Chat ID</label>
-                        <input type="text" id="chatId_${nextIndex}" name="accounts[${nextIndex}].chatId" required placeholder="@channel or -100..."/>
+                        <div class="field-with-button">
+                            <input type="password" id="chatId_${nextIndex}" name="accounts[${nextIndex}].chatId" required placeholder="@channel or -100..."/>
+                            <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">
@@ -76,7 +86,12 @@ function addNewAccountRow(platform) {
                     </div>
                     <div class="field-with-label">
                         <label for="webhookUrl_${nextIndex}">Webhook URL</label>
-                        <input type="password" id="webhookUrl_${nextIndex}" name="accounts[${nextIndex}].webhookUrl" required autocomplete="off" placeholder="https://discord.com/api/webhooks/..."/>
+                        <div class="field-with-button">
+                            <input type="password" id="webhookUrl_${nextIndex}" name="accounts[${nextIndex}].webhookUrl" required autocomplete="off" placeholder="https://discord.com/api/webhooks/..."/>
+                            <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">
@@ -99,7 +114,12 @@ function addNewAccountRow(platform) {
                     </div>
                     <div class="field-with-label">
                         <label for="webhookUrl_${nextIndex}">Webhook URL</label>
-                        <input type="password" id="webhookUrl_${nextIndex}" name="accounts[${nextIndex}].webhookUrl" required autocomplete="off" placeholder="https://hooks.slack.com/..."/>
+                        <div class="field-with-button">
+                            <input type="password" id="webhookUrl_${nextIndex}" name="accounts[${nextIndex}].webhookUrl" required autocomplete="off" placeholder="https://hooks.slack.com/..."/>
+                            <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">
@@ -122,11 +142,21 @@ function addNewAccountRow(platform) {
                     </div>
                     <div class="field-with-label">
                         <label for="apiToken_${nextIndex}">API Token</label>
-                        <input type="password" id="apiToken_${nextIndex}" name="accounts[${nextIndex}].apiToken" required autocomplete="off" placeholder="secret_..."/>
+                        <div class="field-with-button">
+                            <input type="password" id="apiToken_${nextIndex}" name="accounts[${nextIndex}].apiToken" required autocomplete="off" placeholder="secret_..."/>
+                            <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="field-with-label">
                         <label for="databaseId_${nextIndex}">Database URL/ID</label>
-                        <input type="text" id="databaseId_${nextIndex}" name="accounts[${nextIndex}].databaseId" required placeholder="https://notion.so/..."/>
+                        <div class="field-with-button">
+                            <input type="password" id="databaseId_${nextIndex}" name="accounts[${nextIndex}].databaseId" required placeholder="https://notion.so/..."/>
+                            <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">
@@ -138,5 +168,17 @@ function addNewAccountRow(platform) {
 
     if (template) {
         container.insertAdjacentHTML('beforeend', template);
+    }
+}
+
+function togglePasswordVisibility(button) {
+    const input = button.parentElement.querySelector('input');
+    const icon = button.querySelector('svg');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+    } else {
+        input.type = 'password';
+        icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
     }
 }

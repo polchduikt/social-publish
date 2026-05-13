@@ -28,4 +28,13 @@ public class PostUpsertRequest {
     private String failedReason;
 
     private List<String> platforms = new ArrayList<>();
+
+    private boolean recurring;
+
+    private List<String> recurringDays = new ArrayList<>();
+
+    private String recurringTime;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime recurringEndDate;
 }

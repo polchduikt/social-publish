@@ -295,13 +295,25 @@
   color: #cfe0ff;
 }
 
+.queue-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .queue-table .queue-preview-cell strong {
   display: block;
   font-size: 15px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   color: #0f172a;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.recurring-badge-icon {
+  color: #8b5cf6;
+  flex-shrink: 0;
 }
 
 .queue-table .queue-preview-cell p {

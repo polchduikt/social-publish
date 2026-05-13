@@ -42,6 +42,7 @@ public class PostService {
     private final NotificationService notificationService;
     private final PostMediaSyncService postMediaSyncService;
     private final PostMapper postMapper;
+    private final RecurringPostService recurringPostService;
 
     @Transactional(readOnly = true)
     public PostView getPostView(UUID ownerId, UUID postId) {
@@ -284,6 +285,19 @@ public class PostService {
         post.setContent(content);
         List<String> platforms = request.getPlatforms();
         post.setPlatforms(platforms == null || platforms.isEmpty() ? "" : String.join(",", platforms));
+        post.setRecurring(request.isRecurring());
+        if (request.isRecurring()) {
+            List<String> days = request.getRecurringDays();
+            post.setRecurringDays(days == null || days.isEmpty() ? null : String.join(",", days));
+            post.setRecurringTime(request.getRecurringTime());
+            post.setRecurringEndDate(request.getRecurringEndDate() != null
+                    ? request.getRecurringEndDate().atZone(ZoneId.systemDefault()).toInstant()
+                    : null);
+        } else {
+            post.setRecurringDays(null);
+            post.setRecurringTime(null);
+            post.setRecurringEndDate(null);
+        }
     }
 
     private String buildTitleFromContent(String content) {
@@ -327,13 +341,26 @@ public class PostService {
     }
 
     private void applyScheduledFields(Post post, PostUpsertRequest request) {
-        if (request.getScheduledAt() == null) {
-            throw new PostValidationException("Scheduled date is required for SCHEDULED posts");
+        if (post.isRecurring()) {
+            String days = post.getRecurringDays();
+            String time = post.getRecurringTime();
+            if (days == null || days.isBlank() || time == null || time.isBlank()) {
+                throw new PostValidationException("Recurring days and time are required");
+            }
+            Instant nextAt = recurringPostService.calculateFirstOccurrence(days, time);
+            if (nextAt == null) {
+                throw new PostValidationException("Could not calculate next recurring date");
+            }
+            post.setScheduledAt(nextAt);
+        } else {
+            if (request.getScheduledAt() == null) {
+                throw new PostValidationException("Scheduled date is required for SCHEDULED posts");
+            }
+            post.setScheduledAt(request.getScheduledAt().atZone(ZoneId.systemDefault()).toInstant());
         }
         if (post.getPlatforms() == null || post.getPlatforms().isBlank()) {
             throw new PostValidationException("Select at least one platform for SCHEDULED posts");
         }
-        post.setScheduledAt(request.getScheduledAt().atZone(ZoneId.systemDefault()).toInstant());
         post.setPublishedAt(null);
         post.setFailedReason(null);
         post.setRetryCount(0);

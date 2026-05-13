@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
         forceEventDuration: true,
         defaultTimedEventDuration: '00:30:00',
         nextDayThreshold: '00:00:00',
+        slotEventOverlap: false,
+        allDaySlot: true,
         events: '/api/calendar/events',
         eventTimeFormat: {
             hour: '2-digit',

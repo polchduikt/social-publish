@@ -90,18 +90,11 @@ public class LinkedInService {
     private LinkedInSettingsView toSettingsView(LinkedInSettingsEntity entity) {
         return LinkedInSettingsView.builder()
                 .id(entity.getId())
-                .accessToken(maskToken(entity.getAccessToken()))
+                .accessToken(entity.getAccessToken())
                 .authorUrn(entity.getAuthorUrn())
                 .expiresAt(entity.getExpiresAt())
                 .enabled(entity.isEnabled())
                 .configured(true)
                 .build();
-    }
-
-    private String maskToken(String token) {
-        if (token == null || token.length() < 10) {
-            return "***";
-        }
-        return token.substring(0, 6) + "..." + token.substring(token.length() - 6);
     }
 }

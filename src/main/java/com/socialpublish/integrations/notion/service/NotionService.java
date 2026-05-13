@@ -33,18 +33,13 @@ public class NotionService extends BaseIntegrationService<NotionSettingsEntity, 
         request.setAccounts(entities.stream().map(entity -> {
             NotionSettingsRequest req = new NotionSettingsRequest();
             req.setId(entity.getId());
-            req.setApiToken(maskToken(entity.getApiToken()));
+            req.setApiToken(entity.getApiToken());
             req.setDatabaseId(entity.getDatabaseId());
             req.setLabel(entity.getLabel());
             req.setEnabled(entity.isEnabled());
             return req;
         }).collect(Collectors.toList()));
         return request;
-    }
-
-    private String maskToken(String token) {
-        if (token == null || token.length() <= 8) return token == null ? "" : token;
-        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
     }
 
     @Transactional
@@ -66,12 +61,15 @@ public class NotionService extends BaseIntegrationService<NotionSettingsEntity, 
                     entity.setUser(userRepository.getReferenceById(userId));
                 }
                 
-                String dbId = extractDatabaseId(req.getDatabaseId().trim());
+                String rawDbId = req.getDatabaseId().trim();
+                if (!rawDbId.contains("...")) {
+                    entity.setDatabaseId(extractDatabaseId(rawDbId));
+                }
+                
                 String rawToken = req.getApiToken();
                 if (rawToken != null && !rawToken.isBlank() && !rawToken.contains("...")) {
                     entity.setApiToken(rawToken.trim());
                 }
-                entity.setDatabaseId(dbId);
                 entity.setLabel(req.getLabel() != null ? req.getLabel().trim() : "");
                 entity.setEnabled(req.getEnabled() != null ? req.getEnabled() : false);
                 toSave.add(entity);

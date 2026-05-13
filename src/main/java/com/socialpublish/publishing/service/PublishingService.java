@@ -15,6 +15,7 @@ import com.socialpublish.integrations.slack.repository.SlackSettingsRepository;
 import com.socialpublish.integrations.notion.repository.NotionSettingsRepository;
 import com.socialpublish.integrations.linkedin.repository.LinkedInSettingsRepository;
 import com.socialpublish.integrations.reddit.repository.RedditSettingsRepository;
+import com.socialpublish.posts.service.RecurringPostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,6 +46,7 @@ public class PublishingService {
     private final NotionSettingsRepository notionRepository;
     private final LinkedInSettingsRepository linkedinRepository;
     private final RedditSettingsRepository redditRepository;
+    private final RecurringPostService recurringPostService;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -193,6 +195,15 @@ public class PublishingService {
         post.setFailedReason(null);
         postRepository.save(post);
         log.info("Post {} published successfully", post.getId());
+        if (post.isRecurring()) {
+            try {
+                recurringPostService.createNextOccurrence(post).ifPresent(nextPost ->
+                        log.info("Next recurring post {} scheduled for {}", nextPost.getId(), nextPost.getScheduledAt())
+                );
+            } catch (Exception ex) {
+                log.error("Failed to create next recurring occurrence for post {}: {}", post.getId(), ex.getMessage());
+            }
+        }
     }
 
     private void handleFailure(Post post, String reason, int attempt) {

@@ -464,3 +464,44 @@
         grid-template-columns: 1fr;
     }
 }
+
+.field-with-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.field-with-button input {
+    padding-right: 40px;
+    width: 100%;
+}
+
+.btn-toggle-visibility {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-toggle-visibility:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1e293b;
+}
+
+.dark-mode .btn-toggle-visibility:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.btn-toggle-visibility svg {
+    width: 20px;
+    height: 20px;
+}

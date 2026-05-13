@@ -25,6 +25,7 @@ public interface PostMapper {
     @Mapping(target = "publishedAt", source = "publishedAt", qualifiedByName = "toLocalDateTime")
     @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "toLocalDateTime")
     @Mapping(target = "updatedAt", source = "updatedAt", qualifiedByName = "toLocalDateTime")
+    @Mapping(target = "recurringEndDate", source = "recurringEndDate", qualifiedByName = "toLocalDateTime")
     @Mapping(target = "platforms", source = "platforms", qualifiedByName = "normalizePlatformsRaw")
     @Mapping(target = "platformList", source = "platforms", qualifiedByName = "toPlatformList")
     @Mapping(target = "excerpt", source = "content", qualifiedByName = "toExcerpt")
@@ -39,8 +40,11 @@ public interface PostMapper {
     @Mapping(target = "publishedAt", ignore = true)
     @Mapping(target = "failedReason", ignore = true)
     @Mapping(target = "retryCount", ignore = true)
+    @Mapping(target = "parentRecurringId", ignore = true)
     @Mapping(target = "platforms", source = "platforms", qualifiedByName = "platformsToString")
     @Mapping(target = "scheduledAt", source = "scheduledAt", qualifiedByName = "toInstant")
+    @Mapping(target = "recurringDays", source = "recurringDays", qualifiedByName = "recurringDaysToString")
+    @Mapping(target = "recurringEndDate", source = "recurringEndDate", qualifiedByName = "toInstant")
     Post toEntity(PostUpsertRequest request);
 
     List<PostView> toViews(List<Post> posts);
@@ -55,9 +59,22 @@ public interface PostMapper {
         return value == null ? null : value.atZone(ZoneId.systemDefault()).toInstant();
     }
 
+    @Named("recurringDaysToString")
+    default String recurringDaysToString(List<String> days) {
+        return days == null || days.isEmpty() ? null : String.join(",", days);
+    }
+
+    @Named("recurringDaysToList")
+    default List<String> recurringDaysToList(String days) {
+        if (days == null || days.isBlank()) return List.of();
+        return Arrays.stream(days.split(",")).map(String::trim).filter(s -> !s.isBlank()).toList();
+    }
+
 
     @Mapping(target = "scheduledAt", source = "scheduledAt", qualifiedByName = "toLocalDateTime")
     @Mapping(target = "platforms", source = "platforms", qualifiedByName = "toPlatformList")
+    @Mapping(target = "recurringDays", source = "recurringDays", qualifiedByName = "recurringDaysToList")
+    @Mapping(target = "recurringEndDate", source = "recurringEndDate", qualifiedByName = "toLocalDateTime")
     PostUpsertRequest toUpsertRequest(Post post);
 
     default PostMediaView toPostMediaView(PostMedia media) {

@@ -91,13 +91,23 @@
                                             </div>
                                             <div class="field-with-label">
                                                 <label th:for="|apiToken_${stat.index}|" th:text="#{acc.apiToken}">API Token</label>
-                                                <input type="password" th:id="|apiToken_${stat.index}|" th:name="|accounts[${stat.index}].apiToken|" autocomplete="off"
-                                                       th:value="${account.apiToken()}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" th:id="|apiToken_${stat.index}|" th:name="|accounts[${stat.index}].apiToken|" autocomplete="off"
+                                                           th:value="${account.apiToken()}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="field-with-label">
                                                 <label th:for="|databaseId_${stat.index}|" th:text="#{acc.databaseId}">Database ID</label>
-                                                <input type="text" th:id="|databaseId_${stat.index}|" th:name="|accounts[${stat.index}].databaseId|" required
-                                                       th:value="${account.databaseId()}" th:placeholder="#{acc.notionPlaceholderDbId}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" th:id="|databaseId_${stat.index}|" th:name="|accounts[${stat.index}].databaseId|" required
+                                                           th:value="${account.databaseId()}" th:placeholder="#{acc.notionPlaceholderDbId}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -119,11 +129,21 @@
                                             </div>
                                             <div class="field-with-label">
                                                 <label for="apiToken_0" th:text="#{acc.apiToken}">API Token</label>
-                                                <input type="password" id="apiToken_0" name="accounts[0].apiToken" required autocomplete="off" th:placeholder="#{acc.notionPlaceholderToken}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" id="apiToken_0" name="accounts[0].apiToken" required autocomplete="off" th:placeholder="#{acc.notionPlaceholderToken}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="field-with-label">
                                                 <label for="databaseId_0" th:text="#{acc.databaseId}">Database ID</label>
-                                                <input type="text" id="databaseId_0" name="accounts[0].databaseId" required th:placeholder="#{acc.notionPlaceholderDbId}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" id="databaseId_0" name="accounts[0].databaseId" required th:placeholder="#{acc.notionPlaceholderDbId}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                         <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">

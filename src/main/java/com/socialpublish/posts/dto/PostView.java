@@ -18,6 +18,10 @@ public record PostView(
         LocalDateTime updatedAt,
         String platforms,
         List<String> platformList,
-        List<PostMediaView> media
+        List<PostMediaView> media,
+        boolean recurring,
+        String recurringDays,
+        String recurringTime,
+        LocalDateTime recurringEndDate
 ) {
 }

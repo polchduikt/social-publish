@@ -682,7 +682,7 @@
 .stat-statuses-body {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 48px;
 }
 
 .status-donut-wrap {
@@ -690,14 +690,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
   flex-shrink: 0;
-  min-width: 100px;
+  min-width: 140px;
 }
 
 .status-donut {
-  width: 100px;
-  height: 100px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   position: relative;
   flex-shrink: 0;
@@ -706,7 +706,7 @@
 .status-donut::after {
   content: "";
   position: absolute;
-  inset: 18px;
+  inset: 28px;
   border-radius: 50%;
   background: #ffffff;
   border: 1px solid #dce4f1;
@@ -718,19 +718,20 @@
 
 .status-donut-meta strong {
   display: block;
-  font-size: 24px;
+  font-size: 32px;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .status-donut-meta span {
   color: #64748b;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .status-progress-list {
   display: grid;
-  gap: 8px;
+  gap: 18px;
   flex: 1;
 }
 
@@ -738,8 +739,11 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .status-name {
@@ -774,8 +778,8 @@
 }
 
 .status-progress-track {
-  margin-top: 6px;
-  height: 6px;
+  margin-top: 8px;
+  height: 8px;
   border-radius: 999px;
   background: #e2e8f0;
   overflow: hidden;
@@ -1470,4 +1474,9 @@ html.dark-mode .icon-action-danger {
 html.dark-mode .icon-action-danger:hover {
   background: rgba(239, 68, 68, 0.25);
   color: #ffffff;
+}
+
+html.dark-mode .status-donut::after {
+  background: var(--dm-surface-2);
+  border-color: var(--dm-border);
 }

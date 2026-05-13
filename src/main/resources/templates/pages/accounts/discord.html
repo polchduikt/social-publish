@@ -91,8 +91,13 @@
                                             </div>
                                             <div class="field-with-label">
                                                 <label th:for="|webhookUrl_${stat.index}|" th:text="#{acc.webhookUrl}">Webhook URL</label>
-                                                <input type="password" th:id="|webhookUrl_${stat.index}|" th:name="|accounts[${stat.index}].webhookUrl|" autocomplete="off"
-                                                       th:value="${account.webhookUrl()}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" th:id="|webhookUrl_${stat.index}|" th:name="|accounts[${stat.index}].webhookUrl|" autocomplete="off"
+                                                           th:value="${account.webhookUrl()}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -114,7 +119,12 @@
                                             </div>
                                             <div class="field-with-label">
                                                 <label for="webhookUrl_0" th:text="#{acc.webhookUrl}">Webhook URL</label>
-                                                <input type="password" id="webhookUrl_0" name="accounts[0].webhookUrl" required autocomplete="off" th:placeholder="#{acc.discordWebhookPlaceholder}"/>
+                                                <div class="field-with-button">
+                                                    <input type="password" id="webhookUrl_0" name="accounts[0].webhookUrl" required autocomplete="off" th:placeholder="#{acc.discordWebhookPlaceholder}"/>
+                                                    <button type="button" class="btn-toggle-visibility" onclick="togglePasswordVisibility(this)" tabindex="-1">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                         <button type="button" class="btn-remove-account" onclick="removeAccountRow(this)">

@@ -1,6 +1,3 @@
-/**
- * Simple IndexedDB wrapper for autosaving post drafts.
- */
 window.DraftStore = (function () {
     var dbName = "SocialPublishDrafts";
     var dbVersion = 1;
@@ -60,9 +57,6 @@ window.DraftStore = (function () {
     };
 })();
 
-/**
- * Utility for debouncing functions.
- */
 window.debounce = function (func, wait) {
     var timeout;
     var debounced = function () {

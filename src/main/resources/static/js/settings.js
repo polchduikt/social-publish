@@ -1,5 +1,4 @@
 (function () {
-    // Theme switching logic
     var lightBtn = document.getElementById('themeLightBtn');
     var darkBtn = document.getElementById('themeDarkBtn');
 
@@ -32,7 +31,6 @@
         });
     }
 
-    // Autosave interval logic
     var autosaveBtns = document.querySelectorAll('#autosave-control .appearance-btn');
     if (autosaveBtns.length > 0) {
         function syncAutosave() {
