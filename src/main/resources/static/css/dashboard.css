@@ -1148,6 +1148,34 @@
 .next-publish-meta-row {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
+  align-items: flex-start;
+}
+
+.next-message-row {
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  padding-top: 20px;
+  margin-top: auto;
+}
+
+.next-message-value {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.next-message-value strong,
+.next-message-value p {
+  margin: 0;
+  word-break: break-all;
+}
+
+.next-message-value p {
+  font-size: 14px;
+  color: var(--text-secondary, #64748b);
+  opacity: 0.8;
+}
   align-items: start;
   gap: 12px;
 }

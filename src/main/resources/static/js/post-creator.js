@@ -13,6 +13,7 @@
 
     var content = document.getElementById("content");
     var charCount = document.getElementById("charCount");
+    var maxCharCount = document.getElementById("maxCharCount");
     var previewTelegramContent = document.getElementById("previewTelegramContent");
     var previewDiscordContent = document.getElementById("previewDiscordContent");
     var previewSlackContent = document.getElementById("previewSlackContent");
@@ -52,8 +53,35 @@
         formattingSuffix: creatorShell.dataset.msgFormattingSuffix,
         sharedSuffix: creatorShell.dataset.msgSharedSuffix,
         defaultSuffix: creatorShell.dataset.msgDefaultSuffix,
-        previewPlaceholder: creatorShell.dataset.msgPreviewPlaceholder
+        previewPlaceholder: creatorShell.dataset.msgPreviewPlaceholder,
+        autosaved: creatorShell.dataset.msgAutosaved,
+        draftRestored: creatorShell.dataset.msgDraftRestored
     };
+
+    var autosaveNotice = document.getElementById("autosave-notice");
+
+    function showNotice(text) {
+        if (!autosaveNotice) return;
+        autosaveNotice.textContent = text;
+        autosaveNotice.classList.add("show");
+        setTimeout(function () {
+            autosaveNotice.classList.remove("show");
+        }, 3000);
+    }
+
+    var saveDraftDebounced = debounce(function () {
+        if (!DraftStore || window.location.pathname.includes("/edit")) return;
+        
+        var currentData = {
+            content: content.value,
+            platforms: getSelectedPlatforms(),
+            files: collectedFiles
+        };
+
+        DraftStore.save("currentDraft", currentData).then(function () {
+            showNotice(messages.autosaved);
+        });
+    }, parseInt(localStorage.getItem("autosaveInterval") || "2000"));
 
     var collectedFiles = [];
     var dragSrcIndex = null;
@@ -69,6 +97,15 @@
         link: { telegram: true, discord: true, whatsapp: true },
         hashtag: { telegram: true, discord: true, whatsapp: false },
         mention: { telegram: true, discord: true, whatsapp: false }
+    };
+
+    var platformLimits = {
+        TELEGRAM: 4096,
+        DISCORD: 2000,
+        SLACK: 4000,
+        LINKEDIN: 3000,
+        NOTION: 2000,
+        DEFAULT: 5000
     };
 
     function getSelectedPlatforms() {
@@ -174,9 +211,9 @@
 
     function updateToolbarAvailability() {
         var selected = getSelectedPlatforms();
-        var hasTelegram = selected.indexOf("TELEGRAM") !== -1;
-        var hasDiscord = selected.indexOf("DISCORD") !== -1;
-        var hasWhatsapp = selected.indexOf("WHATSAPP") !== -1;
+        var hasTelegram = selected.some(v => v.startsWith("TELEGRAM"));
+        var hasDiscord = selected.some(v => v.startsWith("DISCORD"));
+        var hasWhatsapp = selected.some(v => v.startsWith("WHATSAPP"));
 
         var count = (hasTelegram ? 1 : 0) + (hasDiscord ? 1 : 0) + (hasWhatsapp ? 1 : 0);
 
@@ -221,6 +258,45 @@
         }
     }
 
+    function updateCharacterLimit() {
+        var selected = getSelectedPlatforms();
+        var minLimit = platformLimits.DEFAULT;
+
+        if (selected.length > 0) {
+            selected.forEach(function (val) {
+                var platform = val.split(":")[0];
+                var limit = platformLimits[platform] || platformLimits.DEFAULT;
+                if (limit < minLimit) {
+                    minLimit = limit;
+                }
+            });
+        }
+
+        if (maxCharCount) {
+            maxCharCount.textContent = minLimit;
+        }
+        if (content) {
+            content.maxLength = minLimit;
+        }
+        
+        updateCharCountColor();
+    }
+
+    function updateCharCountColor() {
+        if (!charCount || !content || !maxCharCount) return;
+        var current = content.value.length;
+        var max = parseInt(maxCharCount.textContent, 10);
+        
+        if (current > max) {
+            charCount.classList.add("text-danger");
+        } else if (current > max * 0.9) {
+            charCount.classList.add("text-warning");
+            charCount.classList.remove("text-danger");
+        } else {
+            charCount.classList.remove("text-warning", "text-danger");
+        }
+    }
+
     function escapeHtml(value) {
         return value
             .replace(/&/g, "&amp;")
@@ -253,7 +329,7 @@
         return safe;
     }
 
-    function buildImageCard(src, index) {
+    function buildMediaCard(src, index) {
         return "<figure class=\"preview-media-card\"><img src=\"" + src + "\" alt=\"Selected media " + (index + 1) + "\"></figure>";
     }
 
@@ -264,12 +340,14 @@
 
         var combinedHtml = "";
         collectedFiles.forEach(function (file, index) {
-            combinedHtml += buildImageCard(URL.createObjectURL(file), index);
+            combinedHtml += buildMediaCard(URL.createObjectURL(file), index);
         });
 
         if (existingMediaGrid) {
-            Array.prototype.forEach.call(existingMediaGrid.querySelectorAll(".existing-media-item img"), function (img, index) {
-                combinedHtml += buildImageCard(img.src, index + collectedFiles.length);
+            Array.prototype.forEach.call(existingMediaGrid.querySelectorAll(".existing-media-item"), function (item, index) {
+                var img = item.querySelector("img");
+                var src = img ? img.src : "";
+                combinedHtml += buildMediaCard(src, index + collectedFiles.length);
             });
         }
 
@@ -290,14 +368,15 @@
 
         renderPreviewMedia();
         if (charCount) charCount.textContent = content.value.length;
+        updateCharCountColor();
     }
 
     function resolvePreviewMode() {
         var selected = getSelectedPlatforms();
-        if (selected.indexOf("DISCORD") !== -1) return "discord";
-        if (selected.indexOf("SLACK") !== -1) return "slack";
-        if (selected.indexOf("LINKEDIN") !== -1) return "linkedin";
-        if (selected.indexOf("NOTION") !== -1) return "notion";
+        if (selected.some(v => v.startsWith("DISCORD"))) return "discord";
+        if (selected.some(v => v.startsWith("SLACK"))) return "slack";
+        if (selected.some(v => v.startsWith("LINKEDIN"))) return "linkedin";
+        if (selected.some(v => v.startsWith("NOTION"))) return "notion";
         return "telegram";
     }
 
@@ -313,7 +392,6 @@
         });
     }
 
-
     function syncFilesToInput() {
         if (!mediaInput) return;
         var dt = new DataTransfer();
@@ -325,8 +403,13 @@
 
     function addFiles(fileList) {
         var maxFiles = 10;
+        var existingCount = 0;
+        if (existingMediaGrid) {
+            existingCount = existingMediaGrid.querySelectorAll(".existing-media-item").length;
+        }
+
         Array.from(fileList).forEach(function (file) {
-            if (collectedFiles.length >= maxFiles) return;
+            if (collectedFiles.length + existingCount >= maxFiles) return;
             if (!file.type.startsWith("image/")) return;
             if (file.size > 10 * 1024 * 1024) return;
             collectedFiles.push(file);
@@ -334,6 +417,7 @@
         syncFilesToInput();
         renderSelectedMedia();
         updatePreview();
+        saveDraftDebounced();
     }
 
     function renderSelectedMedia() {
@@ -346,9 +430,9 @@
             item.draggable = true;
             item.dataset.sortIndex = String(index);
 
-            var img = document.createElement("img");
-            img.alt = "Selected image";
-            img.src = URL.createObjectURL(file);
+            var mediaEl = document.createElement("img");
+            mediaEl.src = URL.createObjectURL(file);
+            mediaEl.alt = "Selected image";
 
             var badge = document.createElement("span");
             badge.className = "media-order-badge";
@@ -364,7 +448,7 @@
             handle.className = "media-drag-handle";
             handle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
 
-            item.appendChild(img);
+            item.appendChild(mediaEl);
             item.appendChild(badge);
             item.appendChild(removeButton);
             item.appendChild(handle);
@@ -418,6 +502,7 @@
         syncFilesToInput();
         renderSelectedMedia();
         updatePreview();
+        saveDraftDebounced();
     }
 
     function markExistingMediaRemoved(publicId, targetCard) {
@@ -566,7 +651,9 @@
     document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
         input.addEventListener("change", function () {
             updateToolbarAvailability();
+            updateCharacterLimit();
             setPreviewMode(resolvePreviewMode());
+            saveDraftDebounced();
         });
     });
 
@@ -586,8 +673,13 @@
         }
     }
 
-    content.addEventListener("input", updatePreview);
+    content.addEventListener("input", function() {
+        updatePreview();
+        saveDraftDebounced();
+    });
+
     updateToolbarAvailability();
+    updateCharacterLimit();
     setPreviewMode(resolvePreviewMode());
     updateTelegramTime();
     updatePreview();
@@ -630,7 +722,9 @@
         }
         
         updateToolbarAvailability();
+        updateCharacterLimit();
         updatePreview();
+        saveDraftDebounced();
     }
 
     document.addEventListener('click', (e) => {
@@ -649,5 +743,52 @@
         });
         const closeModalBtn = saveTemplateModal.querySelector('.close-modal-btn');
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeSaveModal);
+    }
+    document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
+        input.addEventListener("change", saveDraftDebounced);
+    });
+
+    document.addEventListener("htmx:beforeRequest", function (evt) {
+        // Clear draft when starting any post-related action
+        if (evt.detail.elt && (evt.detail.elt.closest("form.creator-layout") || evt.detail.elt.id === "btnConfirmSaveTemplate")) {
+            if (saveDraftDebounced && saveDraftDebounced.cancel) {
+                saveDraftDebounced.cancel();
+            }
+            DraftStore.remove("currentDraft");
+        }
+    });
+
+    document.addEventListener("htmx:afterRequest", function (evt) {
+        if (evt.detail.successful) {
+            if (saveDraftDebounced && saveDraftDebounced.cancel) {
+                saveDraftDebounced.cancel();
+            }
+            DraftStore.remove("currentDraft");
+        }
+    });
+
+    if (!window.location.pathname.includes("/edit")) {
+        DraftStore.init().then(function () {
+            DraftStore.load("currentDraft").then(function (data) {
+                if (data) {
+                    if (data.content) {
+                        content.value = data.content;
+                    }
+                    if (data.platforms && data.platforms.length > 0) {
+                        document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
+                            input.checked = data.platforms.indexOf(input.value) !== -1;
+                        });
+                    }
+                    if (data.files && data.files.length > 0) {
+                        collectedFiles = data.files;
+                        syncFilesToInput();
+                        renderSelectedMedia();
+                    }
+                    updateCharacterLimit();
+                    updatePreview();
+                    showNotice(messages.draftRestored);
+                }
+            });
+        });
     }
 })();

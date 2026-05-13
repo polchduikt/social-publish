@@ -85,7 +85,7 @@ public interface PostMapper {
         return Arrays.stream(platforms.split("[,;\\s]+"))
                 .map(String::trim)
                 .filter(token -> !token.isBlank())
-                .map(token -> token.replaceAll("[^a-zA-Z_]", ""))
+                .map(token -> token.replaceAll("[^a-zA-Z0-9_:]", ""))
                 .map(token -> token.toUpperCase(Locale.ROOT))
                 .filter(token -> !token.isBlank())
                 .toList();

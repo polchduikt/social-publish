@@ -40,7 +40,10 @@
                        data-msg-formatting-suffix=#{post.formattingSuffix},
                        data-msg-shared-suffix=#{post.sharedSuffix},
                        data-msg-default-suffix=#{post.defaultSuffix},
-                       data-msg-preview-placeholder=#{post.previewPlaceholder}">
+                       data-msg-preview-placeholder=#{post.previewPlaceholder},
+                       data-msg-autosaved=#{post.autosaved},
+                       data-msg-draft-restored=#{post.draftRestored}">
+                <div id="autosave-notice" class="autosave-notice"></div>
                 <div id="post-form-status" th:insert="~{fragments/posts/form-status :: status}">
                 </div>
 
@@ -151,7 +154,7 @@
                         <section class="panel message-panel">
                             <div class="editor-toolbar">
                                 <span class="toolbar-label" th:text="#{post.message}">Message</span>
-                                <span class="char-count"><span id="charCount">0</span>/5000</span>
+                                <span class="char-count"><span id="charCount">0</span>/<span id="maxCharCount">5000</span></span>
                             </div>
                             <div class="format-toolbar" id="formatToolbar">
                                 <button type="button" class="format-btn" data-feature="bold"
@@ -187,7 +190,7 @@
                         <section class="panel media-panel">
                             <div class="editor-toolbar">
                                 <span class="toolbar-label" th:text="#{post.photos}">Photos</span>
-                                <span class="char-count" th:text="#{post.photosHint}">Up to 10 images, 10 MB each</span>
+                                <span class="char-count" th:text="#{post.photosHint}">Up to 10 images, 10MB each</span>
                             </div>
 
                             <div class="media-dropzone" id="mediaDropzone">
@@ -201,9 +204,8 @@
                                         <polyline points="17 8 12 3 7 8" />
                                         <line x1="12" y1="3" x2="12" y2="15" />
                                     </svg>
-                                    <p class="media-dropzone-title" th:text="#{post.dragDrop}">Drag &amp; drop media</p>
-                                    <p class="media-dropzone-hint" th:text="#{post.supports}">or click to browse files.
-                                        Supports JPG, PNG, WEBP.</p>
+                                    <p class="media-dropzone-title" th:text="#{post.dragDrop}">Drag and drop your photos here</p>
+                                    <p class="media-dropzone-hint" th:text="#{post.supports}">Supports JPG, PNG up to 10MB</p>
                                 </div>
                             </div>
 
@@ -431,6 +433,7 @@
     </div>
 
     <div id="toast-container"></div>
+    <script src="/js/draft-store.js"></script>
     <script src="/js/post-creator.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
