@@ -6,10 +6,10 @@ import com.socialpublish.posts.dto.PostView;
 import com.socialpublish.posts.entity.PostStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +76,6 @@ public class CalendarService {
                 .map(p -> p.contains(":") ? p.split(":")[0] : p)
                 .map(p -> p.substring(0, 1).toUpperCase() + p.substring(1).toLowerCase())
                 .distinct()
-                .collect(java.util.stream.Collectors.joining(", "));
+                .collect(Collectors.joining(", "));
     }
 }

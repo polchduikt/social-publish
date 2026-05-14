@@ -18,4 +18,6 @@ public class UpdateProfileRequest {
     @Email(message = "Email format is invalid")
     @Size(max = 320, message = "Email must be at most 320 characters")
     private String email;
+
+    private boolean emailNotificationsEnabled;
 }

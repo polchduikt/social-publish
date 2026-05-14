@@ -49,6 +49,9 @@ public class User {
     @Column(nullable = false)
     private boolean passwordLoginEnabled;
 
+    @Column(nullable = false)
+    private boolean emailNotificationsEnabled = true;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

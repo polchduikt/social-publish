@@ -27,4 +27,6 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
             PostStatus status,
             Instant now
     );
+
+    List<Post> findByOwnerIdAndUpdatedAtAfter(UUID ownerId, Instant after);
 }

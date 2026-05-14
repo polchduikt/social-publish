@@ -3,6 +3,7 @@ package com.socialpublish.integrations.notion.service;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ public class NotionClientService {
             "title", List.of(Map.of("text", Map.of("content", truncate(content, 100))))
         );
 
-        List<Map<String, Object>> children = new java.util.ArrayList<>();
+        List<Map<String, Object>> children = new ArrayList<>();
         children.add(Map.of(
             "object", "block",
             "type", "paragraph",

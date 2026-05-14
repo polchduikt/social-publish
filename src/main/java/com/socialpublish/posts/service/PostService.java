@@ -424,7 +424,7 @@ public class PostService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                publishingProducer.sendPublishRequest(postId);
+                publishingProducer.sendPublishRequest(postId, false);
             }
         });
     }

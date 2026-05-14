@@ -15,19 +15,19 @@ public class PublishingProducer {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void sendPublishRequest(UUID postId) {
+    public void sendPublishRequest(UUID postId, boolean scheduled) {
         rabbitTemplate.convertAndSend(
                 RabbitConfig.EXCHANGE,
                 RabbitConfig.PUBLISH_KEY,
-                new PublishPostMessage(postId, 1)
+                new PublishPostMessage(postId, 1, scheduled)
         );
     }
 
-    public void sendRetryRequest(UUID postId, int attempt) {
+    public void sendRetryRequest(UUID postId, int attempt, boolean scheduled) {
         rabbitTemplate.convertAndSend(
                 RabbitConfig.EXCHANGE,
                 RabbitConfig.RETRY_KEY,
-                new PublishPostMessage(postId, attempt)
+                new PublishPostMessage(postId, attempt, scheduled)
         );
     }
 }

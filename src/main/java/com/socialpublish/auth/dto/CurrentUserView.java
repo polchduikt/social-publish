@@ -10,6 +10,7 @@ public record CurrentUserView(
         String fullName,
         AuthProvider provider,
         Role role,
-        boolean passwordLoginEnabled
+        boolean passwordLoginEnabled,
+        boolean emailNotificationsEnabled
 ) {
 }

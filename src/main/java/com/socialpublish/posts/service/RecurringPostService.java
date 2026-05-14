@@ -1,6 +1,5 @@
 package com.socialpublish.posts.service;
 
-import com.socialpublish.media.entity.PostMedia;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
@@ -9,20 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.temporal.TemporalAdjusters;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -137,7 +129,7 @@ public class RecurringPostService {
                         };
                     }
                 })
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 

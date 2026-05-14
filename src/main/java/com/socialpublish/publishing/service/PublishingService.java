@@ -16,6 +16,7 @@ import com.socialpublish.integrations.notion.repository.NotionSettingsRepository
 import com.socialpublish.integrations.linkedin.repository.LinkedInSettingsRepository;
 import com.socialpublish.integrations.reddit.repository.RedditSettingsRepository;
 import com.socialpublish.posts.service.RecurringPostService;
+import com.socialpublish.mail.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,9 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,6 +46,7 @@ public class PublishingService {
     private final LinkedInSettingsRepository linkedinRepository;
     private final RedditSettingsRepository redditRepository;
     private final RecurringPostService recurringPostService;
+    private final EmailService emailService;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -68,18 +68,18 @@ public class PublishingService {
         notificationService.sendPostUpdate(post.getOwner().getId(),
                 new PostNotification(postId, post.getTitle(), "PUBLISHING", "Publishing...", "info", Instant.now()));
 
-        eventPublisher.publishEvent(new PostScheduledEvent(postId));
-        log.info("Post {} transitioned to PUBLISHING and event published", postId);
+        eventPublisher.publishEvent(new PostScheduledEvent(postId, true));
+        log.info("Post {} transitioned to PUBLISHING and event published (scheduled=true)", postId);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPostScheduled(PostScheduledEvent event) {
-        publishingProducer.sendPublishRequest(event.postId());
-        log.info("Post {} sent to RabbitMQ after commit", event.postId());
+        publishingProducer.sendPublishRequest(event.postId(), event.scheduled());
+        log.info("Post {} sent to RabbitMQ after commit (scheduled={})", event.postId(), event.scheduled());
     }
 
     @Transactional
-    public void attemptPublish(UUID postId, int attempt) {
+    public void attemptPublish(UUID postId, int attempt, boolean scheduled) {
         Post post = postRepository.findById(postId).orElse(null);
         if (post == null) {
             log.warn("Post {} not found, skipping publish", postId);
@@ -101,12 +101,12 @@ public class PublishingService {
 
         try {
             doPublish(post);
-            markPublished(post);
+            markPublished(post, scheduled);
             notificationService.sendPostUpdate(userId,
                     new PostNotification(postId, post.getTitle(), "PUBLISHED", "Published", "success", Instant.now()));
         } catch (Exception ex) {
             log.error("Publishing failed for post {}: {}", postId, ex.getMessage());
-            handleFailure(post, ex.getMessage(), attempt);
+            handleFailure(post, ex.getMessage(), attempt, scheduled);
         }
     }
 
@@ -170,7 +170,7 @@ public class PublishingService {
                         return null;
                     }
                 })
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -189,12 +189,17 @@ public class PublishingService {
         };
     }
 
-    private void markPublished(Post post) {
+    private void markPublished(Post post, boolean scheduled) {
         statusMachine.transition(post, PostStatus.PUBLISHED);
         post.setPublishedAt(Instant.now());
         post.setFailedReason(null);
         postRepository.save(post);
         log.info("Post {} published successfully", post.getId());
+
+        if (scheduled) {
+            sendResultEmail(post, true, null);
+        }
+
         if (post.isRecurring()) {
             try {
                 recurringPostService.createNextOccurrence(post).ifPresent(nextPost ->
@@ -206,7 +211,7 @@ public class PublishingService {
         }
     }
 
-    private void handleFailure(Post post, String reason, int attempt) {
+    private void handleFailure(Post post, String reason, int attempt, boolean scheduled) {
         UUID userId = post.getOwner().getId();
 
         if (attempt < post.getMaxRetries()) {
@@ -214,7 +219,7 @@ public class PublishingService {
             post.setRetryCount(attempt);
             post.setFailedReason(reason);
             postRepository.save(post);
-            publishingProducer.sendRetryRequest(post.getId(), attempt + 1);
+            publishingProducer.sendRetryRequest(post.getId(), attempt + 1, scheduled);
 
             notificationService.sendPostUpdate(userId,
                     new PostNotification(post.getId(), post.getTitle(), "RETRYING", "Retrying... (" + attempt + "/" + post.getMaxRetries() + ")", "warning", Instant.now()));
@@ -226,6 +231,42 @@ public class PublishingService {
 
             notificationService.sendPostUpdate(userId,
                     new PostNotification(post.getId(), post.getTitle(), "FAILED", "Failed - " + reason, "error", Instant.now()));
+
+            if (scheduled) {
+                sendResultEmail(post, false, reason);
+            }
         }
+    }
+
+    private void sendResultEmail(Post post, boolean success, String errorReason) {
+        String email = post.getOwner().getEmail();
+        if (email == null || email.isBlank()) {
+            log.warn("Cannot send result email for post {}: User {} has no email", post.getId(), post.getOwner().getId());
+            return;
+        }
+
+        if (!post.getOwner().isEmailNotificationsEnabled()) {
+            log.info("Email notifications are disabled for user {}", post.getOwner().getId());
+            return;
+        }
+
+        String subject = success ? "✅ Post published: " + post.getTitle() : "❌ Publication error: " + post.getTitle();
+        
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("postTitle", post.getTitle());
+        variables.put("success", success);
+        variables.put("scheduledTime", post.getScheduledAt());
+        
+        List<String> platformNames = new ArrayList<>();
+        if (post.getPlatforms() != null && !post.getPlatforms().isBlank()) {
+            for (String p : post.getPlatforms().split(",")) {
+                String name = p.split(":")[0];
+                platformNames.add(name);
+            }
+        }
+        variables.put("platforms", platformNames);
+        variables.put("errorReason", errorReason);
+
+        emailService.sendHtmlMessage(email, subject, "post-result", variables);
     }
 }

@@ -17,7 +17,8 @@ public class PublishingConsumer {
 
     @RabbitListener(queues = RabbitConfig.PUBLISH_QUEUE)
     public void onPublishRequest(PublishPostMessage message) {
-        log.info("Received publish request for post {} (attempt {})", message.postId(), message.attempt());
-        publishingService.attemptPublish(message.postId(), message.attempt());
+        log.info("Received publish request for post {} (attempt {}, scheduled={})", 
+                message.postId(), message.attempt(), message.scheduled());
+        publishingService.attemptPublish(message.postId(), message.attempt(), message.scheduled());
     }
 }

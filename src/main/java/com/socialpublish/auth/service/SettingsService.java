@@ -31,6 +31,7 @@ public class SettingsService {
 
         user.setFullName(normalizedName);
         user.setEmail(normalizedEmail);
+        user.setEmailNotificationsEnabled(request.isEmailNotificationsEnabled());
         userRepository.save(user);
     }
 

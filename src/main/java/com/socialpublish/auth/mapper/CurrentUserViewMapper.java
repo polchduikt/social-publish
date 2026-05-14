@@ -14,5 +14,6 @@ public interface CurrentUserViewMapper {
     @Mapping(target = "provider", expression = "java(AuthProvider.GOOGLE)")
     @Mapping(target = "role", expression = "java(Role.USER)")
     @Mapping(target = "passwordLoginEnabled", constant = "false")
+    @Mapping(target = "emailNotificationsEnabled", constant = "true")
     CurrentUserView toOAuth2View(String email, String fullName);
 }

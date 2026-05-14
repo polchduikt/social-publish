@@ -6,9 +6,7 @@ import com.socialpublish.integrations.telegram.entity.TelegramSettingsEntity;
 import com.socialpublish.integrations.telegram.repository.TelegramSettingsRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.UUID;
-
 import com.socialpublish.integrations.service.BaseIntegrationService;
 import java.util.ArrayList;
 import java.util.List;
