@@ -11,6 +11,7 @@ public record CurrentUserView(
         AuthProvider provider,
         Role role,
         boolean passwordLoginEnabled,
-        boolean emailNotificationsEnabled
+        boolean emailNotificationsEnabled,
+        boolean aiAssistantEnabled
 ) {
 }

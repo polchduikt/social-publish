@@ -90,19 +90,24 @@
         }, 3000);
     }
 
-    var saveDraftDebounced = debounce(function () {
-        if (!DraftStore || window.location.pathname.includes("/edit")) return;
+    var saveDraftDebounced = (function() {
+        var interval = parseInt(localStorage.getItem("autosaveInterval") || "5000");
+        if (interval === 0) return function() {};
         
-        var currentData = {
-            content: content.value,
-            platforms: getSelectedPlatforms(),
-            files: collectedFiles
-        };
+        return debounce(function () {
+            if (!DraftStore || window.location.pathname.includes("/edit")) return;
+            
+            var currentData = {
+                content: content.value,
+                platforms: getSelectedPlatforms(),
+                files: collectedFiles
+            };
 
-        DraftStore.save("currentDraft", currentData).then(function () {
-            showNotice(messages.autosaved);
-        });
-    }, parseInt(localStorage.getItem("autosaveInterval") || "2000"));
+            DraftStore.save("currentDraft", currentData).then(function () {
+                showNotice(messages.autosaved);
+            });
+        }, interval);
+    })();
 
     var collectedFiles = [];
     var dragSrcIndex = null;
@@ -788,27 +793,30 @@
     });
 
     if (!window.location.pathname.includes("/edit")) {
-        DraftStore.init().then(function () {
-            DraftStore.load("currentDraft").then(function (data) {
-                if (data) {
-                    if (data.content) {
-                        content.value = data.content;
+        var interval = parseInt(localStorage.getItem("autosaveInterval") || "5000");
+        if (interval !== 0) {
+            DraftStore.init().then(function () {
+                DraftStore.load("currentDraft").then(function (data) {
+                    if (data) {
+                        if (data.content) {
+                            content.value = data.content;
+                        }
+                        if (data.platforms && data.platforms.length > 0) {
+                            document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
+                                input.checked = data.platforms.indexOf(input.value) !== -1;
+                            });
+                        }
+                        if (data.files && data.files.length > 0) {
+                            collectedFiles = data.files;
+                            syncFilesToInput();
+                            renderSelectedMedia();
+                        }
+                        updateCharacterLimit();
+                        updatePreview();
+                        showNotice(messages.draftRestored);
                     }
-                    if (data.platforms && data.platforms.length > 0) {
-                        document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
-                            input.checked = data.platforms.indexOf(input.value) !== -1;
-                        });
-                    }
-                    if (data.files && data.files.length > 0) {
-                        collectedFiles = data.files;
-                        syncFilesToInput();
-                        renderSelectedMedia();
-                    }
-                    updateCharacterLimit();
-                    updatePreview();
-                    showNotice(messages.draftRestored);
-                }
+                });
             });
-        });
+        }
     }
 })();

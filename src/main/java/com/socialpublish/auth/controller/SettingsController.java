@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
@@ -74,6 +75,17 @@ public class SettingsController {
                     .queryParam("error", ex.getMessage())
                     .build().toUriString();
         }
+    }
+
+    @PostMapping("/settings/ai")
+    public String updateAiAssistant(
+            @CurrentUser CurrentUserView currentUser,
+            @RequestParam(name = "aiAssistantEnabled", defaultValue = "false") boolean aiAssistantEnabled
+    ) {
+        settingsService.updateAiAssistantEnabled(currentUser.id(), aiAssistantEnabled);
+        return "redirect:" + UriComponentsBuilder.fromPath("/settings")
+                .queryParam("message", "AI assistant settings updated")
+                .build().toUriString();
     }
 
     @PostMapping("/settings/delete-account")

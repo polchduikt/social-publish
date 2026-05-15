@@ -13,6 +13,7 @@
     <p th:text="${error != null ? error : 'An unexpected error occurred'}">An unexpected error occurred</p>
     <a th:href="@{/}">Back to Dashboard</a>
 </div>
+<div th:replace="~{fragments/layout/ai-assistant :: assistant}"></div>
 </body>
 </html>
 

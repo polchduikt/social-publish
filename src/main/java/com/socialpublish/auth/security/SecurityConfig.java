@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 "/login/**",
                                 "/error",
                                 "/favicon.ico",
+                                "/favicon.png",
                                 "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated()

@@ -36,6 +36,13 @@ public class SettingsService {
     }
 
     @Transactional
+    public void updateAiAssistantEnabled(UUID userId, boolean enabled) {
+        User user = requireUser(userId);
+        user.setAiAssistantEnabled(enabled);
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         User user = requireUser(userId);
 

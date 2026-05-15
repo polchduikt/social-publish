@@ -52,6 +52,17 @@ public class User {
     @Column(nullable = false)
     private boolean emailNotificationsEnabled = true;
 
+    @Column(nullable = false)
+    private boolean aiAssistantEnabled = true;
+
+    public boolean isAiAssistantEnabled() {
+        return aiAssistantEnabled;
+    }
+
+    public void setAiAssistantEnabled(boolean aiAssistantEnabled) {
+        this.aiAssistantEnabled = aiAssistantEnabled;
+    }
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

@@ -15,5 +15,6 @@ public interface CurrentUserViewMapper {
     @Mapping(target = "role", expression = "java(Role.USER)")
     @Mapping(target = "passwordLoginEnabled", constant = "false")
     @Mapping(target = "emailNotificationsEnabled", constant = "true")
+    @Mapping(target = "aiAssistantEnabled", constant = "true")
     CurrentUserView toOAuth2View(String email, String fullName);
 }

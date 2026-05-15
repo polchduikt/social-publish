@@ -34,7 +34,7 @@
     var autosaveBtns = document.querySelectorAll('#autosave-control .appearance-btn');
     if (autosaveBtns.length > 0) {
         function syncAutosave() {
-            var activeInterval = localStorage.getItem('autosaveInterval') || '2000';
+            var activeInterval = localStorage.getItem('autosaveInterval') || '5000';
             autosaveBtns.forEach(function (btn) {
                 btn.classList.toggle('active', btn.dataset.interval === activeInterval);
             });

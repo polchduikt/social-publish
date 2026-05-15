@@ -1597,7 +1597,7 @@
 
 .autosave-notice {
   position: fixed;
-  bottom: 24px;
+  bottom: 92px;
   right: 24px;
   background: var(--bg-surface, #fff);
   color: var(--text-secondary, #64748b);

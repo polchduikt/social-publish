@@ -1,0 +1,68 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="assistant">
+    <div id="ai-assistant-root"
+         th:if="${user == null or user.aiAssistantEnabled}"
+         th:attr="data-endpoint=@{/api/ai-assistant/chat},
+                  data-csrf-token=${_csrf != null ? _csrf.token : ''},
+                  data-csrf-header=${_csrf != null ? _csrf.headerName : ''},
+                  data-i18n-greeting=#{ai.assistant.greeting},
+                  data-i18n-typing=#{ai.assistant.typing},
+                  data-i18n-ask-placement=#{ai.assistant.askPlacement},
+                  data-i18n-inserted=#{ai.assistant.inserted},
+                  data-i18n-no-message-field=#{ai.assistant.noMessageField},
+                  data-i18n-request-failed=#{ai.assistant.requestFailed},
+                  data-i18n-network-error=#{ai.assistant.networkError},
+                  data-i18n-clear-done=#{ai.assistant.clearDone}">
+        <button id="ai-assistant-toggle" class="ai-assistant-toggle" type="button" th:attr="aria-label=#{ai.assistant.open}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="6" width="14" height="11" rx="3"></rect>
+                <circle cx="10" cy="11.5" r="1"></circle>
+                <circle cx="14" cy="11.5" r="1"></circle>
+                <path d="M10 14.5h4"></path>
+                <path d="M12 3v3"></path>
+                <path d="M8 20h8"></path>
+            </svg>
+        </button>
+
+        <section id="ai-assistant-panel" class="ai-assistant-panel is-hidden" aria-live="polite">
+            <header class="ai-assistant-header">
+                <div>
+                    <strong th:text="#{ai.assistant.title}">AI Assistant</strong>
+                </div>
+                <div class="ai-assistant-header-actions">
+                    <button id="ai-assistant-clear" type="button" class="ai-assistant-clear"
+                            th:attr="aria-label=#{ai.assistant.clear},title=#{ai.assistant.clear}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18"></path>
+                            <path d="M8 6V4h8v2"></path>
+                            <path d="M19 6l-1 14H6L5 6"></path>
+                        </svg>
+                    </button>
+                    <button id="ai-assistant-close" type="button" class="ai-assistant-close"
+                            th:attr="aria-label=#{ai.assistant.close},title=#{ai.assistant.close}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18"></path>
+                            <path d="M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div id="ai-assistant-messages" class="ai-assistant-messages"></div>
+
+            <form id="ai-assistant-form" class="ai-assistant-form">
+                <div class="ai-assistant-actions">
+                    <textarea id="ai-assistant-input" rows="2" maxlength="2500"
+                              th:placeholder="#{ai.assistant.inputPlaceholder}"></textarea>
+                    <button id="ai-assistant-send" type="submit"
+                            th:attr="aria-label=#{ai.assistant.send},title=#{ai.assistant.send}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13"></path>
+                            <path d="M22 2L15 22l-4-9-9-4z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+    <script src="/js/ai-assistant.js"></script>
+</th:block>
