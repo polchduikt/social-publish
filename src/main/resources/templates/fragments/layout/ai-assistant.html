@@ -1,6 +1,7 @@
 <th:block xmlns:th="http://www.thymeleaf.org" th:fragment="assistant">
     <div id="ai-assistant-root"
-         th:if="${user == null or user.aiAssistantEnabled}"
+         style="display: none; position: fixed; bottom: 30px; right: 30px; z-index: 1000;"
+         th:if="${user != null and user.aiAssistantEnabled}"
          th:attr="data-endpoint=@{/api/ai-assistant/chat},
                   data-csrf-token=${_csrf != null ? _csrf.token : ''},
                   data-csrf-header=${_csrf != null ? _csrf.headerName : ''},

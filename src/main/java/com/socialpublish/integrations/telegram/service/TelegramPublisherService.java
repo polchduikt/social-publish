@@ -43,25 +43,55 @@ public class TelegramPublisherService implements PlatformPublisher {
                 .filter(url -> url != null && !url.isBlank())
                 .toList();
 
+        boolean hasMessage = !message.isBlank();
+        boolean hasButtons = post.getInlineButtons() != null && !post.getInlineButtons().isBlank();
         boolean longMessage = message.length() > 1024;
         String caption = longMessage ? "" : message;
 
         if (mediaUrls.isEmpty()) {
-            telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), message);
+            if (hasMessage) {
+                telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), message, post.isSilentMode(), post.getInlineButtons());
+            } else if (hasButtons) {
+
+                telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), "·", post.isSilentMode(), post.getInlineButtons());
+            }
         } else if (mediaUrls.size() == 1) {
-            telegramClientService.sendPhoto(settings.getBotToken(), settings.getChatId(), mediaUrls.get(0), caption);
+            telegramClientService.sendPhoto(settings.getBotToken(), settings.getChatId(), mediaUrls.get(0), caption, post.isSilentMode(), post.getInlineButtons());
             if (longMessage) {
-                telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), message);
+                telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), message, post.isSilentMode(), post.getInlineButtons());
             }
         } else {
             telegramClientService.sendMediaGroup(
                     settings.getBotToken(),
                     settings.getChatId(),
                     mediaUrls,
-                    caption
+                    caption,
+                    post.isSilentMode()
             );
             if (longMessage) {
-                telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), message);
+                telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), message, post.isSilentMode(), post.getInlineButtons());
+            }
+            if (!longMessage && hasButtons && !hasMessage) {
+                 telegramClientService.sendMessage(settings.getBotToken(), settings.getChatId(), "·", post.isSilentMode(), post.getInlineButtons());
+            }
+        }
+
+        if (post.getPollQuestion() != null && !post.getPollQuestion().isBlank() && post.getPollOptions() != null && !post.getPollOptions().isBlank()) {
+            List<String> options = java.util.Arrays.stream(post.getPollOptions().split("\\n"))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .toList();
+            if (options.size() >= 2) {
+                telegramClientService.sendPoll(
+                        settings.getBotToken(),
+                        settings.getChatId(),
+                        post.getPollQuestion(),
+                        options,
+                        post.isSilentMode(),
+                        post.isPollMultipleAnswers(),
+                        post.isPollIsQuiz(),
+                        post.getPollCorrectOptionId()
+                );
             }
         }
         log.info("Published post {} to Telegram for user {}", post.getId(), userId);

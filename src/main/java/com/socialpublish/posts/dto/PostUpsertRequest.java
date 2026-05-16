@@ -14,7 +14,6 @@ import java.util.List;
 @Setter
 public class PostUpsertRequest {
 
-    @NotBlank(message = "Post content is required")
     @Size(max = 5000, message = "Post content must be at most 5000 characters")
     private String content;
 
@@ -37,4 +36,19 @@ public class PostUpsertRequest {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime recurringEndDate;
+
+    private boolean silentMode;
+
+    private String inlineButtons;
+
+    @Size(max = 250, message = "Poll question must be at most 250 characters")
+    private String pollQuestion;
+
+    private String pollOptions;
+
+    private boolean pollMultipleAnswers;
+
+    private boolean pollIsQuiz;
+
+    private Integer pollCorrectOptionId;
 }

@@ -76,7 +76,7 @@ public class PostService {
         post.setOwner(owner);
         post.setStatus(PostStatus.DRAFT);
         post.setTitle(buildTitleFromContent(post.getContent()));
-        
+
         postMediaSyncService.syncMedia(post, ownerId, mediaFiles, List.of());
 
         PostStatus targetStatus = request.getStatus() == null || request.getStatus().isBlank() ? PostStatus.DRAFT : PostStatus.valueOf(request.getStatus());
@@ -101,7 +101,7 @@ public class PostService {
         post.setOwner(owner);
         post.setStatus(PostStatus.DRAFT);
         post.setTitle(buildTitleFromContent(post.getContent()));
-        
+
         postMediaSyncService.syncMedia(post, ownerId, mediaFiles, List.of());
 
         prepareForImmediatePublish(post, request);
@@ -298,6 +298,14 @@ public class PostService {
             post.setRecurringTime(null);
             post.setRecurringEndDate(null);
         }
+
+        post.setSilentMode(request.isSilentMode());
+        post.setInlineButtons(request.getInlineButtons());
+        post.setPollQuestion(request.getPollQuestion());
+        post.setPollOptions(request.getPollOptions());
+        post.setPollMultipleAnswers(request.isPollMultipleAnswers());
+        post.setPollIsQuiz(request.isPollIsQuiz());
+        post.setPollCorrectOptionId(request.getPollCorrectOptionId());
     }
 
     private String buildTitleFromContent(String content) {

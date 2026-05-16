@@ -75,7 +75,7 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
                     }
                     entity.setChatId(rawChatId);
                 }
-                
+
                 entity.setLabel(req.getLabel() != null ? req.getLabel().trim() : "");
                 entity.setEnabled(req.getEnabled() != null ? req.getEnabled() : false);
                 toSave.add(entity);
@@ -91,7 +91,7 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
         if (!settings.isEnabled()) {
             throw new RuntimeException("Telegram is disabled");
         }
-        telegramClient.sendMessage(settings.getBotToken(), settings.getChatId(), testMessage);
+        telegramClient.sendMessage(settings.getBotToken(), settings.getChatId(), testMessage, false, null);
     }
 
     @Override

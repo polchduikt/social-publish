@@ -1,17 +1,25 @@
 (function () {
-    if (!document.querySelector('link[data-ai-assistant-style="1"]')) {
-        var styleLink = document.createElement("link");
-        styleLink.rel = "stylesheet";
-        styleLink.href = "/css/ai-assistant.css";
-        styleLink.setAttribute("data-ai-assistant-style", "1");
-        document.head.appendChild(styleLink);
-    }
-
     var root = document.getElementById("ai-assistant-root");
     if (!root || root.dataset.bound === "true") {
         return;
     }
     root.dataset.bound = "true";
+
+    var styleExists = document.querySelector('link[data-ai-assistant-style="1"]');
+    if (!styleExists) {
+        var styleLink = document.createElement("link");
+        styleLink.rel = "stylesheet";
+        styleLink.href = "/css/ai-assistant.css";
+        styleLink.setAttribute("data-ai-assistant-style", "1");
+        styleLink.onload = function() {
+            root.classList.add("is-ready");
+            root.style.display = "";
+        };
+        document.head.appendChild(styleLink);
+    } else {
+        root.classList.add("is-ready");
+        root.style.display = "";
+    }
 
     var toggleButton = document.getElementById("ai-assistant-toggle");
     var panel = document.getElementById("ai-assistant-panel");
@@ -84,7 +92,7 @@
                 pendingIntent: pendingIntent
             }));
         } catch (e) {
-            // ignore storage errors
+
         }
     }
 
@@ -467,7 +475,7 @@
             localStorage.removeItem(HISTORY_KEY);
             localStorage.removeItem(STATE_KEY);
         } catch (e) {
-            // ignore storage errors
+
         }
         renderMessage("assistant", t("clearDone"));
         addMessage("assistant", t("greeting"));

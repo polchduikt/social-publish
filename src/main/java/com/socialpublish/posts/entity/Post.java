@@ -91,6 +91,26 @@ public class Post {
     @Column(name = "parent_recurring_id")
     private UUID parentRecurringId;
 
+    @Column(nullable = false)
+    private boolean silentMode = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String inlineButtons;
+
+    @Column(length = 250)
+    private String pollQuestion;
+
+    @Column(columnDefinition = "TEXT")
+    private String pollOptions;
+
+    @Column(nullable = false)
+    private boolean pollMultipleAnswers = false;
+
+    @Column(nullable = false)
+    private boolean pollIsQuiz = false;
+
+    private Integer pollCorrectOptionId;
+
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;

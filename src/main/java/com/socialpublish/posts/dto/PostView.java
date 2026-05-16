@@ -22,6 +22,13 @@ public record PostView(
         boolean recurring,
         String recurringDays,
         String recurringTime,
-        LocalDateTime recurringEndDate
+        LocalDateTime recurringEndDate,
+        boolean silentMode,
+        String inlineButtons,
+        String pollQuestion,
+        String pollOptions,
+        boolean pollMultipleAnswers,
+        boolean pollIsQuiz,
+        Integer pollCorrectOptionId
 ) {
 }

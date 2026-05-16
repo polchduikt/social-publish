@@ -3,6 +3,11 @@
   right: 20px;
   bottom: 20px;
   z-index: 1300;
+  display: none;
+}
+
+#ai-assistant-root.is-ready {
+  display: block;
 }
 
 .ai-assistant-toggle {

@@ -1,41 +1,43 @@
-<nav class="top-navbar" xmlns:th="http://www.thymeleaf.org" th:fragment="navbar">
-    <div class="navbar-left">
-        <a href="/dashboard" class="brand-link">
-            <img src="/images/logo.png" alt="Social Publish" class="brand-logo">
-            <div class="brand-text">
-                <h1 th:text="#{nav.title}">Social Publish</h1>
-                <p th:text="#{nav.subtitle}">Automation Hub</p>
-            </div>
-        </a>
-    </div>
-    
-    <div class="navbar-center">
-    </div>
-
-    <div class="navbar-right">
-        <div class="notif-bell" th:if="${user != null}">
-            <button id="notifToggle" class="btn-icon" aria-label="Notifications">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-                <span id="notifCount" class="notif-count" style="display:none">0</span>
-            </button>
-            <div id="notifDropdown" class="notif-dropdown is-hidden">
-                <div class="notif-dropdown-header">
-                    <strong th:text="#{notif.title}">Notifications</strong>
-                    <button id="notifClear" class="notif-clear-btn" th:text="#{notif.clearAll}">Clear all</button>
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="navbar">
+    <nav class="top-navbar">
+        <div class="navbar-left">
+            <a href="/dashboard" class="brand-link">
+                <img src="/images/logo.png" alt="Social Publish" class="brand-logo">
+                <div class="brand-text">
+                    <h1 th:text="#{nav.title}">Social Publish</h1>
+                    <p th:text="#{nav.subtitle}">Automation Hub</p>
                 </div>
-                <div id="notifList" class="notif-list">
-                    <div class="notif-empty" th:text="#{notif.empty}">No new notifications</div>
-                </div>
-            </div>
+            </a>
         </div>
-        <a href="/settings" class="profile-chip" th:if="${user != null}" th:text="${user.fullName}">Profile</a>
-        <a href="/login" class="btn-primary" th:unless="${user != null}" th:text="#{nav.login}">Login</a>
-    </div>
-    <script th:inline="javascript">
-        window.csrfToken = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
-        window.csrfHeader = /*[[${_csrf != null ? _csrf.headerName : ''}]]*/ '';
-    </script>
-    <script src="/js/theme-toggle.js"></script>
+
+        <div class="navbar-center">
+        </div>
+
+        <div class="navbar-right">
+            <div class="notif-bell" th:if="${user != null}">
+                <button id="notifToggle" class="btn-icon" aria-label="Notifications">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <span id="notifCount" class="notif-count" style="display:none">0</span>
+                </button>
+                <div id="notifDropdown" class="notif-dropdown is-hidden">
+                    <div class="notif-dropdown-header">
+                        <strong th:text="#{notif.title}">Notifications</strong>
+                        <button id="notifClear" class="notif-clear-btn" th:text="#{notif.clearAll}">Clear all</button>
+                    </div>
+                    <div id="notifList" class="notif-list">
+                        <div class="notif-empty" th:text="#{notif.empty}">No new notifications</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/settings" class="profile-chip" th:if="${user != null}" th:text="${user.fullName}">Profile</a>
+            <a href="/login" class="btn-primary" th:unless="${user != null}" th:text="#{nav.login}">Login</a>
+        </div>
+        <script th:inline="javascript">
+            window.csrfToken = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+            window.csrfHeader = /*[[${_csrf != null ? _csrf.headerName : ''}]]*/ '';
+        </script>
+        <script src="/js/theme-toggle.js"></script>
+    </nav>
     <div th:replace="~{fragments/layout/ai-assistant :: assistant}"></div>
-</nav>
+</th:block>
 

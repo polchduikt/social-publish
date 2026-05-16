@@ -1,22 +1,35 @@
 (function () {
-    flatpickr("#scheduledAt", {
-        enableTime: true,
-        dateFormat: "Y-m-d\\TH:i",
-        altInput: true,
-        altFormat: "Y-m-d H:i",
-        time_24hr: true,
-        minDate: "today",
-        minuteIncrement: 1,
-        defaultHour: new Date().getHours(),
-        defaultMinute: new Date().getMinutes()
-    });
+    function initPollQuiz() {
+        try {
+            if (typeof setupQuizLogic === 'function') {
+                setupQuizLogic();
+                console.log("Quiz Logic Initialized");
+            }
+        } catch (e) {
+            console.error("Failed to init Quiz Logic:", e);
+        }
+    }
 
-    flatpickr("#recurringEndDate", {
-        dateFormat: "Y-m-d\\TH:i",
-        altInput: true,
-        altFormat: "Y-m-d",
-        minDate: "today"
-    });
+    try {
+        flatpickr("#scheduledAt", {
+            enableTime: true,
+            dateFormat: "Y-m-d\\TH:i",
+            altInput: true,
+            altFormat: "Y-m-d H:i",
+            time_24hr: true,
+            minDate: "today",
+            minuteIncrement: 1,
+            defaultHour: new Date().getHours(),
+            defaultMinute: new Date().getMinutes()
+        });
+
+        flatpickr("#recurringEndDate", {
+            dateFormat: "Y-m-d\\TH:i",
+            altInput: true,
+            altFormat: "Y-m-d",
+            minDate: "today"
+        });
+    } catch (e) { console.warn("Flatpickr init failed:", e); }
 
     var recurringOptions = document.getElementById("recurringOptions");
     var singleScheduleField = document.getElementById("singleScheduleField");
@@ -62,21 +75,23 @@
 
     var creatorShell = document.querySelector(".creator-shell");
     if (!content || !toolbar || !creatorShell) {
-        return;
+        console.error("Critical elements missing from Post Creator", {content, toolbar, creatorShell});
     }
 
+    setTimeout(initPollQuiz, 100);
+
     var messages = {
-        noPlatform: creatorShell.dataset.msgNoPlatform,
-        mixedMode: creatorShell.dataset.msgMixedMode,
-        telegramMode: creatorShell.dataset.msgTelegramMode,
-        discordMode: creatorShell.dataset.msgDiscordMode,
-        whatsappMode: creatorShell.dataset.msgWhatsappMode,
-        formattingSuffix: creatorShell.dataset.msgFormattingSuffix,
-        sharedSuffix: creatorShell.dataset.msgSharedSuffix,
-        defaultSuffix: creatorShell.dataset.msgDefaultSuffix,
-        previewPlaceholder: creatorShell.dataset.msgPreviewPlaceholder,
-        autosaved: creatorShell.dataset.msgAutosaved,
-        draftRestored: creatorShell.dataset.msgDraftRestored
+        noPlatform: creatorShell ? creatorShell.dataset.msgNoPlatform : "Select platform",
+        mixedMode: creatorShell ? creatorShell.dataset.msgMixedMode : "Mixed Mode",
+        telegramMode: creatorShell ? creatorShell.dataset.msgTelegramMode : "Telegram Mode",
+        discordMode: creatorShell ? creatorShell.dataset.msgDiscordMode : "Discord Mode",
+        whatsappMode: creatorShell ? creatorShell.dataset.msgWhatsappMode : "WhatsApp Mode",
+        formattingSuffix: creatorShell ? creatorShell.dataset.msgFormattingSuffix : "formatting",
+        sharedSuffix: creatorShell ? creatorShell.dataset.msgSharedSuffix : "shared",
+        defaultSuffix: creatorShell ? creatorShell.dataset.msgDefaultSuffix : "default",
+        previewPlaceholder: creatorShell ? creatorShell.dataset.msgPreviewPlaceholder : "Preview",
+        autosaved: creatorShell ? creatorShell.dataset.msgAutosaved : "Autosaved",
+        draftRestored: creatorShell ? creatorShell.dataset.msgDraftRestored : "Draft restored"
     };
 
     var autosaveNotice = document.getElementById("autosave-notice");
@@ -93,10 +108,10 @@
     var saveDraftDebounced = (function() {
         var interval = parseInt(localStorage.getItem("autosaveInterval") || "5000");
         if (interval === 0) return function() {};
-        
+
         return debounce(function () {
             if (!DraftStore || window.location.pathname.includes("/edit")) return;
-            
+
             var currentData = {
                 content: content.value,
                 platforms: getSelectedPlatforms(),
@@ -304,7 +319,7 @@
         if (content) {
             content.maxLength = minLimit;
         }
-        
+
         updateCharCountColor();
     }
 
@@ -312,7 +327,7 @@
         if (!charCount || !content || !maxCharCount) return;
         var current = content.value.length;
         var max = parseInt(maxCharCount.textContent, 10);
-        
+
         if (current > max) {
             charCount.classList.add("text-danger");
         } else if (current > max * 0.9) {
@@ -674,11 +689,101 @@
         initExistingMediaSorting();
     }
 
+    function updateAdvancedSettingsVisibility() {
+        const selected = getSelectedPlatforms();
+        const onlyTelegram = selected.length > 0 && selected.every(v => v.startsWith("TELEGRAM"));
+        const hasAnyNonTelegram = selected.some(v => !v.startsWith("TELEGRAM"));
+        const btnButtons = document.getElementById("btnToggleButtons");
+        const btnPoll = document.getElementById("btnTogglePoll");
+        const groupButtons = document.getElementById("groupInlineButtons");
+        const groupPoll = document.getElementById("groupPoll");
+        const shouldDisable = hasAnyNonTelegram;
+
+        if (btnButtons) {
+            btnButtons.disabled = shouldDisable;
+            btnButtons.style.opacity = shouldDisable ? "0.4" : "1";
+            btnButtons.style.pointerEvents = shouldDisable ? "none" : "auto";
+            if (shouldDisable && groupButtons) {
+                groupButtons.style.display = "none";
+                btnButtons.classList.remove("is-active");
+            }
+        }
+
+        if (btnPoll) {
+            btnPoll.disabled = shouldDisable;
+            btnPoll.style.opacity = shouldDisable ? "0.4" : "1";
+            btnPoll.style.pointerEvents = shouldDisable ? "none" : "auto";
+            if (shouldDisable && groupPoll) {
+                groupPoll.style.display = "none";
+                btnPoll.classList.remove("is-active");
+            }
+        }
+    }
+
+    function setupAdvancedSettings() {
+        var header = document.querySelector(".advanced-settings-header");
+        var panel = document.getElementById("advancedSettingsPanel");
+
+        if (header && panel) {
+        }
+
+        var btnSilent = document.getElementById("btnToggleSilent");
+        var btnButtons = document.getElementById("btnToggleButtons");
+        var btnPoll = document.getElementById("btnTogglePoll");
+        var groupSilent = document.getElementById("groupSilentMode");
+        var groupButtons = document.getElementById("groupInlineButtons");
+        var groupPoll = document.getElementById("groupPoll");
+
+        function toggleGroup(btn, group) {
+            if (!btn || !group) return;
+            var isHidden = group.style.display === 'none';
+            group.style.display = isHidden ? 'block' : 'none';
+            btn.classList.toggle("is-active", isHidden);
+        }
+
+        if (btnSilent) btnSilent.addEventListener("click", function() { toggleGroup(this, groupSilent); });
+        if (btnButtons) btnButtons.addEventListener("click", function() { toggleGroup(this, groupButtons); });
+        if (btnPoll) btnPoll.addEventListener("click", function() { toggleGroup(this, groupPoll); });
+        if (document.getElementById("silentMode") && document.getElementById("silentMode").checked) {
+            if (groupSilent) groupSilent.style.display = 'block';
+            if (btnSilent) btnSilent.classList.add("is-active");
+        }
+        if (document.getElementById("inlineButtons") && document.getElementById("inlineButtons").value.trim().length > 0) {
+            if (groupButtons) groupButtons.style.display = 'block';
+            if (btnButtons) btnButtons.classList.add("is-active");
+        }
+
+        var pollQuestionInput = document.getElementById("pollQuestion");
+        if (pollQuestionInput) {
+            if (pollQuestionInput.value.trim().length > 0) {
+                if (groupPoll) groupPoll.style.display = 'block';
+                if (btnPoll) btnPoll.classList.add("is-active");
+                var container = document.getElementById("pollOptionsContainer");
+                if (container) container.style.display = 'block';
+            }
+
+            pollQuestionInput.addEventListener("input", function () {
+                var container = document.getElementById("pollOptionsContainer");
+                if (this.value.trim().length > 0) {
+                    if (container) container.style.display = 'block';
+                } else {
+                    if (container) container.style.display = 'none';
+                }
+            });
+        }
+
+
+    }
+
+    setupAdvancedSettings();
+
+
     document.querySelectorAll('input[name="platforms"]').forEach(function (input) {
         input.addEventListener("change", function () {
             updateToolbarAvailability();
             updateCharacterLimit();
             setPreviewMode(resolvePreviewMode());
+            updateAdvancedSettingsVisibility();
             saveDraftDebounced();
         });
     });
@@ -707,6 +812,7 @@
     updateToolbarAvailability();
     updateCharacterLimit();
     setPreviewMode(resolvePreviewMode());
+    updateAdvancedSettingsVisibility();
     updateTelegramTime();
     updatePreview();
 
@@ -736,7 +842,7 @@
         document.querySelectorAll('input[name="platforms"]').forEach(input => {
             input.checked = false;
         });
-        
+
         if (platformsStr) {
             const platforms = platformsStr.split(',');
             platforms.forEach(p => {
@@ -746,7 +852,7 @@
                 }
             });
         }
-        
+
         updateToolbarAvailability();
         updateCharacterLimit();
         updatePreview();
@@ -792,6 +898,154 @@
         }
     });
 
+    function setupAdvancedToggles() {
+        const btnSilent = document.getElementById("btnToggleSilent");
+        const groupSilent = document.getElementById("groupSilentMode");
+        const silentMode = document.getElementById("silentMode");
+
+        const btnPoll = document.getElementById("btnTogglePoll");
+        const groupPoll = document.getElementById("groupPoll");
+        const pollQuestion = document.getElementById("pollQuestion");
+
+        if (silentMode && silentMode.checked) {
+            if (groupSilent) groupSilent.style.display = 'block';
+            if (btnSilent) btnSilent.classList.add("is-active");
+        }
+        if (pollQuestion && pollQuestion.value.trim().length > 0) {
+            if (groupPoll) groupPoll.style.display = 'block';
+            if (btnPoll) btnPoll.classList.add("is-active");
+        }
+    }
+
+    function setupQuizLogic() {
+        const getQuizCb = () => document.getElementById('pollIsQuiz') || document.querySelector('input[name="pollIsQuiz"]');
+        const getMultCb = () => document.getElementById('pollMultipleAnswers') || document.querySelector('input[name="pollMultipleAnswers"]');
+        const pollOpts = document.getElementById('pollOptions');
+        const radioList = document.getElementById('quizOptionsRadioList');
+        const quizGroup = document.getElementById('quizCorrectOptionGroup');
+        const hiddenId = document.getElementById('pollCorrectOptionId');
+
+        function sync() {
+            const quizCb = getQuizCb();
+            const multCb = getMultCb();
+
+            if (!quizCb || !multCb || !quizGroup || !radioList) return;
+
+            const isQuiz = quizCb.checked;
+
+            if (isQuiz) {
+                quizGroup.style.display = 'block';
+                const groupLabel = quizGroup.querySelector('label');
+                if (groupLabel) {
+                    groupLabel.style.display = 'block';
+                    groupLabel.style.textAlign = 'left';
+                    groupLabel.style.width = '50%';
+                    groupLabel.style.marginLeft = 'auto';
+                    groupLabel.style.paddingLeft = '4px';
+                    groupLabel.style.marginBottom = '12px';
+                }
+                multCb.disabled = true;
+                const parent = multCb.closest('.toggle-field');
+                if (parent) {
+                    parent.style.opacity = '0.5';
+                    parent.style.pointerEvents = 'none';
+                }
+
+                const val = pollOpts ? pollOpts.value : "";
+                const lines = val.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                radioList.innerHTML = '';
+                let selectedIdx = parseInt(hiddenId ? hiddenId.value : "0") || 0;
+
+                if (lines.length === 0) {
+                    radioList.innerHTML = '<div style="font-size:0.8rem; color:rgba(255,255,255,0.4); font-style:italic; padding:10px; text-align: right;">Enter options above...</div>';
+                } else {
+                    lines.forEach((line, idx) => {
+                        const isSelected = (idx === selectedIdx);
+                        const label = document.createElement('label');
+                        label.style.cssText = `
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 15px;
+                            padding: 10px 16px;
+                            background: ${isSelected ? 'rgba(37, 99, 235, 0.15)' : 'rgba(255, 255, 255, 0.03)'};
+                            border-radius: 10px;
+                            margin-bottom: 8px;
+                            cursor: pointer;
+                            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                            border: 1px solid ${isSelected ? 'rgba(59, 130, 246, 0.5)' : 'rgba(255, 255, 255, 0.05)'};
+                            width: 50%;
+                            margin-left: auto;
+                            box-shadow: ${isSelected ? '0 4px 12px rgba(0, 0, 0, 0.1)' : 'none'};
+                        `;
+
+                        label.onmouseenter = () => {
+                            if (!isSelected) label.style.background = 'rgba(255, 255, 255, 0.06)';
+                        };
+                        label.onmouseleave = () => {
+                            if (!isSelected) label.style.background = 'rgba(255, 255, 255, 0.03)';
+                        };
+
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = 'quiz_correct_choice_final';
+                        radio.value = idx;
+                        radio.checked = isSelected;
+                        radio.style.cssText = `
+                            margin: 0;
+                            width: 18px;
+                            height: 18px;
+                            cursor: pointer;
+                            accent-color: #3b82f6;
+                        `;
+
+                        radio.onchange = () => {
+                            if (hiddenId) hiddenId.value = idx;
+                            saveDraftDebounced();
+                            sync();
+                        };
+
+                        const span = document.createElement('span');
+                        span.style.cssText = `
+                            font-size: 0.9rem;
+                            font-weight: 500;
+                            color: ${isSelected ? '#60a5fa' : 'var(--dm-text-strong)'};
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        `;
+                        span.textContent = line;
+
+                        label.appendChild(radio);
+                        label.appendChild(span);
+                        radioList.appendChild(label);
+                    });
+                }
+            } else {
+                quizGroup.style.display = 'none';
+                multCb.disabled = false;
+                const parent = multCb.closest('.toggle-field');
+                if (parent) {
+                    parent.style.opacity = '1';
+                    parent.style.pointerEvents = 'auto';
+                }
+            }
+        }
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'pollIsQuiz' || e.target.id === 'pollMultipleAnswers') sync();
+        });
+        if (pollOpts) {
+            pollOpts.addEventListener('input', sync);
+        }
+        setInterval(sync, 1000);
+        sync();
+    }
+
+    setupAdvancedToggles();
+    setupQuizLogic();
+
     if (!window.location.pathname.includes("/edit")) {
         var interval = parseInt(localStorage.getItem("autosaveInterval") || "5000");
         if (interval !== 0) {
@@ -813,10 +1067,21 @@
                         }
                         updateCharacterLimit();
                         updatePreview();
+                        updateAdvancedSettingsVisibility();
+                        if (typeof setupQuizLogic === 'function') {
+                            const pollOptions = document.getElementById("pollOptions");
+                            if (pollOptions && pollOptions.value) {
+                                pollOptions.dispatchEvent(new Event('input'));
+                            }
+                        }
                         showNotice(messages.draftRestored);
                     }
                 });
             });
         }
     }
+    updateToolbarAvailability();
+    updateCharacterLimit();
+    setPreviewMode(resolvePreviewMode());
+    updateAdvancedSettingsVisibility();
 })();

@@ -153,7 +153,7 @@
 
                         <section class="panel message-panel">
                             <div class="editor-toolbar">
-                                <span class="toolbar-label" th:text="#{post.message}">Message</span>
+                                <h3 class="panel-title m-0" th:text="#{post.message}">Message</h3>
                                 <span class="char-count"><span id="charCount">0</span>/<span id="maxCharCount">5000</span></span>
                             </div>
                             <div class="format-toolbar" id="formatToolbar">
@@ -182,14 +182,98 @@
                                 platform to see available formatting features.</div>
                             <div class="field mb-0">
                                 <textarea id="content" th:field="*{content}" rows="6" maxlength="5000"
-                                    th:placeholder="#{post.contentPlaceholder}" required></textarea>
+                                    th:placeholder="#{post.contentPlaceholder}"></textarea>
                             </div>
 
                         </section>
 
+                        <section class="panel advanced-settings-panel" id="advancedSettingsPanel">
+                            <div class="advanced-settings-header">
+                                <h3 class="panel-title" th:text="#{post.advancedSettings} ?: 'Advanced Settings'">Advanced Settings</h3>
+                            </div>
+                                <div id="advancedSettingsContent">
+                                    <div class="advanced-settings-toolbar" style="display: flex; gap: 8px; margin-top: 10px; margin-bottom: 5px;">
+                                        <button type="button" id="btnToggleSilent" class="format-btn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                                <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/>
+                                            </svg>
+                                            <span th:text="#{post.silentModeShort} ?: 'Silent'">Silent</span>
+                                        </button>
+                                        <button type="button" id="btnToggleButtons" class="format-btn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                                            </svg>
+                                            <span th:text="#{post.inlineButtons} ?: 'Buttons'">Buttons</span>
+                                        </button>
+                                        <button type="button" id="btnTogglePoll" class="format-btn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                                <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
+                                            </svg>
+                                            <span th:text="#{post.pollShort} ?: 'Poll'">Poll</span>
+                                        </button>
+                                    </div>
+
+                                    <div id="advancedSettingsFields" style="margin-top: 10px;">
+
+                                        <div class="field" id="groupSilentMode" style="display: none; margin-bottom: 12px;">
+                                            <label class="toggle-field" for="silentMode">
+                                                <span class="toggle-label" style="font-weight: 600;" th:text="#{post.silentModeShort} ?: 'Silent'">Silent</span>
+                                                <div class="switch">
+                                                    <input type="checkbox" id="silentMode" th:field="*{silentMode}">
+                                                    <span class="slider"></span>
+                                                </div>
+                                            </label>
+                                        </div>
+
+
+                                        <div class="field" id="groupInlineButtons" style="display: none; margin-top: 10px;">
+                                            <label for="inlineButtons" style="font-weight: 600; font-size: 0.9rem;" th:text="#{post.inlineButtons} ?: 'Inline Buttons'">Inline Buttons</label>
+                                            <textarea id="inlineButtons" th:field="*{inlineButtons}" rows="2" placeholder='[{"text": "Button", "url": "https://..."}]' style="margin-top: 5px;"></textarea>
+                                        </div>
+
+
+                                        <div class="field" id="groupPoll" style="display: none; margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 15px;">
+                                            <label for="pollQuestion" style="font-weight: 600; font-size: 0.9rem;" th:text="#{post.pollQuestion} ?: 'Poll Question'">Poll Question</label>
+                                            <input type="text" id="pollQuestion" th:field="*{pollQuestion}" placeholder="Ask a question..." style="margin-top: 5px;">
+
+                                            <div id="pollOptionsContainer" style="display: none; margin-top: 10px; padding: 15px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                                                <label for="pollOptions" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; display: block;" th:text="#{post.pollOptions} ?: 'Poll Options (One per line)'">Poll Options (One per line)</label>
+                                                <textarea id="pollOptions" th:field="*{pollOptions}" rows="3" placeholder="Option 1&#10;Option 2"></textarea>
+
+                                                <div id="quizCorrectOptionGroup" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                                                    <label style="font-size: 0.85rem; font-weight: 600;" th:text="#{post.pollCorrectSelectLabel} ?: 'Select Correct Answer'">Select Correct Answer</label>
+                                                    <div id="quizOptionsRadioList" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+
+                                                    </div>
+                                                    <input type="hidden" id="pollCorrectOptionId" th:field="*{pollCorrectOptionId}">
+                                                </div>
+                                            </div>
+
+
+                                            <div id="pollToggles" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top: 12px;">
+                                                <label class="toggle-field" for="pollMultipleAnswers">
+                                                    <span class="toggle-label" style="font-size: 0.85rem;" th:text="#{post.pollMultipleShort} ?: 'Multiple'">Multiple</span>
+                                                    <div class="switch">
+                                                        <input type="checkbox" id="pollMultipleAnswers" th:field="*{pollMultipleAnswers}">
+                                                        <span class="slider"></span>
+                                                    </div>
+                                                </label>
+                                                <label class="toggle-field" for="pollIsQuiz">
+                                                    <span class="toggle-label" style="font-size: 0.85rem;" th:text="#{post.pollQuizShort} ?: 'Quiz'">Quiz</span>
+                                                    <div class="switch">
+                                                        <input type="checkbox" id="pollIsQuiz" th:field="*{pollIsQuiz}">
+                                                        <span class="slider"></span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </section>
+
                         <section class="panel media-panel">
                             <div class="editor-toolbar">
-                                <span class="toolbar-label" th:text="#{post.photos}">Photos</span>
+                                <h3 class="panel-title m-0" th:text="#{post.photos}">Photos</h3>
                                 <span class="char-count" th:text="#{post.photosHint}">Up to 10 images, 10MB each</span>
                             </div>
 
@@ -303,6 +387,8 @@
                                     </div>
                                 </div>
                             </div>
+
+
 
                             <div class="creator-actions">
                                 <button type="submit" name="status" value="SCHEDULED" class="btn-schedule">
@@ -484,11 +570,10 @@
     </div>
 
     <div id="toast-container"></div>
-    <script src="/js/draft-store.js"></script>
-    <script src="/js/post-creator.js"></script>
+    <script src="/js/draft-store.js?v=1.1"></script>
+    <script src="/js/post-creator.js?v=1.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2/lib/stomp.min.js"></script>
     <script src="/js/notifications.js"></script>
 </body>
-
 </html>
