@@ -31,9 +31,7 @@
                             <span class="template-date" th:text="${#temporals.format(tpl.updatedAt, 'dd MMM yyyy, HH:mm')}">Date</span>
                         </div>
                         <div class="template-platforms">
-                            <th:block th:if="${!#strings.isEmpty(tpl.platforms)}">
-                                <span class="platform-badge" th:each="p : ${#strings.arraySplit(tpl.platforms, ',')}" th:text="${p}">Platform</span>
-                            </th:block>
+                            <span class="platform-badge" th:each="p : ${tpl.formattedPlatforms}" th:text="${p}">Platform</span>
                         </div>
                     </div>
                     

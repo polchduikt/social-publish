@@ -36,6 +36,24 @@ Social Publish provides a full content lifecycle through a unified web interface
 - **Dark/Light Mode**: Fully responsive design with advanced dark theme support.
 - **Transactional Integrity**: Ensures posts are either published everywhere or errors are handled with retry capabilities.
 
+### Screenshots
+
+| Dashboard | Post Creator |
+| :---: | :---: |
+| ![Dashboard](docs/screenshots/dashboard.jpg) | ![Post Creator](docs/screenshots/post-creator.jpg) |
+
+| Post Templates | Content Queue |
+| :---: | :---: |
+| ![Post Templates](docs/screenshots/templates.jpg) | ![Content Queue](docs/screenshots/queue.jpg) |
+
+| Content Calendar | Account Management |
+| :---: | :---: |
+| ![Content Calendar](docs/screenshots/calendar.jpg) | ![Account Management](docs/screenshots/accounts.jpg) |
+
+| Platform Configuration | User Settings |
+| :---: | :---: |
+| ![Platform Configuration](docs/screenshots/configuration.jpg) | ![User Settings](docs/screenshots/settings.jpg) |
+
 ### Core Features
 
 #### Post Creator & AI

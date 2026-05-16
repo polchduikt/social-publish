@@ -2,6 +2,7 @@ package com.socialpublish.posts.service;
 
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.repository.UserRepository;
+import com.socialpublish.integrations.service.IntegrationStatusService;
 import com.socialpublish.posts.dto.PostUpsertRequest;
 import com.socialpublish.posts.dto.CreatePostTemplateRequest;
 import com.socialpublish.posts.dto.PostTemplateDto;
@@ -20,12 +21,14 @@ public class PostTemplateService {
 
     private final PostTemplateRepository postTemplateRepository;
     private final UserRepository userRepository;
+    private final IntegrationStatusService integrationStatusService;
 
     @Transactional(readOnly = true)
     public List<PostTemplateDto> getUserTemplates(UUID userId) {
+        var labels = integrationStatusService.getAccountLabels(userId);
         return postTemplateRepository.findAllByOwnerIdOrderByUpdatedAtDesc(userId)
                 .stream()
-                .map(this::toDto)
+                .map(t -> toDto(t, labels))
                 .collect(Collectors.toList());
     }
 
@@ -41,7 +44,7 @@ public class PostTemplateService {
         template.setPlatforms(request.platforms() != null ? String.join(",", request.platforms()) : "");
 
         PostTemplate saved = postTemplateRepository.save(template);
-        return toDto(saved);
+        return toDto(saved, integrationStatusService.getAccountLabels(userId));
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +56,7 @@ public class PostTemplateService {
             throw new IllegalStateException("You don't own this template");
         }
 
-        return toDto(template);
+        return toDto(template, integrationStatusService.getAccountLabels(userId));
     }
     @Transactional(readOnly = true)
     public PostUpsertRequest createUpsertRequest(UUID userId, UUID templateId) {
@@ -86,12 +89,20 @@ public class PostTemplateService {
         postTemplateRepository.delete(template);
     }
 
-    private PostTemplateDto toDto(PostTemplate template) {
+    private PostTemplateDto toDto(PostTemplate template, java.util.Map<String, String> labels) {
+        List<String> formatted = new java.util.ArrayList<>();
+        if (template.getPlatforms() != null && !template.getPlatforms().isBlank()) {
+            for (String p : template.getPlatforms().split(",")) {
+                formatted.add(labels.getOrDefault(p, p));
+            }
+        }
+
         return new PostTemplateDto(
                 template.getId(),
                 template.getTemplateName(),
                 template.getContent(),
                 template.getPlatforms(),
+                formatted,
                 template.getUpdatedAt()
         );
     }

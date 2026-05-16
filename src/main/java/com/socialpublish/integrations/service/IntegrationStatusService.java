@@ -22,7 +22,9 @@ import com.socialpublish.integrations.dto.UserIntegrationsView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -111,6 +113,35 @@ public class IntegrationStatusService {
         return linkedinSettingsRepository.findByUserId(userId)
                 .map(this::toLinkedInView)
                 .orElse(LinkedInSettingsView.builder().configured(false).enabled(false).build());
+    }
+
+    public Map<String, String> getAccountLabels(UUID userId) {
+        Map<String, String> labels = new HashMap<>();
+
+        telegramSettingsRepository.findAllByUserId(userId).forEach(s ->
+                labels.put("TELEGRAM:" + s.getId(), s.getLabel() == null || s.getLabel().isBlank() ? "Telegram" : "Telegram: " + s.getLabel()));
+
+        discordSettingsRepository.findAllByUserId(userId).forEach(s ->
+                labels.put("DISCORD:" + s.getId(), s.getLabel() == null || s.getLabel().isBlank() ? "Discord" : "Discord: " + s.getLabel()));
+
+        slackSettingsRepository.findAllByUserId(userId).forEach(s ->
+                labels.put("SLACK:" + s.getId(), s.getLabel() == null || s.getLabel().isBlank() ? "Slack" : "Slack: " + s.getLabel()));
+
+        notionSettingsRepository.findAllByUserId(userId).forEach(s ->
+                labels.put("NOTION:" + s.getId(), s.getLabel() == null || s.getLabel().isBlank() ? "Notion" : "Notion: " + s.getLabel()));
+
+        redditSettingsRepository.findByUserId(userId).ifPresent(s -> {
+            String label = s.getLabel() == null || s.getLabel().isBlank() ? "Reddit" : "Reddit: " + s.getLabel();
+            labels.put("REDDIT:" + s.getId(), label);
+            labels.put("REDDIT", label);
+        });
+
+        linkedinSettingsRepository.findByUserId(userId).ifPresent(s -> {
+            labels.put("LINKEDIN:" + s.getId(), "LinkedIn");
+            labels.put("LINKEDIN", "LinkedIn");
+        });
+
+        return labels;
     }
 
     public UserIntegrationsView getAllStatuses(UUID userId) {
