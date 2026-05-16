@@ -68,9 +68,32 @@
 
 .queue-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
+}
+
+.filter-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.filter-checkbox-label:hover {
+  color: #1e293b;
+}
+
+.filter-checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
 }
 
 .queue-main-panel {
@@ -494,8 +517,18 @@ html.dark-mode .queue-filter-group h4 {
   color: #94a3b8;
 }
 
-html.dark-mode .queue-radio {
+html.dark-mode .queue-radio,
+html.dark-mode .filter-checkbox-label {
   color: #cbd5e1;
+}
+
+html.dark-mode .filter-checkbox-label:hover {
+  color: #f8fafc;
+}
+
+html.dark-mode .filter-checkbox-label input[type="checkbox"] {
+  background: #1f2937;
+  border-color: #374151;
 }
 
 html.dark-mode .queue-search-wrap input,

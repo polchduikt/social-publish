@@ -1,5 +1,7 @@
 package com.socialpublish.posts.queue;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,18 +15,22 @@ public class QueueFilterRequest {
     private String status;
     private String search;
     private String tag;
-    private QueuePlatformFilter platform = QueuePlatformFilter.ALL;
-    private QueuePostTypeFilter type = QueuePostTypeFilter.ALL;
+    private List<QueuePlatformFilter> platform = new ArrayList<>();
+    private List<QueuePostTypeFilter> type = new ArrayList<>();
     private QueueDateRangeFilter dateRange = QueueDateRangeFilter.ALL;
     private QueueSortOption sort = QueueSortOption.NEWEST;
     private Integer size = DEFAULT_SIZE;
 
-    public QueuePlatformFilter getPlatform() {
-        return platform == null ? QueuePlatformFilter.ALL : platform;
+    public String getStatus() {
+        return status == null ? "" : status;
     }
 
-    public QueuePostTypeFilter getType() {
-        return type == null ? QueuePostTypeFilter.ALL : type;
+    public List<QueuePlatformFilter> getPlatform() {
+        return platform == null ? new ArrayList<>() : platform;
+    }
+
+    public List<QueuePostTypeFilter> getType() {
+        return type == null ? new ArrayList<>() : type;
     }
 
     public QueueDateRangeFilter getDateRange() {

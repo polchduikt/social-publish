@@ -40,11 +40,11 @@ public class QueueWebSupport {
         if (filters.hasTag()) {
             builder.queryParam("tag", filters.normalizedTag());
         }
-        if (filters.getPlatform() != QueuePlatformFilter.ALL) {
-            builder.queryParam("platform", filters.getPlatform().name());
+        if (!filters.getPlatform().isEmpty()) {
+            builder.queryParam("platform", filters.getPlatform());
         }
-        if (filters.getType() != QueuePostTypeFilter.ALL) {
-            builder.queryParam("type", filters.getType().name());
+        if (!filters.getType().isEmpty()) {
+            builder.queryParam("type", filters.getType());
         }
         if (filters.getDateRange() != QueueDateRangeFilter.ALL) {
             builder.queryParam("dateRange", filters.getDateRange().name());

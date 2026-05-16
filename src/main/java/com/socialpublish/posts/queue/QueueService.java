@@ -112,7 +112,7 @@ public class QueueService {
             if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
                 predicates.add(cb.equal(root.get("status"), PostStatus.valueOf(filter.getStatus())));
             }
-
+            
             if (filter.hasSearch()) {
                 String token = "%" + filter.normalizedSearch().toLowerCase() + "%";
                 predicates.add(cb.or(
@@ -120,34 +120,42 @@ public class QueueService {
                         cb.like(cb.lower(root.get("content")), token)
                 ));
             }
-
+            
             if (filter.hasTag()) {
                 String tagToken = "%#" + filter.normalizedTag().toLowerCase() + "%";
                 predicates.add(cb.like(cb.lower(root.get("content")), tagToken));
             }
-
-            if (filter.getPlatform() != QueuePlatformFilter.ALL) {
-                String platform = filter.getPlatform().name();
-                Expression<String> normalizedPlatforms = cb.concat(cb.concat(",", root.get("platforms")), ",");
-                predicates.add(cb.like(normalizedPlatforms, "%," + platform + ",%"));
+            
+            if (!filter.getPlatform().isEmpty() && !filter.getPlatform().contains(QueuePlatformFilter.ALL)) {
+                List<Predicate> platformPredicates = new ArrayList<>();
+                for (QueuePlatformFilter p : filter.getPlatform()) {
+                    String platform = p.name();
+                    Expression<String> normalizedPlatforms = cb.concat(cb.concat(",", root.get("platforms")), ",");
+                    platformPredicates.add(cb.like(normalizedPlatforms, "%," + platform + ",%"));
+                }
+                predicates.add(cb.or(platformPredicates.toArray(new Predicate[0])));
             }
-
-            switch (filter.getType()) {
-                case IMAGE -> predicates.add(cb.isNotEmpty(root.get("media")));
-                case TEXT -> predicates.add(cb.isEmpty(root.get("media")));
-                case VIDEO -> {
-                    Predicate mp4 = cb.like(cb.lower(root.get("content")), "%.mp4%");
-                    Predicate mov = cb.like(cb.lower(root.get("content")), "%.mov%");
-                    Predicate webm = cb.like(cb.lower(root.get("content")), "%.webm%");
-                    predicates.add(cb.or(mp4, mov, webm));
+            
+            if (!filter.getType().isEmpty() && !filter.getType().contains(QueuePostTypeFilter.ALL)) {
+                List<Predicate> typePredicates = new ArrayList<>();
+                for (QueuePostTypeFilter t : filter.getType()) {
+                    switch (t) {
+                        case IMAGE -> typePredicates.add(cb.isNotEmpty(root.get("media")));
+                        case TEXT -> typePredicates.add(cb.isEmpty(root.get("media")));
+                        case VIDEO -> {
+                            Predicate mp4 = cb.like(cb.lower(root.get("content")), "%.mp4%");
+                            Predicate mov = cb.like(cb.lower(root.get("content")), "%.mov%");
+                            Predicate webm = cb.like(cb.lower(root.get("content")), "%.webm%");
+                            typePredicates.add(cb.or(mp4, mov, webm));
+                        }
+                        case POLL -> {
+                            Predicate withQuestion = cb.like(cb.lower(root.get("content")), "%?%");
+                            Predicate withPollKeyword = cb.like(cb.lower(root.get("content")), "%poll%");
+                            typePredicates.add(cb.or(withQuestion, withPollKeyword));
+                        }
+                    }
                 }
-                case POLL -> {
-                    Predicate withQuestion = cb.like(cb.lower(root.get("content")), "%?%");
-                    Predicate withPollKeyword = cb.like(cb.lower(root.get("content")), "%poll%");
-                    predicates.add(cb.or(withQuestion, withPollKeyword));
-                }
-                case ALL -> {
-                }
+                predicates.add(cb.or(typePredicates.toArray(new Predicate[0])));
             }
 
             switch (filter.getDateRange()) {

@@ -55,23 +55,73 @@
                 </article>
             </section>
 
-            <div class="queue-filters">
-                <a th:href="@{/queue(search=${filters.search},tag=${filters.tag},platform=${filters.platform},type=${filters.type},dateRange=${filters.dateRange},sort=${filters.sort},size=${filters.size})}"
-                   class="filter-pill"
-                   th:classappend="${filters.status == null} ? 'active'" th:text="#{queue.filters.all}">All</a>
-                <a th:each="s : ${statusOptions}"
-                   th:href="@{/queue(status=${s},search=${filters.search},tag=${filters.tag},platform=${filters.platform},type=${filters.type},dateRange=${filters.dateRange},sort=${filters.sort},size=${filters.size})}"
-                   class="filter-pill"
-                   th:classappend="${filters.status != null and filters.status == s} ? 'active'"
-                   th:text="${#messages.msg('status.' + s)}">STATUS</a>
-            </div>
-
             <div class="queue-layout">
+                <aside class="panel queue-sidebar">
+                    <h3 th:text="#{queue.filters.title}">Filters</h3>
+                    <form method="get" action="/queue" class="queue-sidebar-form">
+                        <input type="hidden" name="search" th:value="${filters.search}">
+                        <input type="hidden" name="tag" th:value="${filters.tag}">
+                        <input type="hidden" name="sort" th:value="${filters.sort}">
+                        <input type="hidden" name="size" th:value="${filters.size}">
+
+                        <div class="queue-filter-group">
+                            <h4 th:text="#{queue.table.status}">Status</h4>
+                            <label class="queue-radio">
+                                <input type="radio" name="status" value="" th:checked="${filters.status == null or filters.status == ''}">
+                                <span th:text="#{queue.filters.all}">All</span>
+                            </label>
+                            <label th:each="s : ${statusOptions}" class="queue-radio">
+                                <input type="radio" name="status" th:value="${s}"
+                                       th:checked="${filters.status == s}">
+                                <span th:text="${#messages.msg('status.' + s)}">DRAFT</span>
+                            </label>
+                        </div>
+
+                        <div class="queue-filter-group">
+                            <h4 th:text="#{queue.filters.byPlatform}">By platform</h4>
+                            <label th:each="option : ${platformOptions}"
+                                   th:if="${option.name() != 'ALL' and option.name() != 'REDDIT' and option.name() != 'WHATSAPP'}"
+                                   class="filter-checkbox-label">
+                                <input type="checkbox" name="platform" th:value="${option.name()}"
+                                       th:checked="${filters.platform.contains(option)}">
+                                <div th:replace="~{fragments/ui/icons :: platform-icon(${option.name()}, 'sm')}" style="margin-right: 8px;"></div>
+                                <span th:text="${#messages.msg('platform.' + option.name())}">Telegram</span>
+                            </label>
+                        </div>
+
+                        <div class="queue-filter-group">
+                            <h4 th:text="#{queue.filters.byType}">By type</h4>
+                            <label th:each="option : ${typeOptions}" 
+                                   th:if="${option.name() != 'ALL'}"
+                                   class="filter-checkbox-label">
+                                <input type="checkbox" name="type" th:value="${option.name()}"
+                                       th:checked="${filters.type.contains(option)}">
+                                <span th:text="${#messages.msg('post.type.' + option.name())}">Text</span>
+                            </label>
+                        </div>
+
+                        <div class="queue-filter-group">
+                            <h4 th:text="#{queue.filters.byDate}">By date</h4>
+                            <label th:each="option : ${dateRangeOptions}" class="queue-radio">
+                                <input type="radio" name="dateRange" th:value="${option.name()}"
+                                       th:checked="${filters.dateRange.name() == option.name()}">
+                                <span th:text="${#messages.msg('dateRange.' + option.name())}">All</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-link btn-sm w-100" th:text="#{queue.filters.apply}">Apply filters</button>
+                    </form>
+                </aside>
+
                 <section class="panel queue-main-panel">
                     <form method="get" action="/queue" class="queue-toolbar">
-                        <input type="hidden" name="status" th:if="${filters.status != null}" th:value="${filters.status}">
-                        <input type="hidden" name="platform" th:value="${filters.platform}">
-                        <input type="hidden" name="type" th:value="${filters.type}">
+                        <input type="hidden" name="status" th:value="${filters.status}">
+                        <th:block th:each="p : ${filters.platform}">
+                            <input type="hidden" name="platform" th:value="${p}">
+                        </th:block>
+                        <th:block th:each="t : ${filters.type}">
+                            <input type="hidden" name="type" th:value="${t}">
+                        </th:block>
                         <input type="hidden" name="dateRange" th:value="${filters.dateRange}">
                         <input type="hidden" name="size" th:value="${filters.size}">
 
@@ -93,11 +143,15 @@
 
                     <form id="bulkActionForm" method="post" action="/queue/bulk">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <input type="hidden" name="status" th:if="${filters.status != null}" th:value="${filters.status}">
+                        <input type="hidden" name="status" th:value="${filters.status}">
                         <input type="hidden" name="search" th:value="${filters.search}">
                         <input type="hidden" name="tag" th:value="${filters.tag}">
-                        <input type="hidden" name="platform" th:value="${filters.platform}">
-                        <input type="hidden" name="type" th:value="${filters.type}">
+                        <th:block th:each="p : ${filters.platform}">
+                            <input type="hidden" name="platform" th:value="${p}">
+                        </th:block>
+                        <th:block th:each="t : ${filters.type}">
+                            <input type="hidden" name="type" th:value="${t}">
+                        </th:block>
                         <input type="hidden" name="dateRange" th:value="${filters.dateRange}">
                         <input type="hidden" name="sort" th:value="${filters.sort}">
                         <input type="hidden" name="size" th:value="${filters.size}">
@@ -184,12 +238,6 @@
                                     </td>
                                     <td>
                                         <div class="row-actions">
-                                            <a th:href="@{|/posts/${post.id}/preview?from=/queue|}" class="icon-action" th:title="#{queue.previewTitle}" th:aria-label="#{queue.previewTitle}">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </a>
                                             <a th:href="@{|/posts/${post.id}/edit|}" class="icon-action" th:title="#{queue.editTitle}" th:aria-label="#{queue.editTitle}">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <path d="M12 20h9"/>
@@ -205,8 +253,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </form>
-
                     <div class="queue-footer">
                         <span class="queue-count" th:text="${queue.totalFiltered} + ' ' + #{queue.results}">0 results</span>
                         <a th:if="${queue.hasMore}"
@@ -216,49 +262,6 @@
                         </a>
                     </div>
                 </section>
-
-                <aside class="panel queue-sidebar">
-                    <h3 th:text="#{queue.filters.title}">Filters</h3>
-                    <form method="get" action="/queue" class="queue-sidebar-form">
-                        <input type="hidden" name="status" th:if="${filters.status != null}" th:value="${filters.status}">
-                        <input type="hidden" name="search" th:value="${filters.search}">
-                        <input type="hidden" name="tag" th:value="${filters.tag}">
-                        <input type="hidden" name="sort" th:value="${filters.sort}">
-                        <input type="hidden" name="size" th:value="${filters.size}">
-
-                        <div class="queue-filter-group">
-                            <h4 th:text="#{queue.filters.byPlatform}">By platform</h4>
-                            <label th:each="option : ${platformOptions}"
-                                   th:if="${option.name() != 'REDDIT' and option.name() != 'WHATSAPP'}"
-                                   class="queue-radio">
-                                <input type="radio" name="platform" th:value="${option.name()}"
-                                       th:checked="${filters.platform.name() == option.name()}">
-                                <div th:if="${option.name() != 'ALL'}" th:replace="~{fragments/ui/icons :: platform-icon(${option.name()}, 'sm')}" style="margin-right: 8px;"></div>
-                                <span th:text="${#messages.msg('platform.' + option.name())}">All</span>
-                            </label>
-                        </div>
-
-                        <div class="queue-filter-group">
-                            <h4 th:text="#{queue.filters.byType}">By type</h4>
-                            <label th:each="option : ${typeOptions}" class="queue-radio">
-                                <input type="radio" name="type" th:value="${option.name()}"
-                                       th:checked="${filters.type.name() == option.name()}">
-                                <span th:text="${#messages.msg('post.type.' + option.name())}">All</span>
-                            </label>
-                        </div>
-
-                        <div class="queue-filter-group">
-                            <h4 th:text="#{queue.filters.byDate}">By date</h4>
-                            <label th:each="option : ${dateRangeOptions}" class="queue-radio">
-                                <input type="radio" name="dateRange" th:value="${option.name()}"
-                                       th:checked="${filters.dateRange.name() == option.name()}">
-                                <span th:text="${#messages.msg('dateRange.' + option.name())}">All</span>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn-link btn-sm w-100" th:text="#{queue.filters.apply}">Apply filters</button>
-                    </form>
-                </aside>
             </div>
         </main>
     </div>

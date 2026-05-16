@@ -161,25 +161,6 @@ public class PostController {
         }
     }
 
-    @GetMapping("/posts/{id}/preview")
-    public String previewPost(
-            @CurrentUser CurrentUserView currentUser,
-            @PathVariable("id") UUID postId,
-            @RequestParam(name = "from", required = false) String from,
-            Model model
-    ) {
-        try {
-            PostView post = postService.getPostView(currentUser.id(), postId);
-            model.addAttribute("user", currentUser);
-            model.addAttribute("post", post);
-            model.addAttribute("from", from == null || from.isBlank() ? "/" : from);
-            return "pages/posts/preview";
-        } catch (PostNotFoundException ex) {
-            return "redirect:" + UriComponentsBuilder.fromPath("/dashboard")
-                    .queryParam("error", "Post not found")
-                    .build().toUriString();
-        }
-    }
 
     private String renderFormError(
             Model model,

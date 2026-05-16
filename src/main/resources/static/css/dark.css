@@ -159,16 +159,33 @@ html.dark-mode .account-card-body code {
   color: var(--dm-text-strong);
 }
 html.dark-mode .btn-secondary,
-html.dark-mode .btn-draft-action {
+html.dark-mode .btn-draft-action,
+html.dark-mode .btn-secondary-action {
   background: transparent;
   border-color: var(--dm-border);
   color: #cbd9ee;
 }
 html.dark-mode .btn-secondary:hover,
-html.dark-mode .btn-draft-action:hover {
+html.dark-mode .btn-draft-action:hover,
+html.dark-mode .btn-secondary-action:hover {
   background: #152440;
   border-color: #466089;
   color: #f3f7ff;
+}
+
+html.dark-mode .schedule-type-tabs {
+  background: #0d1730;
+  border-color: var(--dm-border);
+}
+
+html.dark-mode .tab-inner {
+  color: #7f95b2;
+}
+
+html.dark-mode .schedule-tab input:checked + .tab-inner {
+  background: var(--dm-surface-3);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 html.dark-mode .btn-link,
 html.dark-mode .primary-action {
