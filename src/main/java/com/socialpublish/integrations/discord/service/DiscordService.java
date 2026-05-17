@@ -4,6 +4,8 @@ import com.socialpublish.auth.repository.UserRepository;
 import com.socialpublish.integrations.discord.dto.DiscordSettingsRequest;
 import com.socialpublish.integrations.discord.entity.DiscordSettingsEntity;
 import com.socialpublish.integrations.discord.repository.DiscordSettingsRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -41,6 +43,10 @@ public class DiscordService extends BaseIntegrationService<DiscordSettingsEntity
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void saveSettings(UUID userId, DiscordSettingsListRequest requestList) {
         List<DiscordSettingsEntity> existing = settingsRepository.findAllByUserId(userId);
         Map<UUID, DiscordSettingsEntity> existingMap = existing.stream()

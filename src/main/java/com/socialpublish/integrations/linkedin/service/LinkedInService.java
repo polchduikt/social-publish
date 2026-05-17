@@ -8,6 +8,8 @@ import com.socialpublish.integrations.linkedin.entity.LinkedInSettingsEntity;
 import com.socialpublish.integrations.linkedin.repository.LinkedInSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
@@ -39,6 +41,10 @@ public class LinkedInService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void connectAccount(UUID userId, String code) {
         LinkedInTokenResponse tokenResponse = linkedInClient.exchangeCodeForToken(code, clientId, clientSecret, redirectUri);
         String accessToken = tokenResponse.accessToken();
@@ -67,6 +73,10 @@ public class LinkedInService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void disconnectAccount(UUID userId) {
         settingsRepository.findByUserId(userId).ifPresent(settingsRepository::delete);
     }

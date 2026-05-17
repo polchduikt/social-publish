@@ -1,21 +1,106 @@
 services:
-  postgres:
-    image: 'postgres:latest'
+  app:
+    build: .
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env
     environment:
-      - 'POSTGRES_DB=socialpublish'
-      - 'POSTGRES_PASSWORD=admin'
-      - 'POSTGRES_USER=postgres'
+      app.secrets.datasource.url: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-socialpublish}
+      app.secrets.datasource.username: ${POSTGRES_USER:-postgres}
+      app.secrets.datasource.password: ${POSTGRES_PASSWORD:-admin}
+      app.secrets.rabbitmq.host: rabbitmq
+      app.secrets.rabbitmq.port: '5672'
+      app.secrets.rabbitmq.username: ${RABBITMQ_USER:-guest}
+      app.secrets.rabbitmq.password: ${RABBITMQ_PASSWORD:-guest}
+      app.secrets.redis.host: redis
+      app.secrets.redis.port: '6379'
+      app.secrets.redis.password: ${REDIS_PASSWORD:-}
+      spring.docker.compose.enabled: 'false'
+      app.secrets.oauth2.redirect-uri: ${OAUTH2_REDIRECT_URI:-http://localhost:8080/}
+      app.secrets.google.client-id: ${GOOGLE_CLIENT_ID}
+      app.secrets.google.client-secret: ${GOOGLE_CLIENT_SECRET}
+      app.secrets.cloudinary.cloud-name: ${CLOUDINARY_CLOUD_NAME:-}
+      app.secrets.cloudinary.api-key: ${CLOUDINARY_API_KEY:-}
+      app.secrets.cloudinary.api-secret: ${CLOUDINARY_API_SECRET:-}
+      app.secrets.reddit.client-id: ${REDDIT_CLIENT_ID:-}
+      app.secrets.reddit.client-secret: ${REDDIT_CLIENT_SECRET:-}
+      app.secrets.reddit.redirect-uri: ${REDDIT_REDIRECT_URI:-}
+      app.secrets.linkedin.client-id: ${LINKEDIN_CLIENT_ID:-}
+      app.secrets.linkedin.client-secret: ${LINKEDIN_CLIENT_SECRET:-}
+      app.secrets.linkedin.redirect-uri: ${LINKEDIN_REDIRECT_URI:-}
+      app.secrets.mail.host: ${MAIL_HOST:-smtp.gmail.com}
+      app.secrets.mail.port: ${MAIL_PORT:-587}
+      app.secrets.mail.username: ${MAIL_USERNAME:-}
+      app.secrets.mail.password: ${MAIL_PASSWORD:-}
+      app.secrets.ai.provider: ${AI_PROVIDER:-groq}
+      app.secrets.groq.api-url: ${GROQ_API_URL:-https://api.groq.com/openai/v1/chat/completions}
+      app.secrets.groq.api-key: ${GROQ_API_KEY:-}
+      app.secrets.groq.model: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      app.secrets.groq.temperature: ${GROQ_TEMPERATURE:-0.3}
+      app.secrets.groq.max-tokens: ${GROQ_MAX_TOKENS:-900}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: 'postgres:17-alpine'
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-socialpublish}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
     ports:
       - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   rabbitmq:
-    image: 'rabbitmq:3-management'
+    image: 'rabbitmq:3-management-alpine'
     environment:
-      - 'RABBITMQ_DEFAULT_PASS=guest'
-      - 'RABBITMQ_DEFAULT_USER=guest'
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
     ports:
       - '5672:5672'
       - '15672:15672'
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
-    image: 'redis:latest'
+    image: 'redis:7-alpine'
+    command: >
+      sh -c "if [ -n \"$$REDIS_PASSWORD\" ]; then
+        redis-server --requirepass $$REDIS_PASSWORD;
+      else
+        redis-server;
+      fi"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
     ports:
       - '6379:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  rabbitmqdata:
+  redisdata:

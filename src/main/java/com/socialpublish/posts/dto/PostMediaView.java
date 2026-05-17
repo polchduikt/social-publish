@@ -1,10 +1,13 @@
 package com.socialpublish.posts.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record PostMediaView(
         String publicId,
         String url,
         int sortOrder
 ) {
+    @JsonIgnore
     public boolean isVideo() {
         if (url == null || url.isBlank()) {
             return false;

@@ -5,6 +5,8 @@ import com.socialpublish.auth.repository.UserRepository;
 import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 import com.socialpublish.integrations.repository.BaseIntegrationSettingsRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -28,6 +30,10 @@ public abstract class BaseIntegrationService<E extends BaseIntegrationSettings, 
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void disconnect(UUID userId) {
         settingsRepository.findByUserId(userId).ifPresent(settingsRepository::delete);
     }

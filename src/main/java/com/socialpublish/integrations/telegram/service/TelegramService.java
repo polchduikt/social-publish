@@ -4,6 +4,8 @@ import com.socialpublish.auth.repository.UserRepository;
 import com.socialpublish.integrations.telegram.dto.TelegramSettingsRequest;
 import com.socialpublish.integrations.telegram.entity.TelegramSettingsEntity;
 import com.socialpublish.integrations.telegram.repository.TelegramSettingsRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -47,6 +49,10 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void saveSettings(UUID userId, TelegramSettingsListRequest requestList) {
         List<TelegramSettingsEntity> existing = settingsRepository.findAllByUserId(userId);
         Map<UUID, TelegramSettingsEntity> existingMap = existing.stream()

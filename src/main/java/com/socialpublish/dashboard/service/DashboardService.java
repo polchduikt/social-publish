@@ -10,6 +10,7 @@ import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.mapper.PostMapper;
 import com.socialpublish.posts.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -30,6 +31,7 @@ public class DashboardService {
     private final DashboardNextPublishBuilder nextPublishBuilder;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "dashboard", key = "#ownerId")
     public DashboardView buildDashboard(UUID ownerId) {
         List<Post> allPosts = postRepository.findByOwnerIdOrderByUpdatedAtDesc(ownerId);
         List<PostView> allPostViews = postMapper.toViews(allPosts);
