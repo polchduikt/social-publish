@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.cache.annotation.CacheEvict;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -65,11 +66,13 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView createPost(UUID ownerId, PostUpsertRequest request) {
         return createPost(ownerId, request, List.of());
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView createPost(UUID ownerId, PostUpsertRequest request, List<MultipartFile> mediaFiles) {
         User owner = userRepository.findById(ownerId).orElseThrow(UnauthorizedPostAccessException::new);
         Post post = postMapper.toEntity(request);
@@ -90,11 +93,13 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView createPostAndPublishNow(UUID ownerId, PostUpsertRequest request) {
         return createPostAndPublishNow(ownerId, request, List.of());
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView createPostAndPublishNow(UUID ownerId, PostUpsertRequest request, List<MultipartFile> mediaFiles) {
         User owner = userRepository.findById(ownerId).orElseThrow(UnauthorizedPostAccessException::new);
         Post post = postMapper.toEntity(request);
@@ -112,11 +117,13 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView updatePost(UUID ownerId, UUID postId, PostUpsertRequest request) {
         return updatePost(ownerId, postId, request, List.of(), List.of());
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView updatePost(
             UUID ownerId,
             UUID postId,
@@ -142,11 +149,13 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView updatePostAndPublishNow(UUID ownerId, UUID postId, PostUpsertRequest request) {
         return updatePostAndPublishNow(ownerId, postId, request, List.of(), List.of());
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView updatePostAndPublishNow(
             UUID ownerId,
             UUID postId,
@@ -170,6 +179,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public void deletePost(UUID ownerId, UUID postId) {
         Post post = requireOwnedPost(ownerId, postId);
         if (post.getStatus() == PostStatus.SCHEDULED) {
@@ -182,6 +192,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public void publishNow(UUID ownerId, UUID postId) {
         Post post = requireOwnedPost(ownerId, postId);
         PostStatus oldStatus = post.getStatus();
@@ -198,6 +209,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public void moveToDraft(UUID ownerId, UUID postId) {
         Post post = requireOwnedPost(ownerId, postId);
         PostStatus oldStatus = post.getStatus();
@@ -218,6 +230,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public void retryFailedNow(UUID ownerId, UUID postId) {
         Post post = requireOwnedPost(ownerId, postId);
         if (post.getStatus() != PostStatus.FAILED) {
@@ -227,6 +240,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public PostView duplicatePost(UUID ownerId, UUID postId) {
         Post source = requireOwnedPost(ownerId, postId);
         User owner = source.getOwner();
@@ -249,6 +263,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#ownerId")
     public void reschedulePost(UUID ownerId, UUID postId, LocalDateTime scheduledAt) {
         if (scheduledAt == null) {
             throw new PostValidationException("Scheduled date is required");

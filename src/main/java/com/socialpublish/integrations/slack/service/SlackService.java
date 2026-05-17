@@ -4,6 +4,8 @@ import com.socialpublish.auth.repository.UserRepository;
 import com.socialpublish.integrations.slack.dto.SlackSettingsRequest;
 import com.socialpublish.integrations.slack.entity.SlackSettingsEntity;
 import com.socialpublish.integrations.slack.repository.SlackSettingsRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -42,6 +44,10 @@ public class SlackService extends BaseIntegrationService<SlackSettingsEntity, Sl
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void saveSettings(UUID userId, SlackSettingsListRequest requestList) {
         List<SlackSettingsEntity> existing = settingsRepository.findAllByUserId(userId);
         Map<UUID, SlackSettingsEntity> existingMap = existing.stream()

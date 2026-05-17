@@ -4,6 +4,8 @@ import com.socialpublish.auth.repository.UserRepository;
 import com.socialpublish.integrations.notion.dto.NotionSettingsRequest;
 import com.socialpublish.integrations.notion.entity.NotionSettingsEntity;
 import com.socialpublish.integrations.notion.repository.NotionSettingsRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -43,6 +45,10 @@ public class NotionService extends BaseIntegrationService<NotionSettingsEntity, 
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void saveSettings(UUID userId, NotionSettingsListRequest requestList) {
         List<NotionSettingsEntity> existing = settingsRepository.findAllByUserId(userId);
         Map<UUID, NotionSettingsEntity> existingMap = existing.stream()

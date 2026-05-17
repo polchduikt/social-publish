@@ -19,6 +19,8 @@ import com.socialpublish.posts.service.RecurringPostService;
 import com.socialpublish.mail.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ public class PublishingService {
     private final RedditSettingsRepository redditRepository;
     private final RecurringPostService recurringPostService;
     private final EmailService emailService;
+    private final CacheManager cacheManager;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -108,6 +111,8 @@ public class PublishingService {
             log.error("Publishing failed for post {}: {}", postId, ex.getMessage());
             handleFailure(post, ex.getMessage(), attempt, scheduled);
         }
+
+        evictDashboardCache(userId);
     }
 
     private record PlatformTarget(Platform platform, UUID targetId) {}
@@ -268,5 +273,19 @@ public class PublishingService {
         variables.put("errorReason", errorReason);
 
         emailService.sendHtmlMessage(email, subject, "post-result", variables);
+    }
+
+    private void evictDashboardCache(UUID userId) {
+        if (userId != null) {
+            try {
+                Cache cache = cacheManager.getCache("dashboard");
+                if (cache != null) {
+                    cache.evict(userId);
+                    log.debug("Evicted dashboard cache for user {}", userId);
+                }
+            } catch (Exception ex) {
+                log.error("Failed to evict dashboard cache for user {}: {}", userId, ex.getMessage());
+            }
+        }
     }
 }

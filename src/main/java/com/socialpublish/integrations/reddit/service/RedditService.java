@@ -8,6 +8,8 @@ import com.socialpublish.integrations.reddit.entity.RedditSettingsEntity;
 import com.socialpublish.integrations.reddit.repository.RedditSettingsRepository;
 import com.socialpublish.integrations.service.BaseIntegrationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,10 @@ public class RedditService extends BaseIntegrationService<RedditSettingsEntity, 
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void connectAccount(UUID userId, String code) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
@@ -82,6 +88,10 @@ public class RedditService extends BaseIntegrationService<RedditSettingsEntity, 
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "integrations", key = "#userId"),
+            @CacheEvict(value = "account-labels", key = "#userId")
+    })
     public void updateSettings(UUID userId, RedditSettingsRequest request) {
         settingsRepository.findByUserId(userId).ifPresent(settings -> {
             settings.setDefaultSubreddit(request.getDefaultSubreddit());
