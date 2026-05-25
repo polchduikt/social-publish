@@ -123,7 +123,7 @@
 
 .account-card-body {
   margin: 12px 0;
-  flex: 1;
+  height: 20px;
 }
 
 .account-card-body p {
@@ -148,6 +148,7 @@
 }
 
 .account-card-footer {
+  margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid #f1f5f9;
 }

@@ -310,6 +310,24 @@
 
 .dashboard-main {
   padding: 18px 28px 26px;
+  animation: premiumEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes premiumEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-main {
+    animation: none !important;
+  }
 }
 
 .page-subtitle {
@@ -1180,9 +1198,6 @@
   color: var(--text-secondary, #64748b);
   opacity: 0.8;
 }
-  align-items: start;
-  gap: 12px;
-}
 
 .next-label {
   font-size: 12px;
@@ -1283,7 +1298,7 @@
   grid-template-columns: 52px minmax(0, 1fr);
   gap: 16px;
   align-items: stretch;
-  padding-bottom: 24px; /* Reduced space since labels are horizontal */
+  padding-bottom: 24px;
 }
 
 .success-timeline-axis {
