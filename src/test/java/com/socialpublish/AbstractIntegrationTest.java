@@ -7,7 +7,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
-    // Uncomment this block if you want to run integration tests using a real PostgreSQL container
+    // Run integration tests using a real PostgreSQL container
     /*
     @Container
     static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")

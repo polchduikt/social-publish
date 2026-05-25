@@ -5,7 +5,6 @@ import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.exception.PostValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class PostStatusMachineTest {

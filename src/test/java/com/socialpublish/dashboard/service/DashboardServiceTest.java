@@ -1,9 +1,6 @@
 package com.socialpublish.dashboard.service;
 
-import com.socialpublish.dashboard.dto.DashboardActivityDayView;
-import com.socialpublish.dashboard.dto.DashboardNextPublishView;
 import com.socialpublish.dashboard.dto.DashboardStatsView;
-import com.socialpublish.dashboard.dto.DashboardStatusSliceView;
 import com.socialpublish.dashboard.dto.DashboardView;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.mapper.PostMapper;
@@ -13,10 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.List;
 import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

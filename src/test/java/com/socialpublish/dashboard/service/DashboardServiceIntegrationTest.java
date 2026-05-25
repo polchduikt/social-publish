@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DashboardServiceIntegrationTest extends AbstractIntegrationTest {
