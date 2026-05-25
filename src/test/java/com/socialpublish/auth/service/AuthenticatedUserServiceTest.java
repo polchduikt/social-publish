@@ -1,7 +1,6 @@
 package com.socialpublish.auth.service;
 
 import com.socialpublish.auth.dto.CurrentUserView;
-import com.socialpublish.auth.entity.AuthProvider;
 import com.socialpublish.auth.entity.Role;
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.mapper.CurrentUserViewMapper;
@@ -10,7 +9,6 @@ import com.socialpublish.auth.security.AppUserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,7 +24,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,7 +49,10 @@ class AuthenticatedUserServiceTest {
         testUser.setFullName("Test User");
         testUser.setRole(Role.USER);
         
-        testUserView = new CurrentUserView(testUser.getId(), testUser.getEmail(), testUser.getFullName(), null, null, false, false, false);
+        testUserView = new CurrentUserView(
+                testUser.getId(), testUser.getEmail(), null, testUser.getFullName(),
+                null, null, false, false, false, false
+        );
     }
 
     @Test
@@ -84,10 +84,50 @@ class AuthenticatedUserServiceTest {
     }
 
     @Test
-    void resolveCurrentUser_WithOAuth2UserFoundInDb_ReturnsUser() {
-        OAuth2User oauth2User = new DefaultOAuth2User(Set.of(), Map.of("email", "test@example.com", "name", "Test User"), "name");
+    void resolveCurrentUser_WithOAuth2User_FoundByGoogleSub_ReturnsUser() {
+        testUser.setGoogleSub("google-sub-123");
+        testUser.setGoogleEmail("test@example.com");
+
+        OAuth2User oauth2User = new DefaultOAuth2User(
+                Set.of(), Map.of("email", "test@example.com", "name", "Test User", "sub", "google-sub-123"), "name"
+        );
         Authentication auth = new OAuth2AuthenticationToken(oauth2User, Set.of(), "google");
         
+        when(userRepository.findByGoogleSub("google-sub-123")).thenReturn(Optional.of(testUser));
+        when(currentUserViewMapper.toView(testUser)).thenReturn(testUserView);
+
+        Optional<CurrentUserView> result = authenticatedUserService.resolveCurrentUser(auth);
+        
+        assertTrue(result.isPresent());
+        assertEquals(testUserView, result.get());
+    }
+
+    @Test
+    void resolveCurrentUser_WithOAuth2User_FoundByGoogleEmail_ReturnsUser() {
+        testUser.setGoogleEmail("test@example.com");
+
+        OAuth2User oauth2User = new DefaultOAuth2User(
+                Set.of(), Map.of("email", "test@example.com", "name", "Test User"), "name"
+        );
+        Authentication auth = new OAuth2AuthenticationToken(oauth2User, Set.of(), "google");
+        
+        when(userRepository.findByGoogleEmailIgnoreCase("test@example.com")).thenReturn(Optional.of(testUser));
+        when(currentUserViewMapper.toView(testUser)).thenReturn(testUserView);
+
+        Optional<CurrentUserView> result = authenticatedUserService.resolveCurrentUser(auth);
+        
+        assertTrue(result.isPresent());
+        assertEquals(testUserView, result.get());
+    }
+
+    @Test
+    void resolveCurrentUser_WithOAuth2User_FoundByPrimaryEmail_ReturnsUser() {
+        OAuth2User oauth2User = new DefaultOAuth2User(
+                Set.of(), Map.of("email", "test@example.com", "name", "Test User"), "name"
+        );
+        Authentication auth = new OAuth2AuthenticationToken(oauth2User, Set.of(), "google");
+        
+        when(userRepository.findByGoogleEmailIgnoreCase("test@example.com")).thenReturn(Optional.empty());
         when(userRepository.findByEmailIgnoreCase("test@example.com")).thenReturn(Optional.of(testUser));
         when(currentUserViewMapper.toView(testUser)).thenReturn(testUserView);
 
@@ -95,38 +135,20 @@ class AuthenticatedUserServiceTest {
         
         assertTrue(result.isPresent());
         assertEquals(testUserView, result.get());
-        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void resolveCurrentUser_WithOAuth2UserNotFoundInDb_CreatesAndReturnsUser() {
-        OAuth2User oauth2User = new DefaultOAuth2User(Set.of(), Map.of("email", "new@example.com", "name", "New User"), "name");
+    void resolveCurrentUser_WithOAuth2User_NotFoundInDb_ReturnsEmpty() {
+        OAuth2User oauth2User = new DefaultOAuth2User(
+                Set.of(), Map.of("email", "new@example.com", "name", "New User"), "name"
+        );
         Authentication auth = new OAuth2AuthenticationToken(oauth2User, Set.of(), "google");
         
-        User savedUser = new User();
-        savedUser.setId(UUID.randomUUID());
-        savedUser.setEmail("new@example.com");
-        savedUser.setFullName("New User");
-        
-        CurrentUserView newView = new CurrentUserView(savedUser.getId(), savedUser.getEmail(), savedUser.getFullName(), null, null, false, false, false);
-        
+        when(userRepository.findByGoogleEmailIgnoreCase("new@example.com")).thenReturn(Optional.empty());
         when(userRepository.findByEmailIgnoreCase("new@example.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(currentUserViewMapper.toView(savedUser)).thenReturn(newView);
 
         Optional<CurrentUserView> result = authenticatedUserService.resolveCurrentUser(auth);
         
-        assertTrue(result.isPresent());
-        assertEquals(newView, result.get());
-        
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
-        
-        User capturedUser = userCaptor.getValue();
-        assertEquals("new@example.com", capturedUser.getEmail());
-        assertEquals("New User", capturedUser.getFullName());
-        assertEquals(AuthProvider.GOOGLE, capturedUser.getProvider());
-        assertEquals(Role.USER, capturedUser.getRole());
-        assertFalse(capturedUser.isPasswordLoginEnabled());
+        assertTrue(result.isEmpty());
     }
 }

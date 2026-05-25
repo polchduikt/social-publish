@@ -31,6 +31,7 @@ public class SecurityConfig {
             HttpSecurity http,
             PasswordEncoder passwordEncoder,
             CustomOAuth2UserService customOAuth2UserService,
+            CustomOidcUserService customOidcUserService,
             OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
             OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler
     ) throws Exception {
@@ -74,7 +75,10 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService)
+                        )
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(oAuth2AuthenticationFailureHandler)
                 );

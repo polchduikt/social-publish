@@ -1,6 +1,7 @@
 package com.socialpublish.auth.service;
 
 import com.socialpublish.auth.dto.ChangePasswordRequest;
+import com.socialpublish.auth.dto.SetPasswordRequest;
 import com.socialpublish.auth.dto.UpdateProfileRequest;
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.exception.SettingsOperationException;
@@ -43,11 +44,28 @@ public class SettingsService {
     }
 
     @Transactional
+    public void setPassword(UUID userId, SetPasswordRequest request) {
+        User user = requireUser(userId);
+
+        if (user.isPasswordLoginEnabled() && user.getPassword() != null) {
+            throw new SettingsOperationException("Password already set. Use Change Password instead.");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new SettingsOperationException("Passwords do not match");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordLoginEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         User user = requireUser(userId);
 
-        if (!user.isPasswordLoginEnabled()) {
-            throw new SettingsOperationException("Password change is not available for OAuth accounts");
+        if (!user.isPasswordLoginEnabled() || user.getPassword() == null) {
+            throw new SettingsOperationException("Set a password first before changing it");
         }
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
@@ -59,6 +77,23 @@ public class SettingsService {
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unlinkGoogle(UUID userId) {
+        User user = requireUser(userId);
+
+        if (!user.isGoogleLinked()) {
+            throw new SettingsOperationException("Google account is not linked");
+        }
+
+        if (!user.isPasswordLoginEnabled() || user.getPassword() == null) {
+            throw new SettingsOperationException("Set a password before unlinking Google. Otherwise you won't be able to log in.");
+        }
+
+        user.setGoogleEmail(null);
+        user.setGoogleSub(null);
         userRepository.save(user);
     }
 

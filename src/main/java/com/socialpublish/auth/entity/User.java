@@ -35,6 +35,12 @@ public class User {
 
     private String password;
 
+    @Column(unique = true)
+    private String googleEmail;
+
+    @Column(unique = true)
+    private String googleSub;
+
     @Column(nullable = false)
     private String fullName;
 
@@ -73,11 +79,12 @@ public class User {
 
     @PrePersist
     void onCreate() {
-        if (provider == AuthProvider.LOCAL && !passwordLoginEnabled) {
+        if (provider == AuthProvider.LOCAL && password != null && !passwordLoginEnabled) {
             passwordLoginEnabled = true;
         }
-        if (provider == AuthProvider.GOOGLE) {
-            passwordLoginEnabled = false;
-        }
+    }
+
+    public boolean isGoogleLinked() {
+        return googleSub != null || googleEmail != null;
     }
 }

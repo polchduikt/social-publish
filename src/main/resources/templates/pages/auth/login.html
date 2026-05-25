@@ -35,13 +35,10 @@
             <th:block th:if="${error}">
                 <div th:replace="~{fragments/auth/login-error :: loginError(#{login.error})}"></div>
             </th:block>
-            <th:block th:if="${oauth2Error == 'account_exists'}">
-                <div th:replace="~{fragments/auth/login-error :: loginError(#{login.errorAccountExists})}"></div>
-            </th:block>
             <th:block th:if="${oauth2Error == 'email_not_verified'}">
                 <div th:replace="~{fragments/auth/login-error :: loginError(#{login.errorEmailNotVerified})}"></div>
             </th:block>
-            <th:block th:if="${oauth2Error != null and oauth2Error != 'account_exists' and oauth2Error != 'email_not_verified'}">
+            <th:block th:if="${oauth2Error != null and oauth2Error != 'email_not_verified'}">
                 <div th:replace="~{fragments/auth/login-error :: loginError(#{login.errorGeneric})}"></div>
             </th:block>
             <div th:if="${logout}" class="status success" th:text="#{login.logoutSuccess}">You have been logged out.</div>

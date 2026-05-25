@@ -28,7 +28,8 @@ public class AuthService {
     public void register(RegisterRequest request) {
         String normalizedEmail = request.getEmail().trim().toLowerCase();
 
-        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)
+                || userRepository.existsByGoogleEmailIgnoreCase(normalizedEmail)) {
             throw new UserAlreadyExistsException("User with this email already exists");
         }
 
@@ -39,7 +40,6 @@ public class AuthService {
         user.setProvider(AuthProvider.LOCAL);
         user.setRole(Role.USER);
         user.setPasswordLoginEnabled(true);
-
         userRepository.save(user);
     }
 }
