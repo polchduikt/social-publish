@@ -66,6 +66,10 @@ document.addEventListener('DOMContentLoaded', function () {
     calendar.render();
     updateTitle();
 
+    window.addEventListener('resize', function () {
+        calendar.updateSize();
+    });
+
     document.getElementById('calPrev').addEventListener('click', function () {
         calendar.prev();
     });

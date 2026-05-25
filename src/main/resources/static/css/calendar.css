@@ -143,9 +143,13 @@
   max-width: 100%;
 }
 
-.fc .fc-scrollgrid {
+.fc .fc-scrollgrid,
+.fc .fc-col-header,
+.fc .fc-daygrid-body,
+.fc .fc-scrollgrid-sync-table {
   border: none;
   width: 100% !important;
+  max-width: 100% !important;
 }
 
 .fc .fc-scrollgrid-section > td,
@@ -155,7 +159,7 @@
 
 .fc table {
   table-layout: fixed;
-  width: 100%;
+  width: 100% !important;
 }
 
 .fc .fc-col-header-cell {
@@ -208,7 +212,7 @@
 
 .fc .fc-event {
   border: none;
-  border-radius: 6px;
+  border-radius: 6px !important;
   padding: 3px 7px;
   font-size: 12px;
   font-weight: 600;
@@ -219,6 +223,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.fc .fc-event.fc-event-not-start,
+.fc .fc-event.fc-event-not-end {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border-radius: 6px !important;
 }
 
 .fc .fc-event:hover {
