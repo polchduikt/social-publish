@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
@@ -105,6 +109,46 @@ html::-webkit-scrollbar-thumb:hover {
 
 .nav-links a.nav-item:hover {
   color: white;
+}
+
+.navbar-menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.menu-item {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s, transform 0.2s;
+  position: relative;
+}
+
+.menu-item::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--accent);
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+
+.menu-item:hover {
+  color: white;
+}
+
+.menu-item:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
 }
 
 .btn-primary {
@@ -471,6 +515,84 @@ html::-webkit-scrollbar-thumb:hover {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.platform-sec {
+  padding: 80px 0;
+  background: var(--dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.calendar-sec {
+  padding: 100px 0;
+  background: var(--dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-sec {
+  padding: 100px 0;
+  background: var(--darker);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.feature-section-title-large {
+  font-family: 'Sora', sans-serif;
+  font-size: 38px;
+  color: white;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.feature-section-title-medium {
+  font-family: 'Sora', sans-serif;
+  font-size: 36px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.feature-section-description {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.feature-section-description-centered {
+  font-size: 18px;
+  color: var(--text-muted);
+  max-width: 720px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.text-success-bold {
+  font-size: 24px;
+  letter-spacing: 1px;
+  margin-top: 16px;
+}
+
+.step-row-rtl {
+  direction: rtl;
+}
+
+.step-content-ltr {
+  direction: ltr;
+}
+
+.step-visual-ltr {
+  direction: ltr;
+}
+
+.chat-send-icon {
+  transform: rotate(45deg);
+  margin-left: -2px;
+  margin-top: 1px;
 }
 
 @media (max-width: 768px) {
@@ -1027,6 +1149,10 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 @media (max-width: 768px) {
+  .navbar-menu {
+    display: none;
+  }
+
   .features-grid {
     grid-template-columns: 1fr;
   }
@@ -1193,3 +1319,68 @@ html::-webkit-scrollbar-thumb:hover {
     font-size: 20px !important;
   }
 }
+
+.reveal {
+  opacity: 0;
+  transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, opacity;
+}
+
+.reveal-up {
+  transform: translateY(40px);
+}
+
+.reveal-left {
+  transform: translateX(-40px);
+}
+
+.reveal-right {
+  transform: translateX(40px);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translate(0) scale(1);
+}
+
+.stagger-1 { transition-delay: 0.1s; }
+.stagger-2 { transition-delay: 0.2s; }
+.stagger-3 { transition-delay: 0.3s; }
+.stagger-4 { transition-delay: 0.4s; }
+
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.9);
+  transition: opacity 0.3s, transform 0.3s, background 0.3s, border-color 0.3s, visibility 0.3s;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-to-top-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4);
+}
+
+.scroll-to-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+

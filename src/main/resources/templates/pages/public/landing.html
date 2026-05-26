@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><link rel="icon" type="image/png" href="/favicon.png">
-    <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark-mode');}</script>
+<head><link rel="icon" type="image/png" href="/images/logo.png">
+    <script src="/js/theme-init.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social Publish — The Ultimate Automation Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="/css/landing.css" rel="stylesheet">
+    <script src="/js/landing.js" defer></script>
 </head>
 <body>
 
@@ -18,6 +19,14 @@
                 <img src="/images/logo.png" alt="Social Publish Logo" class="brand-logo" width="48" height="48">
                 <div class="brand-text">Social Publish</div>
             </a>
+            
+            <div class="navbar-menu">
+                <a href="#features" class="menu-item">Features</a>
+                <a href="#platforms" class="menu-item">Platforms</a>
+                <a href="#how-it-works" class="menu-item">How It Works</a>
+                <a href="#calendar" class="menu-item">Calendar</a>
+                <a href="#ai-assistant" class="menu-item">AI Assistant</a>
+            </div>
             
             <div class="nav-links" th:if="${user == null}">
                 <a href="/login" class="nav-item">Sign In</a>
@@ -88,15 +97,15 @@
         </main>
     </div>
 
-    <section class="features">
+    <section id="features" class="features">
         <div class="container">
-            <div class="section-header">
+            <div class="section-header reveal reveal-up">
                 <h2>Why choose Social Publish?</h2>
                 <p>We built the ultimate tool to save you time and maximize your online reach without the clutter of traditional tools.</p>
             </div>
             
             <div class="features-grid">
-                <div class="feature-card">
+                <div class="feature-card reveal reveal-up stagger-1">
                     <div class="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
@@ -104,7 +113,7 @@
                     <p>Plan your content calendar weeks in advance. Our resilient queueing system ensures your posts go live exactly when you want them to, down to the minute.</p>
                 </div>
                 
-                <div class="feature-card">
+                <div class="feature-card reveal reveal-up stagger-2">
                     <div class="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                     </div>
@@ -112,26 +121,50 @@
                     <p>Write once, publish everywhere. Seamlessly connect your Telegram, Discord, and Instagram accounts to reach all your audiences simultaneously without context switching.</p>
                 </div>
                 
-                <div class="feature-card">
+                <div class="feature-card reveal reveal-up stagger-3">
                     <div class="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                     </div>
                     <h3>Live Updates</h3>
                     <p>Get real-time feedback on your posting pipeline. Watch statuses update instantly over WebSockets without ever refreshing the page. Always stay in the loop.</p>
                 </div>
+
+                <div class="feature-card reveal reveal-up stagger-1">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    </div>
+                    <h3>Resilient Auto-Recovery</h3>
+                    <p>Never worry about server downtime. Our brand new grace period system automatically recovers missed scheduled posts, routes them for publishing, or notifies you instantly.</p>
+                </div>
+
+                <div class="feature-card reveal reveal-up stagger-2">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    </div>
+                    <h3>Recurring Content</h3>
+                    <p>Automate repeating loops. Set announcements, digests, or reminders to automatically repeat daily, weekly, or on a custom schedule, keeping your feed vibrant with zero manual effort.</p>
+                </div>
+
+                <div class="feature-card reveal reveal-up stagger-3">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                    </div>
+                    <h3>Content Templates</h3>
+                    <p>Save outlines, formatting styles, and trending hashtag blocks as reusable blueprints. Instantly kickstart a new post with one-click templates to maintain a consistent brand tone.</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="feature-section platform-sec" style="padding: 80px 0; background: var(--dark); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden;">
+    <section id="platforms" class="feature-section platform-sec">
         <div class="container">
-            <div style="text-align: center; margin-bottom: 48px;">
-                <h3 style="font-family: 'Sora', sans-serif; font-size: 38px; color: white; margin-top: 0; margin-bottom: 20px;">Platform Diversity</h3>
-                <p style="font-size: 18px; color: var(--text-muted); max-width: 720px; margin: 0 auto; line-height: 1.7;">Reach every community simultaneously from a single content draft. Connect your accounts in seconds and start broadcasting rich text, custom embeds, files, and images natively formatted for each connected service.</p>
+            <div class="reveal reveal-up feature-section-header">
+                <h3 class="feature-section-title-large">Platform Diversity</h3>
+                <p class="feature-section-description-centered">Reach every community simultaneously from a single content draft. Connect your accounts in seconds and start broadcasting rich text, custom embeds, files, and images natively formatted for each connected service.</p>
             </div>
         </div>
 
-        <div class="platform-carousel">
+        <div class="platform-carousel reveal reveal-up stagger-1">
             <div class="platform-carousel-track">
                 
                 <div class="platform-carousel-card tg-card">
@@ -339,19 +372,19 @@
         </div>
     </section>
 
-    <section class="how-it-works">
+    <section id="how-it-works" class="how-it-works">
         <div class="container">
-            <div class="section-header">
+            <div class="section-header reveal reveal-up">
                 <h2>How it works</h2>
                 <p>Three simple steps to automate your social media pipeline.</p>
             </div>
 
             <div class="step-row">
-                <div class="step-content">
+                <div class="step-content reveal reveal-left">
                     <h3>1. Create your content</h3>
                     <p>Use our beautifully designed, distraction-free editor. Add emojis, format your text, and preview how it will look on different platforms before you publish.</p>
                 </div>
-                <div class="step-visual">
+                <div class="step-visual reveal reveal-right">
                     <div class="abstract-form">
                         <div class="ui-line shorter mb-24"></div>
                         <div class="ui-line ui-line-100"></div>
@@ -361,11 +394,11 @@
             </div>
 
             <div class="step-row">
-                <div class="step-content">
+                <div class="step-content reveal reveal-right">
                     <h3>2. Schedule accurately</h3>
                     <p>Select your desired date and time using our 24-hour localized time picker. Whether it's tomorrow morning or next month, we've got you covered.</p>
                 </div>
-                <div class="step-visual">
+                <div class="step-visual reveal reveal-left">
                     <div class="pulse-circle">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
@@ -373,14 +406,14 @@
             </div>
 
             <div class="step-row">
-                <div class="step-content">
+                <div class="step-content reveal reveal-left">
                     <h3>3. Relax and let us handle the rest</h3>
                     <p>Our resilient backend takes over. If a network error occurs while posting to Telegram or Discord, our intelligent retry system ensures your post will eventually go through.</p>
                 </div>
-                                <div class="step-visual">
+                                <div class="step-visual reveal reveal-right">
                     <div class="published-pulsing-box flex-col-center">
                         <svg width="112" height="112" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        <span class="text-success-bold" style="font-size: 24px; letter-spacing: 1px; margin-top: 16px;">PUBLISHED</span>
+                        <span class="text-success-bold">PUBLISHED</span>
                     </div>
                 </div>
             </div>
@@ -388,14 +421,14 @@
         </div>
     </section>
 
-    <section class="feature-section calendar-sec" style="padding: 100px 0; background: var(--dark); border-top: 1px solid rgba(255, 255, 255, 0.05);">
+    <section id="calendar" class="feature-section calendar-sec">
         <div class="container">
             <div class="step-row">
-                <div class="step-content">
-                    <h3 style="font-family: 'Sora', sans-serif; font-size: 36px; color: white; margin-bottom: 20px;">Visual Calendar</h3>
-                    <p style="font-size: 18px; color: var(--text-muted); line-height: 1.7; margin: 0;">Plan, organize, and perfect your publishing pipeline weeks in advance with our interactive Content Calendar. Easily visualize your drafts, scheduled posts, and history in a clean, highly responsive monthly and weekly grid. Drag and drop posts to reschedule instantly, color-coordinate platforms, and maintain a seamless, consistent publishing cadence without ever breaking a sweat.</p>
+                <div class="step-content reveal reveal-left">
+                    <h3 class="feature-section-title-medium">Visual Calendar</h3>
+                    <p class="feature-section-description">Plan, organize, and perfect your publishing pipeline weeks in advance with our interactive Content Calendar. Easily visualize your drafts, scheduled posts, and history in a clean, highly responsive monthly and weekly grid. Drag and drop posts to reschedule instantly, color-coordinate platforms, and maintain a seamless, consistent publishing cadence without ever breaking a sweat.</p>
                 </div>
-                <div class="step-visual">
+                <div class="step-visual reveal reveal-right">
                     <div class="calendar-dashboard-mockup">
                         <div class="calendar-header-mockup">
                             <span class="calendar-month-title">May 2026</span>
@@ -458,14 +491,14 @@
         </div>
     </section>
 
-    <section class="feature-section ai-sec" style="padding: 100px 0; background: var(--darker); border-top: 1px solid rgba(255, 255, 255, 0.05);">
+    <section id="ai-assistant" class="feature-section ai-sec">
         <div class="container">
-            <div class="step-row" style="direction: rtl;">
-                <div class="step-content" style="direction: ltr;">
-                     <h3 style="font-family: 'Sora', sans-serif; font-size: 36px; color: white; margin-bottom: 20px;">AI Writing Assistant</h3>
-                     <p style="font-size: 18px; color: var(--text-muted); line-height: 1.7; margin: 0;">Crush writer's block instantly with our integrated AI Copilot sitting directly inside your composer. Harness advanced optimization to instantly polish raw thoughts, expand brief outlines into fully formatted posts, and adjust style to match any brand persona—whether exciting, professional, casual, or technical. The AI automatically recommends trending hashtags and formats emojis beautifully for each target platform.</p>
+            <div class="step-row step-row-rtl">
+                <div class="step-content reveal reveal-right step-content-ltr">
+                     <h3 class="feature-section-title-medium">AI Writing Assistant</h3>
+                     <p class="feature-section-description">Crush writer's block instantly with our integrated AI Copilot sitting directly inside your composer. Harness advanced optimization to instantly polish raw thoughts, expand brief outlines into fully formatted posts, and adjust style to match any brand persona—whether exciting, professional, casual, or technical. The AI automatically recommends trending hashtags and formats emojis beautifully for each target platform.</p>
                 </div>
-                <div class="step-visual" style="direction: ltr;">
+                <div class="step-visual reveal reveal-left step-visual-ltr">
                     <div class="ai-chat-mockup">
                         
                         <div class="chat-header">
@@ -504,7 +537,7 @@
                                 <textarea class="chat-input-textarea" placeholder="Ask to write, shorten, or analyze your posts..." readonly></textarea>
                             </div>
                             <button class="chat-send-btn" type="button">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg); margin-left: -2px; margin-top: 1px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                <svg class="chat-send-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                             </button>
                         </div>
                     </div>
@@ -512,12 +545,13 @@
             </div>
         </div>
     </section>
-
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 Social Publish. All rights reserved.</p>
         </div>
     </footer>
-
+    <button id="scrollToTop" class="scroll-to-top-btn" aria-label="Scroll to top" type="button">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
 </body>
 </html>
