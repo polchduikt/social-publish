@@ -482,11 +482,17 @@ html::-webkit-scrollbar-thumb:hover {
   }
   .hero-cta {
     flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 24px;
   }
   .btn-large,
   .btn-outline {
     width: 100%;
+    max-width: 280px;
     justify-content: center;
+    box-sizing: border-box;
   }
   .step-row {
     grid-template-columns: 1fr;
@@ -1018,4 +1024,172 @@ html::-webkit-scrollbar-thumb:hover {
 .chat-send-btn:hover {
   background: var(--primary-dark);
   transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    padding: 24px;
+  }
+
+  .platform-carousel-card span {
+    font-size: 18px;
+  }
+
+  .platform-carousel-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .platform-carousel-track {
+    gap: 40px;
+  }
+
+  .calendar-dashboard-mockup {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-grid-mockup {
+    min-width: 520px;
+  }
+
+  .calendar-cell-mockup {
+    min-height: 80px;
+    padding: 8px 6px;
+  }
+
+  .ai-chat-mockup {
+    max-width: 100%;
+  }
+
+  .section-header h2 {
+    font-size: 28px;
+  }
+
+  .footer {
+    padding: 40px 0;
+  }
+
+  .platform-sec h3, .calendar-sec h3, .ai-sec h3 {
+    font-size: 24px !important;
+  }
+
+  .platform-sec p, .calendar-sec p, .ai-sec p {
+    font-size: 14px !important;
+  }
+
+  .platform-sec, .calendar-sec, .ai-sec {
+    padding: 60px 0 !important;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-text {
+    display: none !important;
+  }
+
+  .brand-logo {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .nav-links {
+    gap: 8px !important;
+  }
+
+  .btn-primary, .nav-item {
+    white-space: nowrap !important;
+  }
+
+  .btn-primary {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
+  .hero-cta {
+    padding: 0 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .hero-cta .btn-large {
+    width: 100% !important;
+    max-width: 280px !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .browser-mockup {
+    border-radius: 10px;
+  }
+
+  .browser-body {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .features {
+    padding: 60px 0;
+  }
+
+  .feature-card {
+    padding: 20px;
+  }
+
+  .section-header h2 {
+    font-size: 24px;
+  }
+
+  .step-content h3 {
+    font-size: 24px;
+  }
+
+  .calendar-cell-mockup {
+    min-height: 60px;
+  }
+
+  .post-badge-mockup {
+    font-size: 7px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .navbar {
+    padding: 16px 0;
+  }
+
+  .how-it-works {
+    padding: 60px 0;
+  }
+
+  .step-row {
+    gap: 30px;
+    margin-bottom: 50px;
+  }
+
+  .platform-sec h3, .calendar-sec h3, .ai-sec h3 {
+    font-size: 20px !important;
+  }
 }

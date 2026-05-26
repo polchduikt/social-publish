@@ -468,7 +468,49 @@
   }
 
   .queue-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0px !important;
+  }
+
+  .queue-sidebar,
+  .queue-main-panel {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+  }
+
+  .queue-sidebar {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .queue-sidebar-form {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .queue-sidebar-form button {
+    grid-column: span 2 !important;
+    margin-top: 8px !important;
+  }
+
+  #bulkActionForm {
+    display: block !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .posts-table-wrap {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .queue-table {
+    min-width: 760px !important;
   }
 }
 
@@ -487,7 +529,6 @@
   }
 }
 
-/* Dark Mode Overrides */
 html.dark-mode .queue-metric-card {
   background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
   border-color: #334155;
@@ -588,4 +629,48 @@ html.dark-mode .icon-action {
 html.dark-mode .icon-action:hover {
   background: rgba(37, 99, 235, 0.35);
   color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .queue-metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .posts-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .queue-search-wrap {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .queue-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .queue-footer button {
+    width: 100% !important;
+  }
+
+  .queue-main-panel {
+    padding: 12px !important;
+  }
+
+  .queue-metric-card {
+    padding: 12px !important;
+  }
+
+  .queue-sidebar-form {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .queue-sidebar-form button {
+    grid-column: span 1 !important;
+  }
 }

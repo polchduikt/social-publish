@@ -756,3 +756,91 @@ html.dark-mode .fc .fc-popover-header {
 html.dark-mode .fc .fc-daygrid-more-link {
   color: var(--dm-accent);
 }
+
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .fc .fc-toolbar .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc .fc-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  .fc .fc-col-header-cell {
+    font-size: 11px;
+  }
+
+  .fc .fc-daygrid-event {
+    font-size: 10px;
+    padding: 1px 3px;
+  }
+
+  .fc .fc-daygrid-day {
+    min-height: auto;
+  }
+
+  .fc .fc-popover {
+    width: calc(100vw - 24px);
+    max-width: none;
+  }
+
+  .calendar-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .calendar-title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .calendar-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .fc .fc-toolbar-title {
+    font-size: 16px;
+  }
+
+  .fc .fc-button-group {
+    gap: 2px;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+
+  .fc .fc-daygrid-event {
+    font-size: 9px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fc .fc-daygrid-day {
+    padding: 2px;
+  }
+
+  .fc .fc-view-harness {
+    font-size: 11px;
+  }
+}

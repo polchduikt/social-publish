@@ -513,3 +513,29 @@
     width: 20px;
     height: 20px;
 }
+
+@media (max-width: 480px) {
+  .integration-card {
+    padding: 12px;
+  }
+
+  .integration-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .account-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .account-row-actions {
+    flex-direction: column;
+  }
+
+  .account-row-actions button,
+  .account-row-actions .btn-link {
+    width: 100%;
+  }
+}

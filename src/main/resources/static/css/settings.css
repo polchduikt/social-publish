@@ -504,7 +504,6 @@ input:checked+.toggle-slider:before {
   flex-shrink: 0;
 }
 
-/* Dark mode linked accounts */
 .dark-mode .linked-account-row {
   background: #0b1120;
   border-color: #1f2937;
@@ -548,5 +547,40 @@ input:checked+.toggle-slider:before {
   .linked-account-actions {
     width: 100%;
     justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-form {
+    max-width: 100%;
+  }
+
+  .settings-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .linked-account-card {
+    padding: 12px;
+  }
+
+  .settings-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .settings-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .settings-actions button {
+    width: 100% !important;
+  }
+
+  .settings-section {
+    padding: 16px;
   }
 }

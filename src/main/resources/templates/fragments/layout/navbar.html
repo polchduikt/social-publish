@@ -1,6 +1,9 @@
 <th:block xmlns:th="http://www.thymeleaf.org" th:fragment="navbar">
     <nav class="top-navbar">
         <div class="navbar-left">
+            <button class="hamburger-toggle" type="button" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
             <a href="/dashboard" class="brand-link">
                 <img src="/images/logo.png" alt="Social Publish" class="brand-logo">
                 <div class="brand-text">
@@ -37,7 +40,9 @@
             window.csrfHeader = /*[[${_csrf != null ? _csrf.headerName : ''}]]*/ '';
         </script>
         <script src="/js/theme-toggle.js"></script>
+        <script src="/js/mobile.js"></script>
     </nav>
+    <div class="sidebar-backdrop"></div>
     <div th:replace="~{fragments/layout/ai-assistant :: assistant}"></div>
 </th:block>
 

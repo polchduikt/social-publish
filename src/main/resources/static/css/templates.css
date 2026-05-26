@@ -284,3 +284,43 @@ html.dark-mode .empty-icon {
   background: var(--dm-surface-3, #243450);
   color: var(--dm-text-muted, #9eb0c8);
 }
+
+@media (max-width: 768px) {
+  .templates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .template-card {
+    padding: 16px;
+  }
+
+  .template-actions {
+    flex-wrap: wrap;
+  }
+
+  .template-actions button {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .templates-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .template-card {
+    padding: 12px;
+  }
+
+  .templates-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .templates-header button,
+  .templates-header .btn-link {
+    width: 100%;
+  }
+}

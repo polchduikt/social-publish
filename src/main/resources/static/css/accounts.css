@@ -178,3 +178,55 @@
   vertical-align: middle;
   margin-right: 8px;
 }
+
+@media (max-width: 768px) {
+  .accounts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-card {
+    padding: 16px;
+  }
+
+  .account-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-card {
+    padding: 12px;
+  }
+
+  .account-card-footer {
+    display: flex !important;
+    width: 100% !important;
+    padding-top: 8px !important;
+  }
+
+  .account-card-footer .action-link {
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+    padding: 10px !important;
+    background: #f1f5f9 !important;
+    color: #2563eb !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .account-card-footer .action-link:hover {
+    background: #e2e8f0 !important;
+  }
+
+  html.dark-mode .account-card-footer .action-link {
+    background: #1e293b !important;
+    color: #60a5fa !important;
+  }
+
+  html.dark-mode .account-card-footer .action-link:hover {
+    background: #334155 !important;
+  }
+}
