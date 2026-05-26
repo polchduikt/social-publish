@@ -2,6 +2,7 @@ package com.socialpublish.publishing.service;
 
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.mail.service.EmailService;
+import com.socialpublish.publishing.config.PublishingProperties;
 import com.socialpublish.notifications.service.NotificationService;
 import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
@@ -48,6 +49,7 @@ class PublishingServiceTest {
     @Mock private RecurringPostService recurringPostService;
     @Mock private EmailService emailService;
     @Mock private CacheManager cacheManager;
+    @Mock private PublishingProperties publishingProperties;
     @Mock private PlatformPublisher telegramPublisher;
 
     private PublishingService publishingService;
@@ -58,7 +60,7 @@ class PublishingServiceTest {
                 postRepository, statusMachine, publishingProducer, notificationService,
                 eventPublisher, List.of(telegramPublisher), telegramRepository, discordRepository,
                 slackRepository, notionRepository, linkedinRepository, redditRepository,
-                recurringPostService, emailService, cacheManager
+                recurringPostService, emailService, cacheManager, publishingProperties
         );
     }
 

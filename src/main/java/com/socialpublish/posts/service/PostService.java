@@ -35,6 +35,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PostService {
 
+    private static final int MAX_TITLE_LENGTH = 150;
+
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostStatusMachine statusMachine;
@@ -340,7 +342,7 @@ public class PostService {
                 .trim();
 
         String title = plain.isBlank() ? "Untitled post" : plain;
-        return title.length() > 150 ? title.substring(0, 150) : title;
+        return title.length() > MAX_TITLE_LENGTH ? title.substring(0, MAX_TITLE_LENGTH) : title;
     }
 
     private void applyUserTransition(Post post, PostStatus target, PostUpsertRequest request) {

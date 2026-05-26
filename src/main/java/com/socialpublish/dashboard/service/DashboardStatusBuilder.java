@@ -11,6 +11,14 @@ import java.util.Map;
 @Component
 public class DashboardStatusBuilder {
 
+    private static final double FULL_CIRCLE_DEGREES = 360.0;
+    private static final double PERCENTAGE_MULTIPLIER = 100.0;
+    private static final String DEFAULT_GRADIENT = "conic-gradient(#2a3d61 0deg 360deg)";
+    private static final String COLOR_DRAFT = "#93a7c9";
+    private static final String COLOR_SCHEDULED = "#4f83ff";
+    private static final String COLOR_PUBLISHED = "#2ac978";
+    private static final String COLOR_FAILED = "#f87171";
+
     public List<DashboardStatusSliceView> buildSlices(DashboardStatsView stats) {
         long total = Math.max(1, stats.totalPosts());
         return List.of(
@@ -23,21 +31,21 @@ public class DashboardStatusBuilder {
 
     public String buildDonutGradient(List<DashboardStatusSliceView> slices) {
         long totalCount = slices.stream().mapToLong(DashboardStatusSliceView::count).sum();
-        if (totalCount == 0) return "conic-gradient(#2a3d61 0deg 360deg)";
+        if (totalCount == 0) return DEFAULT_GRADIENT;
 
         Map<String, String> colors = Map.of(
-                "draft", "#93a7c9",
-                "scheduled", "#4f83ff",
-                "published", "#2ac978",
-                "failed", "#f87171"
+                "draft", COLOR_DRAFT,
+                "scheduled", COLOR_SCHEDULED,
+                "published", COLOR_PUBLISHED,
+                "failed", COLOR_FAILED
         );
 
         double start = 0.0;
         List<String> parts = new ArrayList<>();
         for (DashboardStatusSliceView slice : slices) {
             double fraction = (double) slice.count() / totalCount;
-            double end = start + (fraction * 360.0);
-            String color = colors.getOrDefault(slice.cssClass(), "#4f83ff");
+            double end = start + (fraction * FULL_CIRCLE_DEGREES);
+            String color = colors.getOrDefault(slice.cssClass(), COLOR_SCHEDULED);
             parts.add(color + " " + round(start) + "deg " + round(end) + "deg");
             start = end;
         }
@@ -46,7 +54,7 @@ public class DashboardStatusBuilder {
 
     private int toPercent(long value, long max) {
         if (max <= 0 || value <= 0) return 0;
-        return (int) Math.round((value * 100.0) / max);
+        return (int) Math.round((value * PERCENTAGE_MULTIPLIER) / max);
     }
 
     private String round(double value) {

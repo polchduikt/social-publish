@@ -6,6 +6,7 @@ import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.posts.service.PostStatusMachine;
+import com.socialpublish.publishing.config.PublishingProperties;
 import com.socialpublish.publishing.entity.Platform;
 import com.socialpublish.publishing.event.PostScheduledEvent;
 import com.socialpublish.integrations.exception.IntegrationException;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +52,7 @@ public class PublishingService {
     private final RecurringPostService recurringPostService;
     private final EmailService emailService;
     private final CacheManager cacheManager;
+    private final PublishingProperties publishingProperties;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -73,6 +76,53 @@ public class PublishingService {
 
         eventPublisher.publishEvent(new PostScheduledEvent(postId, true));
         log.info("Post {} transitioned to PUBLISHING and event published (scheduled=true)", postId);
+    }
+
+    @Transactional
+    public void handleMissedPost(Post post) {
+        UUID postId = post.getId();
+        UUID userId = post.getOwner().getId();
+        Duration delay = Duration.between(post.getScheduledAt(), Instant.now());
+        long delayMinutes = delay.toMinutes();
+        long delayHours = delay.toHours();
+        long remainingMinutes = delayMinutes % 60;
+
+        int silentThreshold = publishingProperties.getGracePeriodSilentMinutes();
+        int maxThreshold = publishingProperties.getGracePeriodMaxMinutes();
+
+        if (delayMinutes <= silentThreshold) {
+            log.info("Post {} is {}min late (within silent grace period), auto-publishing", postId, delayMinutes);
+            startScheduledPublish(postId);
+
+        } else if (delayMinutes <= maxThreshold) {
+            log.info("Post {} is {}min late (within warning grace period), auto-publishing with notification", postId, delayMinutes);
+            startScheduledPublish(postId);
+
+            String delayText = delayHours > 0
+                    ? delayHours + "h " + remainingMinutes + "min"
+                    : delayMinutes + "min";
+
+            notificationService.sendPostUpdate(userId,
+                    new PostNotification(postId, post.getTitle(), "PUBLISHING",
+                            "Published with " + delayText + " delay (server recovery)",
+                            "warning", Instant.now()));
+
+        } else {
+            String overdueText = delayHours + "h " + remainingMinutes + "min";
+            log.warn("Post {} is {} overdue (exceeds max grace period), marking as FAILED", postId, overdueText);
+
+            statusMachine.transition(post, PostStatus.FAILED);
+            post.setFailedReason("Missed schedule window (" + overdueText + " overdue)");
+            postRepository.save(post);
+
+            notificationService.sendPostUpdate(userId,
+                    new PostNotification(postId, post.getTitle(), "FAILED",
+                            "Missed schedule window (" + overdueText + " overdue). Reschedule or publish manually.",
+                            "error", Instant.now()));
+
+            sendResultEmail(post, false, "Missed schedule window (" + overdueText + " overdue)");
+            evictDashboardCache(userId);
+        }
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

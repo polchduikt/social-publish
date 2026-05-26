@@ -25,6 +25,8 @@ public class AiAssistantService {
 
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final int RECENT_POSTS_FOR_CONTEXT = 5;
+    private static final int MAX_PREVIEW_LENGTH = 120;
+    private static final int TRUNCATION_LENGTH = 117;
 
     private final DashboardService dashboardService;
     private final Map<String, AiAssistantProvider> providers;
@@ -150,10 +152,10 @@ public class AiAssistantService {
             return "Untitled";
         }
         String trimmed = value.trim();
-        if (trimmed.length() <= 120) {
+        if (trimmed.length() <= MAX_PREVIEW_LENGTH) {
             return trimmed;
         }
-        return trimmed.substring(0, 117) + "...";
+        return trimmed.substring(0, TRUNCATION_LENGTH) + "...";
     }
 
     private String formatDateTime(LocalDateTime value) {

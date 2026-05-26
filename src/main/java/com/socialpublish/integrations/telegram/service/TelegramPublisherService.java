@@ -18,6 +18,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TelegramPublisherService implements PlatformPublisher {
 
+    private static final int MAX_TELEGRAM_CAPTION_LENGTH = 1024;
+    private static final int MIN_POLL_OPTIONS = 2;
     private final TelegramSettingsRepository settingsRepository;
     private final TelegramClientService telegramClientService;
 
@@ -45,7 +47,7 @@ public class TelegramPublisherService implements PlatformPublisher {
 
         boolean hasMessage = !message.isBlank();
         boolean hasButtons = post.getInlineButtons() != null && !post.getInlineButtons().isBlank();
-        boolean longMessage = message.length() > 1024;
+        boolean longMessage = message.length() > MAX_TELEGRAM_CAPTION_LENGTH;
         String caption = longMessage ? "" : message;
 
         if (mediaUrls.isEmpty()) {
@@ -81,7 +83,7 @@ public class TelegramPublisherService implements PlatformPublisher {
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .toList();
-            if (options.size() >= 2) {
+            if (options.size() >= MIN_POLL_OPTIONS) {
                 telegramClientService.sendPoll(
                         settings.getBotToken(),
                         settings.getChatId(),

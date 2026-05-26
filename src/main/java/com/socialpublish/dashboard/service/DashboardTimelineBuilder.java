@@ -16,13 +16,20 @@ import java.util.Map;
 @Component
 public class DashboardTimelineBuilder {
 
+    private static final int TIMELINE_DAYS = 14;
+    private static final double PERCENTAGE_MULTIPLIER = 100.0;
+    private static final int LABEL_INTERVAL_DAYS = 6;
+    private static final int LABEL_FIT_THRESHOLD = 3;
+    private static final int AXIS_MIN_PERCENT = 10;
+    private static final double AXIS_SCALE_FACTOR = 0.8;
+
     public SuccessTimelineData build(List<Post> posts) {
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDate today = LocalDate.now(zoneId);
-        LocalDate startDate = today.minusDays(13);
+        LocalDate startDate = today.minusDays(TIMELINE_DAYS - 1);
 
         Map<LocalDate, DailySuccessCounter> byDate = new LinkedHashMap<>();
-        for (int i = 0; i < 14; i++) {
+        for (int i = 0; i < TIMELINE_DAYS; i++) {
             LocalDate d = startDate.plusDays(i);
             byDate.put(d, new DailySuccessCounter(d));
         }
@@ -52,9 +59,9 @@ public class DashboardTimelineBuilder {
         for (int i = 0; i < allDays.size(); i++) {
             DailySuccessCounter raw = allDays.get(i);
             long attempts = raw.published + raw.failed;
-            int rate = attempts > 0 ? (int) Math.round((raw.published * 100.0) / attempts) : 0;
-            boolean showLabel = (i % 6 == 0) || (i == allDays.size() - 1 && (i % 6 > 3));
-            double xOffset = (i * 100.0) / (allDays.size() - 1);
+            int rate = attempts > 0 ? (int) Math.round((raw.published * PERCENTAGE_MULTIPLIER) / attempts) : 0;
+            boolean showLabel = (i % LABEL_INTERVAL_DAYS == 0) || (i == allDays.size() - 1 && (i % LABEL_INTERVAL_DAYS > LABEL_FIT_THRESHOLD));
+            double xOffset = (i * PERCENTAGE_MULTIPLIER) / (allDays.size() - 1);
             points.add(new DashboardSuccessTimelinePointView(
                     raw.date.format(labelFormatter),
                     raw.date.format(shortLabelFormatter),
@@ -77,8 +84,8 @@ public class DashboardTimelineBuilder {
 
         double[][] coords = new double[points.size()][2];
         for (int i = 0; i < points.size(); i++) {
-            coords[i][0] = (i * 100.0) / (points.size() - 1);
-            coords[i][1] = 100 - points.get(i).rateY();
+            coords[i][0] = (i * PERCENTAGE_MULTIPLIER) / (points.size() - 1);
+            coords[i][1] = PERCENTAGE_MULTIPLIER - points.get(i).rateY();
         }
 
         if (points.size() == 1) return "M " + round(coords[0][0]) + "," + round(coords[0][1]);
@@ -98,8 +105,8 @@ public class DashboardTimelineBuilder {
     }
 
     private int toAxisPercent(int rate) {
-        int clamped = Math.max(0, Math.min(100, rate));
-        return 10 + (int) Math.round(clamped * 0.8);
+        int clamped = Math.max(0, Math.min((int) PERCENTAGE_MULTIPLIER, rate));
+        return AXIS_MIN_PERCENT + (int) Math.round(clamped * AXIS_SCALE_FACTOR);
     }
 
     private String round(double value) {

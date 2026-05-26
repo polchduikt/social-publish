@@ -28,8 +28,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class QueueService {
 
+    private static final int MAX_QUEUE_PAGE_SIZE = 100;
+    private static final int DAYS_IN_WEEK = 7;
+    private static final int DAYS_IN_MONTH = 30;
     private static final int LOAD_MORE_STEP = 10;
-
     private final PostRepository postRepository;
     private final PostService postService;
     private final PostMapper postMapper;
@@ -46,7 +48,7 @@ public class QueueService {
                 .map(postMapper::toView)
                 .toList();
         boolean hasMore = totalFiltered > posts.size();
-        int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, 100);
+        int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, MAX_QUEUE_PAGE_SIZE);
 
         QueueStatsView stats = new QueueStatsView(
                 postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.SCHEDULED),
@@ -167,12 +169,12 @@ public class QueueService {
                 case WEEK -> predicates.add(buildDateRangePredicate(
                         cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
                         cb,
-                        7
+                        DAYS_IN_WEEK
                 ));
                 case MONTH -> predicates.add(buildDateRangePredicate(
                         cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
                         cb,
-                        30
+                        DAYS_IN_MONTH
                 ));
                 case ALL -> {
                 }

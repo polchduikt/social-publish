@@ -20,6 +20,8 @@ import com.socialpublish.integrations.telegram.dto.TelegramSettingsListRequest;
 @Service
 public class TelegramService extends BaseIntegrationService<TelegramSettingsEntity, TelegramSettingsRepository> {
 
+    private static final int MIN_MASK_LENGTH = 8;
+    private static final int MASK_VISIBLE_CHARS = 4;
     private final TelegramClientService telegramClient;
 
     public TelegramService(TelegramSettingsRepository settingsRepository, UserRepository userRepository, TelegramClientService telegramClient) {
@@ -44,8 +46,8 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
     }
 
     private String maskToken(String token) {
-        if (token == null || token.length() <= 8) return token == null ? "" : token;
-        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
+        if (token == null || token.length() <= MIN_MASK_LENGTH) return token == null ? "" : token;
+        return token.substring(0, MASK_VISIBLE_CHARS) + "..." + token.substring(token.length() - MASK_VISIBLE_CHARS);
     }
 
     @Transactional

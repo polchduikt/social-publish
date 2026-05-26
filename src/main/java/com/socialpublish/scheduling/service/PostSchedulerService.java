@@ -8,6 +8,7 @@ import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
 import org.quartz.SimpleTrigger;
 import org.quartz.TriggerBuilder;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +38,11 @@ public class PostSchedulerService {
                     .usingJobData("postId", post.getId().toString())
                     .build();
 
-            SimpleTrigger trigger = (SimpleTrigger) TriggerBuilder.newTrigger()
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity("trigger-" + post.getId(), JOB_GROUP)
                     .startAt(Date.from(post.getScheduledAt()))
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                            .withMisfireHandlingInstructionFireNow())
                     .build();
 
             scheduler.scheduleJob(jobDetail, trigger);

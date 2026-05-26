@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RecurringPostService {
 
+    private static final int REFERENCE_TIME_BUFFER_MINUTES = 1;
+    private static final int RECURRENCE_LOOKAHEAD_DAYS = 8;
+    private static final int FIRST_OCCURRENCE_LOOKBACK_SECONDS = 60;
     private final PostRepository postRepository;
     private final PostSchedulerService postSchedulerService;
     private final PostMediaSyncService postMediaSyncService;
@@ -90,9 +93,9 @@ public class RecurringPostService {
         ZoneId zone = ZoneId.systemDefault();
         LocalDateTime afterLdt = afterInstant.atZone(zone).toLocalDateTime();
         LocalDate startDate = afterLdt.toLocalDate();
-        LocalDateTime reference = afterLdt.plusMinutes(1);
+        LocalDateTime reference = afterLdt.plusMinutes(REFERENCE_TIME_BUFFER_MINUTES);
         LocalDate checkDate = reference.toLocalDate();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < RECURRENCE_LOOKAHEAD_DAYS; i++) {
             LocalDate candidate = checkDate.plusDays(i);
             if (days.contains(candidate.getDayOfWeek())) {
                 LocalDateTime candidateDt = LocalDateTime.of(candidate, time);
@@ -106,7 +109,7 @@ public class RecurringPostService {
     }
 
     public Instant calculateFirstOccurrence(String recurringDays, String recurringTime) {
-        return calculateNextOccurrence(recurringDays, recurringTime, Instant.now().minusSeconds(60));
+        return calculateNextOccurrence(recurringDays, recurringTime, Instant.now().minusSeconds(FIRST_OCCURRENCE_LOOKBACK_SECONDS));
     }
 
     private Set<DayOfWeek> parseDays(String recurringDays) {

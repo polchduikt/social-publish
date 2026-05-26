@@ -14,7 +14,7 @@ public class PostStatusMachine {
 
     private static final Map<PostStatus, Set<PostStatus>> TRANSITIONS = Map.of(
             DRAFT, Set.of(SCHEDULED, CANCELLED),
-            SCHEDULED, Set.of(PUBLISHING, DRAFT, CANCELLED),
+            SCHEDULED, Set.of(PUBLISHING, DRAFT, CANCELLED, FAILED),
             PUBLISHING, Set.of(PUBLISHED, RETRYING, FAILED),
             RETRYING, Set.of(PUBLISHING, FAILED, CANCELLED),
             FAILED, Set.of(DRAFT),
