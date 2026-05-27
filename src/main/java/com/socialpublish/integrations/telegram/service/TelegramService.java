@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.socialpublish.integrations.telegram.dto.TelegramSettingsListRequest;
+import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 
 @Service
 public class TelegramService extends BaseIntegrationService<TelegramSettingsEntity, TelegramSettingsRepository> {
@@ -23,25 +24,20 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
     private static final int MIN_MASK_LENGTH = 8;
     private static final int MASK_VISIBLE_CHARS = 4;
     private final TelegramClientService telegramClient;
+    private final IntegrationSettingsMapper integrationSettingsMapper;
 
-    public TelegramService(TelegramSettingsRepository settingsRepository, UserRepository userRepository, TelegramClientService telegramClient) {
+    public TelegramService(TelegramSettingsRepository settingsRepository, UserRepository userRepository, 
+                           TelegramClientService telegramClient, IntegrationSettingsMapper integrationSettingsMapper) {
         super(settingsRepository, userRepository);
         this.telegramClient = telegramClient;
+        this.integrationSettingsMapper = integrationSettingsMapper;
     }
 
     @Transactional(readOnly = true)
     public TelegramSettingsListRequest getSettingsRequest(UUID userId) {
         List<TelegramSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
         TelegramSettingsListRequest request = new TelegramSettingsListRequest();
-        request.setAccounts(entities.stream().map(entity -> {
-            TelegramSettingsRequest req = new TelegramSettingsRequest();
-            req.setId(entity.getId());
-            req.setBotToken(entity.getBotToken());
-            req.setChatId(entity.getChatId());
-            req.setLabel(entity.getLabel());
-            req.setEnabled(entity.isEnabled());
-            return req;
-        }).collect(Collectors.toList()));
+        request.setAccounts(integrationSettingsMapper.toTelegramRequests(entities));
         return request;
     }
 

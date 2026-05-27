@@ -16,29 +16,26 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.socialpublish.integrations.service.BaseIntegrationService;
 import com.socialpublish.integrations.discord.dto.DiscordSettingsListRequest;
+import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 
 @Service
 public class DiscordService extends BaseIntegrationService<DiscordSettingsEntity, DiscordSettingsRepository> {
 
     private final DiscordClientService discordClient;
+    private final IntegrationSettingsMapper integrationSettingsMapper;
 
-    public DiscordService(DiscordSettingsRepository settingsRepository, UserRepository userRepository, DiscordClientService discordClient) {
+    public DiscordService(DiscordSettingsRepository settingsRepository, UserRepository userRepository,
+                          DiscordClientService discordClient, IntegrationSettingsMapper integrationSettingsMapper) {
         super(settingsRepository, userRepository);
         this.discordClient = discordClient;
+        this.integrationSettingsMapper = integrationSettingsMapper;
     }
 
     @Transactional(readOnly = true)
     public DiscordSettingsListRequest getSettingsRequest(UUID userId) {
         List<DiscordSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
         DiscordSettingsListRequest request = new DiscordSettingsListRequest();
-        request.setAccounts(entities.stream().map(entity -> {
-            DiscordSettingsRequest req = new DiscordSettingsRequest();
-            req.setId(entity.getId());
-            req.setWebhookUrl(entity.getWebhookUrl());
-            req.setLabel(entity.getLabel());
-            req.setEnabled(entity.isEnabled());
-            return req;
-        }).collect(Collectors.toList()));
+        request.setAccounts(integrationSettingsMapper.toDiscordRequests(entities));
         return request;
     }
 

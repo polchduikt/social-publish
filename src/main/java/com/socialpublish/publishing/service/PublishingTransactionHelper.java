@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.hibernate.Hibernate;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -24,11 +24,13 @@ public class PublishingTransactionHelper {
 
     @Transactional
     public Post preparePublishing(UUID postId) {
-        Post post = postRepository.findWithMediaById(postId).orElse(null);
+        Post post = postRepository.findWithMediaAndOwnerById(postId).orElse(null);
         if (post == null) {
             log.warn("Post {} not found, skipping publish", postId);
             return null;
         }
+        Hibernate.initialize(post.getOwner());
+        Hibernate.initialize(post.getMedia());
 
         if (post.getStatus() != PostStatus.PUBLISHING && post.getStatus() != PostStatus.RETRYING) {
             log.info("Post {} is {}, skipping publish", postId, post.getStatus());
@@ -45,12 +47,13 @@ public class PublishingTransactionHelper {
 
     @Transactional
     public Post markPublished(UUID postId) {
-        Post post = postRepository.findById(postId).orElse(null);
+        Post post = postRepository.findWithMediaAndOwnerById(postId).orElse(null);
         if (post == null) {
             log.warn("Post {} not found when marking published", postId);
             return null;
         }
-
+        Hibernate.initialize(post.getOwner());
+        Hibernate.initialize(post.getMedia());
         statusMachine.transition(post, PostStatus.PUBLISHED);
         post.setPublishedAt(Instant.now());
         post.setFailedReason(null);
@@ -71,11 +74,13 @@ public class PublishingTransactionHelper {
 
     @Transactional
     public FailureResult handleFailure(UUID postId, String reason, int attempt) {
-        Post post = postRepository.findById(postId).orElse(null);
+        Post post = postRepository.findWithMediaAndOwnerById(postId).orElse(null);
         if (post == null) {
             log.warn("Post {} not found when handling failure", postId);
             return null;
         }
+        Hibernate.initialize(post.getOwner());
+        Hibernate.initialize(post.getMedia());
 
         boolean isRetry = attempt < post.getMaxRetries();
         if (isRetry) {

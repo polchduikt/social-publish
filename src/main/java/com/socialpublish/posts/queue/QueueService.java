@@ -22,7 +22,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,10 +43,23 @@ public class QueueService {
     public QueuePageView getQueue(UUID ownerId, QueueFilterRequest filter) {
         Specification<Post> specification = buildSpecification(ownerId, filter);
         long totalFiltered = postRepository.count(specification);
-        PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, filter.getSize());
+        PageRequest pageable = PageRequest.of(0, filter.getSize());
         List<Post> filteredPosts = postRepository.findAll(specification, pageable).getContent();
 
-        List<PostView> posts = filteredPosts.stream()
+        List<UUID> postIds = filteredPosts.stream().map(Post::getId).toList();
+        List<Post> postsWithMedia = postIds.isEmpty()
+                ? List.of()
+                : postRepository.findAllWithMediaByIdIn(postIds);
+
+        Map<UUID, Post> postsMap = postsWithMedia.stream()
+                .collect(Collectors.toMap(Post::getId, post -> post));
+
+        List<Post> orderedPosts = postIds.stream()
+                .map(postsMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<PostView> posts = orderedPosts.stream()
                 .map(postMapper::toView)
                 .toList();
 
@@ -108,10 +124,6 @@ public class QueueService {
 
     private Specification<Post> buildSpecification(UUID ownerId, QueueFilterRequest filter) {
         return (root, query, cb) -> {
-            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
-                root.fetch("media", jakarta.persistence.criteria.JoinType.LEFT);
-            }
-
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("owner").get("id"), ownerId));
 

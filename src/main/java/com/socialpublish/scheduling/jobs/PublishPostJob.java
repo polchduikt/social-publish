@@ -46,7 +46,7 @@ public class PublishPostJob implements Job {
 
         if (delay.toMinutes() > 1) {
             log.info("Post {} is {}min late, routing to missed post handler", postId, delay.toMinutes());
-            publishingService.handleMissedPost(post);
+            publishingService.handleMissedPost(postId);
         } else {
             publishingService.startScheduledPublish(postId);
         }

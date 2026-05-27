@@ -139,14 +139,14 @@ class PublishingServiceTest {
         post.setOwner(owner);
 
         when(transactionHelper.preparePublishing(postId)).thenReturn(post);
-        when(transactionHelper.handleFailure(postId, "API Error", 0)).thenReturn(
+        when(transactionHelper.handleFailure(postId, "TELEGRAM: API Error", 0)).thenReturn(
                 new PublishingTransactionHelper.FailureResult(post, true)
         );
         doThrow(new RuntimeException("API Error")).when(telegramPublisher).publish(any(), any());
 
         publishingService.attemptPublish(postId, 0, false);
 
-        verify(transactionHelper).handleFailure(postId, "API Error", 0);
+        verify(transactionHelper).handleFailure(postId, "TELEGRAM: API Error", 0);
         verify(publishingProducer).sendRetryRequest(postId, 1, false);
         verify(notificationService).sendPostUpdate(eq(owner.getId()), argThat(n -> "RETRYING".equals(n.status())));
     }

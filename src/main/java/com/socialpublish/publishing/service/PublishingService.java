@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
@@ -80,8 +81,15 @@ public class PublishingService {
     }
 
     @Transactional
-    public void handleMissedPost(Post post) {
-        UUID postId = post.getId();
+    public void handleMissedPost(UUID postId) {
+        Post post = postRepository.findWithMediaAndOwnerById(postId).orElse(null);
+        if (post == null) {
+            log.warn("Post {} not found, skipping missed post handler", postId);
+            return;
+        }
+        Hibernate.initialize(post.getOwner());
+        Hibernate.initialize(post.getMedia());
+
         UUID userId = post.getOwner().getId();
         Duration delay = Duration.between(post.getScheduledAt(), Instant.now());
         long delayMinutes = delay.toMinutes();

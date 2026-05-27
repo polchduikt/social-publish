@@ -1,7 +1,7 @@
 package com.socialpublish.posts.service;
 
 import com.socialpublish.posts.entity.Post;
-import com.socialpublish.posts.entity.PostStatus;
+import com.socialpublish.posts.mapper.RecurringPostMapper;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.scheduling.service.PostSchedulerService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +28,7 @@ public class RecurringPostService {
     private final PostRepository postRepository;
     private final PostSchedulerService postSchedulerService;
     private final PostMediaSyncService postMediaSyncService;
+    private final RecurringPostMapper recurringPostMapper;
 
     @Transactional
     public Optional<Post> createNextOccurrence(Post publishedPost) {
@@ -49,25 +50,10 @@ public class RecurringPostService {
             log.info("Recurring post {} reached end date, stopping recurrence", publishedPost.getId());
             return Optional.empty();
         }
-
-        Post next = new Post();
-        next.setOwner(publishedPost.getOwner());
-        next.setTitle(publishedPost.getTitle());
-        next.setContent(publishedPost.getContent());
-        next.setPlatforms(publishedPost.getPlatforms());
-        next.setStatus(PostStatus.SCHEDULED);
-        next.setScheduledAt(nextAt);
-        next.setRecurring(true);
-        next.setRecurringDays(publishedPost.getRecurringDays());
-        next.setRecurringTime(publishedPost.getRecurringTime());
-        next.setRecurringEndDate(publishedPost.getRecurringEndDate());
-        next.setMaxRetries(publishedPost.getMaxRetries());
-
-        next.setParentRecurringId(
-                publishedPost.getParentRecurringId() != null
-                        ? publishedPost.getParentRecurringId()
-                        : publishedPost.getId()
-        );
+        UUID parentId = publishedPost.getParentRecurringId() != null
+                ? publishedPost.getParentRecurringId()
+                : publishedPost.getId();
+        Post next = recurringPostMapper.toNextOccurrence(publishedPost, nextAt, parentId);
 
         Post saved = postRepository.save(next);
         postMediaSyncService.copyMedia(publishedPost, saved, publishedPost.getOwner().getId());

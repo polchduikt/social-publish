@@ -36,7 +36,6 @@ import java.util.UUID;
 public class PostService {
 
     private static final int MAX_TITLE_LENGTH = 150;
-
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostStatusMachine statusMachine;

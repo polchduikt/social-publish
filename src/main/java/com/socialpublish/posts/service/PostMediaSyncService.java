@@ -4,6 +4,7 @@ import com.socialpublish.media.dto.MediaUploadResult;
 import com.socialpublish.media.entity.PostMedia;
 import com.socialpublish.media.service.CloudinaryMediaService;
 import com.socialpublish.posts.entity.Post;
+import com.socialpublish.posts.mapper.PostMediaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import java.util.stream.IntStream;
 public class PostMediaSyncService {
 
     private final CloudinaryMediaService cloudinaryMediaService;
+    private final PostMediaMapper postMediaMapper;
 
     public void syncMedia(
             Post post,
@@ -45,7 +47,7 @@ public class PostMediaSyncService {
 
         int startOrder = post.getMedia().size();
         List<PostMedia> newMedia = IntStream.range(0, uploaded.size())
-                .mapToObj(index -> mapToPostMedia(post, uploaded.get(index), startOrder + index))
+                .mapToObj(index -> postMediaMapper.toPostMedia(post, uploaded.get(index), startOrder + index))
                 .toList();
         post.getMedia().addAll(newMedia);
     }
@@ -68,22 +70,9 @@ public class PostMediaSyncService {
 
         int startOrder = target.getMedia().size();
         List<PostMedia> clonedMedia = IntStream.range(0, copied.size())
-                .mapToObj(index -> mapToPostMedia(target, copied.get(index), startOrder + index))
+                .mapToObj(index -> postMediaMapper.toPostMedia(target, copied.get(index), startOrder + index))
                 .toList();
         target.getMedia().addAll(clonedMedia);
-    }
-
-    private PostMedia mapToPostMedia(Post post, MediaUploadResult upload, int sortOrder) {
-        PostMedia media = new PostMedia();
-        media.setPost(post);
-        media.setPublicId(upload.publicId());
-        media.setSecureUrl(upload.secureUrl());
-        media.setFormat(upload.format());
-        media.setWidth(upload.width());
-        media.setHeight(upload.height());
-        media.setBytes(upload.bytes());
-        media.setSortOrder(sortOrder);
-        return media;
     }
 
     private void renumberMediaOrder(List<PostMedia> mediaList) {

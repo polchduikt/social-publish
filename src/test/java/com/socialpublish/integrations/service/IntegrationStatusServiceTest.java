@@ -4,6 +4,7 @@ import com.socialpublish.integrations.discord.entity.DiscordSettingsEntity;
 import com.socialpublish.integrations.discord.repository.DiscordSettingsRepository;
 import com.socialpublish.integrations.dto.UserIntegrationsView;
 import com.socialpublish.integrations.linkedin.repository.LinkedInSettingsRepository;
+import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 import com.socialpublish.integrations.notion.repository.NotionSettingsRepository;
 import com.socialpublish.integrations.reddit.repository.RedditSettingsRepository;
 import com.socialpublish.integrations.slack.repository.SlackSettingsRepository;
@@ -12,8 +13,10 @@ import com.socialpublish.integrations.telegram.repository.TelegramSettingsReposi
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +33,9 @@ class IntegrationStatusServiceTest {
     @Mock private SlackSettingsRepository slackRepository;
     @Mock private NotionSettingsRepository notionRepository;
     @Mock private LinkedInSettingsRepository linkedInRepository;
+
+    @Spy
+    private IntegrationSettingsMapper integrationSettingsMapper = Mappers.getMapper(IntegrationSettingsMapper.class);
 
     @InjectMocks
     private IntegrationStatusService integrationStatusService;

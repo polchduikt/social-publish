@@ -17,6 +17,12 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     @EntityGraph(attributePaths = {"media"})
     Optional<Post> findWithMediaById(UUID id);
 
+    @EntityGraph(attributePaths = {"media", "owner"})
+    Optional<Post> findWithMediaAndOwnerById(UUID id);
+
+    @EntityGraph(attributePaths = {"media"})
+    List<Post> findAllWithMediaByIdIn(List<UUID> ids);
+
     @EntityGraph(attributePaths = {"media"})
     List<Post> findByOwnerIdOrderByUpdatedAtDesc(UUID ownerId);
 

@@ -56,7 +56,7 @@ public class RedditPublisherService implements PlatformPublisher {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("sr", subreddit);
         body.add("title", post.getTitle() != null && !post.getTitle().isBlank() ? post.getTitle() : "Post from Social Publish");
-        body.add("kind", "self"); // Text post
+        body.add("kind", "self");
         body.add("text", post.getContent());
 
         try {

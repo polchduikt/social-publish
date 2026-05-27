@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.socialpublish.integrations.service.BaseIntegrationService;
 import com.socialpublish.integrations.slack.dto.SlackSettingsListRequest;
+import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,23 +24,19 @@ import lombok.extern.slf4j.Slf4j;
 public class SlackService extends BaseIntegrationService<SlackSettingsEntity, SlackSettingsRepository> {
 
     private final SlackClientService slackClient;
+    private final IntegrationSettingsMapper integrationSettingsMapper;
 
-    public SlackService(SlackSettingsRepository settingsRepository, UserRepository userRepository, SlackClientService slackClient) {
+    public SlackService(SlackSettingsRepository settingsRepository, UserRepository userRepository,
+                        SlackClientService slackClient, IntegrationSettingsMapper integrationSettingsMapper) {
         super(settingsRepository, userRepository);
         this.slackClient = slackClient;
+        this.integrationSettingsMapper = integrationSettingsMapper;
     }
     @Transactional(readOnly = true)
     public SlackSettingsListRequest getSettingsRequest(UUID userId) {
         List<SlackSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
         SlackSettingsListRequest request = new SlackSettingsListRequest();
-        request.setAccounts(entities.stream().map(entity -> {
-            SlackSettingsRequest req = new SlackSettingsRequest();
-            req.setId(entity.getId());
-            req.setWebhookUrl(entity.getWebhookUrl());
-            req.setLabel(entity.getLabel());
-            req.setEnabled(entity.isEnabled());
-            return req;
-        }).collect(Collectors.toList()));
+        request.setAccounts(integrationSettingsMapper.toSlackRequests(entities));
         return request;
     }
 
