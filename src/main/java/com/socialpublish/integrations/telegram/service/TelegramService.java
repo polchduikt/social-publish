@@ -21,8 +21,6 @@ import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 @Service
 public class TelegramService extends BaseIntegrationService<TelegramSettingsEntity, TelegramSettingsRepository> {
 
-    private static final int MIN_MASK_LENGTH = 8;
-    private static final int MASK_VISIBLE_CHARS = 4;
     private final TelegramClientService telegramClient;
     private final IntegrationSettingsMapper integrationSettingsMapper;
 
@@ -39,11 +37,6 @@ public class TelegramService extends BaseIntegrationService<TelegramSettingsEnti
         TelegramSettingsListRequest request = new TelegramSettingsListRequest();
         request.setAccounts(integrationSettingsMapper.toTelegramRequests(entities));
         return request;
-    }
-
-    private String maskToken(String token) {
-        if (token == null || token.length() <= MIN_MASK_LENGTH) return token == null ? "" : token;
-        return token.substring(0, MASK_VISIBLE_CHARS) + "..." + token.substring(token.length() - MASK_VISIBLE_CHARS);
     }
 
     @Transactional

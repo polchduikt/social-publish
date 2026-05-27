@@ -110,14 +110,14 @@
                         <div class="field">
                             <label for="botToken">Bot Token</label>
                             <input type="password" id="botToken" name="botToken"
-                                   th:placeholder="${telegramSettings.configured() ? telegramSettings.botToken() : '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'}"
+                                   th:placeholder="${telegramSettings.configured() and !#lists.isEmpty(telegramSettings.accounts()) ? telegramSettings.accounts().get(0).maskedBotToken() : '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'}"
                                    required autocomplete="off" />
                         </div>
 
                         <div class="field">
                             <label for="chatId">Chat ID</label>
                             <input type="text" id="chatId" name="chatId"
-                                   th:value="${telegramSettings.configured() ? telegramSettings.chatId() : ''}"
+                                   th:value="${telegramSettings.configured() and !#lists.isEmpty(telegramSettings.accounts()) ? telegramSettings.accounts().get(0).maskedChatId() : ''}"
                                    placeholder="-1001234567890"
                                    required />
                         </div>
@@ -148,11 +148,11 @@
                     <div th:if="${telegramSettings.configured()}" class="connection-info">
                         <div class="info-row">
                             <span class="info-label">Bot Token</span>
-                            <code class="info-value" th:text="${telegramSettings.botToken()}">***</code>
+                            <code class="info-value" th:text="${telegramSettings.configured() and !#lists.isEmpty(telegramSettings.accounts()) ? telegramSettings.accounts().get(0).maskedBotToken() : '***'}">***</code>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Chat ID</span>
-                            <code class="info-value" th:text="${telegramSettings.chatId()}">-</code>
+                            <code class="info-value" th:text="${telegramSettings.configured() and !#lists.isEmpty(telegramSettings.accounts()) ? telegramSettings.accounts().get(0).maskedChatId() : '-'}">-</code>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Status</span>

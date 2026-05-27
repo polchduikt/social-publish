@@ -10,7 +10,7 @@ public record SlackSettingsView(
 ) {
     public record SlackAccountView(
             UUID id,
-            String webhookUrl,
+            String maskedWebhookUrl,
             String label,
             boolean enabled
     ) {}

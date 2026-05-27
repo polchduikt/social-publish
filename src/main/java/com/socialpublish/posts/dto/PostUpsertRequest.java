@@ -1,7 +1,8 @@
 package com.socialpublish.posts.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.socialpublish.common.validation.PlatformList;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,10 @@ public class PostUpsertRequest {
     private String content;
 
     @NotNull(message = "Status is required")
+    @Pattern(
+            regexp = "DRAFT|SCHEDULED|PUBLISHING|PUBLISHED|RETRYING|FAILED|CANCELLED",
+            message = "Status value is invalid"
+    )
     private String status = "DRAFT";
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -26,6 +31,7 @@ public class PostUpsertRequest {
     @Size(max = 500, message = "Failure reason must be at most 500 characters")
     private String failedReason;
 
+    @PlatformList
     private List<String> platforms = new ArrayList<>();
 
     private boolean recurring;

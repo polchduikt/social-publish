@@ -25,19 +25,27 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface IntegrationSettingsMapper {
 
+    @Mapping(target = "botToken", source = "botToken", qualifiedByName = "maskSecret")
+    @Mapping(target = "chatId", source = "chatId", qualifiedByName = "maskSecret")
     TelegramSettingsRequest toRequest(TelegramSettingsEntity entity);
     List<TelegramSettingsRequest> toTelegramRequests(List<TelegramSettingsEntity> entities);
 
+    @Mapping(target = "webhookUrl", source = "webhookUrl", qualifiedByName = "maskSecret")
     DiscordSettingsRequest toRequest(DiscordSettingsEntity entity);
     List<DiscordSettingsRequest> toDiscordRequests(List<DiscordSettingsEntity> entities);
 
+    @Mapping(target = "webhookUrl", source = "webhookUrl", qualifiedByName = "maskSecret")
     SlackSettingsRequest toRequest(SlackSettingsEntity entity);
     List<SlackSettingsRequest> toSlackRequests(List<SlackSettingsEntity> entities);
 
+    @Mapping(target = "apiToken", source = "apiToken", qualifiedByName = "maskSecret")
+    @Mapping(target = "databaseId", source = "databaseId", qualifiedByName = "maskSecret")
     NotionSettingsRequest toRequest(NotionSettingsEntity entity);
     List<NotionSettingsRequest> toNotionRequests(List<NotionSettingsEntity> entities);
 
     @Mapping(target = "label", expression = "java(entity.getLabel() == null ? \"\" : entity.getLabel())")
+    @Mapping(target = "maskedBotToken", source = "botToken", qualifiedByName = "maskSecret")
+    @Mapping(target = "maskedChatId", source = "chatId", qualifiedByName = "maskSecret")
     TelegramSettingsView.TelegramAccountView toTelegramAccountView(TelegramSettingsEntity entity);
 
     default TelegramSettingsView toTelegramView(List<TelegramSettingsEntity> entities) {
@@ -51,6 +59,7 @@ public interface IntegrationSettingsMapper {
     }
 
     @Mapping(target = "label", expression = "java(entity.getLabel() == null ? \"\" : entity.getLabel())")
+    @Mapping(target = "maskedWebhookUrl", source = "webhookUrl", qualifiedByName = "maskSecret")
     DiscordSettingsView.DiscordAccountView toDiscordAccountView(DiscordSettingsEntity entity);
 
     default DiscordSettingsView toDiscordView(List<DiscordSettingsEntity> entities) {
@@ -64,6 +73,7 @@ public interface IntegrationSettingsMapper {
     }
 
     @Mapping(target = "label", expression = "java(entity.getLabel() == null ? \"\" : entity.getLabel())")
+    @Mapping(target = "maskedWebhookUrl", source = "webhookUrl", qualifiedByName = "maskSecret")
     SlackSettingsView.SlackAccountView toSlackAccountView(SlackSettingsEntity entity);
 
     default SlackSettingsView toSlackView(List<SlackSettingsEntity> entities) {
@@ -77,6 +87,8 @@ public interface IntegrationSettingsMapper {
     }
 
     @Mapping(target = "label", expression = "java(entity.getLabel() == null ? \"\" : entity.getLabel())")
+    @Mapping(target = "maskedApiToken", source = "apiToken", qualifiedByName = "maskSecret")
+    @Mapping(target = "maskedDatabaseId", source = "databaseId", qualifiedByName = "maskSecret")
     NotionSettingsView.NotionAccountView toNotionAccountView(NotionSettingsEntity entity);
 
     default NotionSettingsView toNotionView(List<NotionSettingsEntity> entities) {
@@ -98,5 +110,21 @@ public interface IntegrationSettingsMapper {
     }
 
     @Mapping(target = "configured", constant = "true")
+    @Mapping(target = "maskedAccessToken", source = "accessToken", qualifiedByName = "maskSecret")
     LinkedInSettingsView toLinkedInView(LinkedInSettingsEntity entity);
+
+    @Named("maskSecret")
+    default String maskSecret(String rawSecret) {
+        if (rawSecret == null || rawSecret.isBlank()) {
+            return "";
+        }
+        String normalized = rawSecret.trim();
+        if (normalized.contains("...")) {
+            return normalized;
+        }
+        if (normalized.length() <= 8) {
+            return "...";
+        }
+        return normalized.substring(0, 4) + "..." + normalized.substring(normalized.length() - 4);
+    }
 }

@@ -10,7 +10,7 @@ public record DiscordSettingsView(
 ) {
     public record DiscordAccountView(
             UUID id,
-            String webhookUrl,
+            String maskedWebhookUrl,
             String label,
             boolean enabled
     ) {}
