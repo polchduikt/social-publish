@@ -12,7 +12,9 @@ import java.util.UUID;
 import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 
 @Entity
-@Table(name = "notion_settings")
+@Table(name = "notion_settings", indexes = {
+    @Index(name = "idx_notion_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)

@@ -51,6 +51,7 @@ class PublishingServiceTest {
     @Mock private CacheManager cacheManager;
     @Mock private PublishingProperties publishingProperties;
     @Mock private PlatformPublisher telegramPublisher;
+    @Mock private PublishingTransactionHelper transactionHelper;
 
     private PublishingService publishingService;
 
@@ -60,7 +61,8 @@ class PublishingServiceTest {
                 postRepository, statusMachine, publishingProducer, notificationService,
                 eventPublisher, List.of(telegramPublisher), telegramRepository, discordRepository,
                 slackRepository, notionRepository, linkedinRepository, redditRepository,
-                recurringPostService, emailService, cacheManager, publishingProperties
+                recurringPostService, emailService, cacheManager, publishingProperties,
+                transactionHelper
         );
     }
 
@@ -113,15 +115,13 @@ class PublishingServiceTest {
         owner.setId(UUID.randomUUID());
         post.setOwner(owner);
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(transactionHelper.preparePublishing(postId)).thenReturn(post);
+        when(transactionHelper.markPublished(postId)).thenReturn(post);
 
         publishingService.attemptPublish(postId, 0, false);
 
         verify(telegramPublisher).publish(eq(post), eq(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")));
-        verify(statusMachine).transition(post, PostStatus.PUBLISHED);
-        assertNotNull(post.getPublishedAt());
-        assertNull(post.getFailedReason());
-        verify(postRepository).save(post);
+        verify(transactionHelper).markPublished(postId);
         verify(notificationService).sendPostUpdate(eq(owner.getId()), argThat(n -> "PUBLISHED".equals(n.status())));
     }
 
@@ -138,15 +138,15 @@ class PublishingServiceTest {
         owner.setId(UUID.randomUUID());
         post.setOwner(owner);
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(transactionHelper.preparePublishing(postId)).thenReturn(post);
+        when(transactionHelper.handleFailure(postId, "API Error", 0)).thenReturn(
+                new PublishingTransactionHelper.FailureResult(post, true)
+        );
         doThrow(new RuntimeException("API Error")).when(telegramPublisher).publish(any(), any());
 
         publishingService.attemptPublish(postId, 0, false);
 
-        verify(statusMachine).transition(post, PostStatus.RETRYING);
-        assertEquals(0, post.getRetryCount());
-        assertTrue(post.getFailedReason().contains("API Error"));
-        verify(postRepository).save(post);
+        verify(transactionHelper).handleFailure(postId, "API Error", 0);
         verify(publishingProducer).sendRetryRequest(postId, 1, false);
         verify(notificationService).sendPostUpdate(eq(owner.getId()), argThat(n -> "RETRYING".equals(n.status())));
     }

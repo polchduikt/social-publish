@@ -9,7 +9,9 @@ import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "reddit_settings")
+@Table(name = "reddit_settings", indexes = {
+    @Index(name = "idx_reddit_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)

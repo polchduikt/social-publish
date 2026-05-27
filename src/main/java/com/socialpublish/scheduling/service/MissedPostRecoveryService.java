@@ -22,7 +22,6 @@ public class MissedPostRecoveryService {
     private final PublishingService publishingService;
 
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void recoverMissedPosts() {
         List<Post> missedPosts = postRepository
                 .findByStatusAndScheduledAtBefore(PostStatus.SCHEDULED, Instant.now());

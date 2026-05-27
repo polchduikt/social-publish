@@ -12,6 +12,7 @@ import com.socialpublish.posts.service.PostService;
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,14 +39,14 @@ public class QueueService {
     @Transactional(readOnly = true)
     public QueuePageView getQueue(UUID ownerId, QueueFilterRequest filter) {
         Specification<Post> specification = buildSpecification(ownerId, filter);
-        List<Post> filteredPosts = new ArrayList<>(postRepository.findAll(specification));
-        sortPostsInMemory(filteredPosts, filter.getSort());
+        long totalFiltered = postRepository.count(specification);
+        PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, filter.getSize());
+        List<Post> filteredPosts = postRepository.findAll(specification, pageable).getContent();
 
-        long totalFiltered = filteredPosts.size();
         List<PostView> posts = filteredPosts.stream()
-                .limit(filter.getSize())
                 .map(postMapper::toView)
                 .toList();
+
         boolean hasMore = totalFiltered > posts.size();
         int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, MAX_QUEUE_PAGE_SIZE);
 
@@ -108,6 +108,10 @@ public class QueueService {
 
     private Specification<Post> buildSpecification(UUID ownerId, QueueFilterRequest filter) {
         return (root, query, cb) -> {
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                root.fetch("media", jakarta.persistence.criteria.JoinType.LEFT);
+            }
+
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("owner").get("id"), ownerId));
 
@@ -180,6 +184,31 @@ public class QueueService {
                 }
             }
 
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                List<jakarta.persistence.criteria.Order> orders = new ArrayList<>();
+                switch (filter.getSort()) {
+                    case OLDEST -> orders.add(cb.asc(root.get("updatedAt")));
+                    case SCHEDULED_SOON -> {
+                        orders.add(cb.asc(cb.coalesce(root.get("scheduledAt"), root.get("updatedAt"))));
+                        orders.add(cb.asc(root.get("updatedAt")));
+                    }
+                    case FAILED_FIRST -> {
+                        orders.add(cb.desc(
+                            cb.selectCase()
+                                .when(cb.equal(root.get("status"), PostStatus.FAILED), 1)
+                                .otherwise(0)
+                        ));
+                        orders.add(cb.desc(root.get("updatedAt")));
+                    }
+                    case MOST_PLATFORMS -> {
+                        orders.add(cb.desc(cb.length(root.get("platforms"))));
+                        orders.add(cb.desc(root.get("updatedAt")));
+                    }
+                    case NEWEST -> orders.add(cb.desc(root.get("updatedAt")));
+                }
+                query.orderBy(orders);
+            }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
@@ -192,36 +221,4 @@ public class QueueService {
         return cb.greaterThanOrEqualTo(field, from);
     }
 
-    private void sortPostsInMemory(List<Post> posts, QueueSortOption sortOption) {
-        Comparator<Post> newest = Comparator.comparing(Post::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
-        Comparator<Post> oldest = Comparator.comparing(Post::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
-        Comparator<Post> scheduledSoon = Comparator
-                .comparing(Post::getScheduledAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(oldest);
-        Comparator<Post> failedFirst = Comparator
-                .comparing((Post post) -> post.getStatus() != PostStatus.FAILED)
-                .thenComparing(newest);
-        Comparator<Post> mostPlatforms = Comparator
-                .comparingInt((Post post) -> countPlatforms(post.getPlatforms()))
-                .reversed()
-                .thenComparing(newest);
-
-        switch (sortOption) {
-            case OLDEST -> posts.sort(oldest);
-            case SCHEDULED_SOON -> posts.sort(scheduledSoon);
-            case FAILED_FIRST -> posts.sort(failedFirst);
-            case MOST_PLATFORMS -> posts.sort(mostPlatforms);
-            case NEWEST -> posts.sort(newest);
-        }
-    }
-
-    private int countPlatforms(String platforms) {
-        if (platforms == null || platforms.isBlank()) {
-            return 0;
-        }
-        return (int) java.util.Arrays.stream(platforms.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .count();
-    }
 }

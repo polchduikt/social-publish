@@ -11,7 +11,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "linkedin_settings")
+@Table(name = "linkedin_settings", indexes = {
+    @Index(name = "idx_linkedin_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
