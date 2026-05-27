@@ -37,4 +37,17 @@ public class RedditSettingsEntity implements BaseIntegrationSettings {
     private String label;
 
     private boolean enabled = true;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RedditSettingsEntity that = (RedditSettingsEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

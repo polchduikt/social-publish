@@ -68,4 +68,17 @@ public class Notification {
         this.type = type;
         this.status = status;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Notification notification = (Notification) o;
+        return id != null && id.equals(notification.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

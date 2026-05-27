@@ -56,4 +56,17 @@ public class PostMedia {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostMedia media = (PostMedia) o;
+        return id != null && id.equals(media.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
