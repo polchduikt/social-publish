@@ -11,6 +11,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -29,7 +30,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "posts", indexes = {
+    @Index(name = "idx_posts_owner", columnList = "owner_id"),
+    @Index(name = "idx_posts_status_scheduled", columnList = "status, scheduled_at"),
+    @Index(name = "idx_posts_updated", columnList = "updated_at DESC")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
@@ -120,5 +125,28 @@ public class Post {
         if (status == null) {
             status = PostStatus.DRAFT;
         }
+    }
+
+    public void addMedia(PostMedia mediaItem) {
+        media.add(mediaItem);
+        mediaItem.setPost(this);
+    }
+
+    public void removeMedia(PostMedia mediaItem) {
+        media.remove(mediaItem);
+        mediaItem.setPost(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Post post = (Post) o;
+        return id != null && id.equals(post.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

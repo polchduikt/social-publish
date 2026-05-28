@@ -5,6 +5,7 @@ import com.socialpublish.auth.repository.UserRepository;
 import com.socialpublish.integrations.linkedin.dto.LinkedInSettingsView;
 import com.socialpublish.integrations.linkedin.dto.LinkedInTokenResponse;
 import com.socialpublish.integrations.linkedin.entity.LinkedInSettingsEntity;
+import com.socialpublish.integrations.linkedin.mapper.LinkedInSettingsMapper;
 import com.socialpublish.integrations.linkedin.repository.LinkedInSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ public class LinkedInService {
     private final LinkedInSettingsRepository settingsRepository;
     private final UserRepository userRepository;
     private final LinkedInClientService linkedInClient;
+    private final LinkedInSettingsMapper linkedInSettingsMapper;
 
     @Value("${linkedin.client-id:}")
     private String clientId;
@@ -84,7 +86,7 @@ public class LinkedInService {
     @Transactional(readOnly = true)
     public LinkedInSettingsView getSettings(UUID userId) {
         return settingsRepository.findByUserId(userId)
-                .map(this::toSettingsView)
+                .map(linkedInSettingsMapper::toSettingsView)
                 .orElse(LinkedInSettingsView.builder().configured(false).enabled(false).build());
     }
 
@@ -95,16 +97,5 @@ public class LinkedInService {
             throw new RuntimeException("LinkedIn is not configured or disabled");
         }
         linkedInClient.sharePost(settings.getAccessToken(), settings.getAuthorUrn(), testMessage, null);
-    }
-
-    private LinkedInSettingsView toSettingsView(LinkedInSettingsEntity entity) {
-        return LinkedInSettingsView.builder()
-                .id(entity.getId())
-                .accessToken(entity.getAccessToken())
-                .authorUrn(entity.getAuthorUrn())
-                .expiresAt(entity.getExpiresAt())
-                .enabled(entity.isEnabled())
-                .configured(true)
-                .build();
     }
 }

@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.socialpublish.integrations.service.BaseIntegrationService;
 import com.socialpublish.integrations.notion.dto.NotionSettingsListRequest;
+import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,24 +24,19 @@ import lombok.extern.slf4j.Slf4j;
 public class NotionService extends BaseIntegrationService<NotionSettingsEntity, NotionSettingsRepository> {
 
     private final NotionClientService notionClient;
+    private final IntegrationSettingsMapper integrationSettingsMapper;
 
-    public NotionService(NotionSettingsRepository settingsRepository, UserRepository userRepository, NotionClientService notionClient) {
+    public NotionService(NotionSettingsRepository settingsRepository, UserRepository userRepository,
+                         NotionClientService notionClient, IntegrationSettingsMapper integrationSettingsMapper) {
         super(settingsRepository, userRepository);
         this.notionClient = notionClient;
+        this.integrationSettingsMapper = integrationSettingsMapper;
     }
     @Transactional(readOnly = true)
     public NotionSettingsListRequest getSettingsRequest(UUID userId) {
         List<NotionSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
         NotionSettingsListRequest request = new NotionSettingsListRequest();
-        request.setAccounts(entities.stream().map(entity -> {
-            NotionSettingsRequest req = new NotionSettingsRequest();
-            req.setId(entity.getId());
-            req.setApiToken(entity.getApiToken());
-            req.setDatabaseId(entity.getDatabaseId());
-            req.setLabel(entity.getLabel());
-            req.setEnabled(entity.isEnabled());
-            return req;
-        }).collect(Collectors.toList()));
+        request.setAccounts(integrationSettingsMapper.toNotionRequests(entities));
         return request;
     }
 

@@ -16,6 +16,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -24,7 +25,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
-public class User {
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,6 +37,12 @@ public class User {
     private String email;
 
     private String password;
+
+    @Column(unique = true)
+    private String googleEmail;
+
+    @Column(unique = true)
+    private String googleSub;
 
     @Column(nullable = false)
     private String fullName;
@@ -73,11 +82,25 @@ public class User {
 
     @PrePersist
     void onCreate() {
-        if (provider == AuthProvider.LOCAL && !passwordLoginEnabled) {
+        if (provider == AuthProvider.LOCAL && password != null && !passwordLoginEnabled) {
             passwordLoginEnabled = true;
         }
-        if (provider == AuthProvider.GOOGLE) {
-            passwordLoginEnabled = false;
-        }
+    }
+
+    public boolean isGoogleLinked() {
+        return googleSub != null || googleEmail != null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

@@ -1,7 +1,7 @@
 package com.socialpublish.posts.service;
 
 import com.socialpublish.posts.entity.Post;
-import com.socialpublish.posts.entity.PostStatus;
+import com.socialpublish.posts.mapper.RecurringPostMapper;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.scheduling.service.PostSchedulerService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +22,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RecurringPostService {
 
+    private static final int REFERENCE_TIME_BUFFER_MINUTES = 1;
+    private static final int RECURRENCE_LOOKAHEAD_DAYS = 8;
+    private static final int FIRST_OCCURRENCE_LOOKBACK_SECONDS = 60;
     private final PostRepository postRepository;
     private final PostSchedulerService postSchedulerService;
     private final PostMediaSyncService postMediaSyncService;
+    private final RecurringPostMapper recurringPostMapper;
 
     @Transactional
     public Optional<Post> createNextOccurrence(Post publishedPost) {
@@ -46,25 +50,10 @@ public class RecurringPostService {
             log.info("Recurring post {} reached end date, stopping recurrence", publishedPost.getId());
             return Optional.empty();
         }
-
-        Post next = new Post();
-        next.setOwner(publishedPost.getOwner());
-        next.setTitle(publishedPost.getTitle());
-        next.setContent(publishedPost.getContent());
-        next.setPlatforms(publishedPost.getPlatforms());
-        next.setStatus(PostStatus.SCHEDULED);
-        next.setScheduledAt(nextAt);
-        next.setRecurring(true);
-        next.setRecurringDays(publishedPost.getRecurringDays());
-        next.setRecurringTime(publishedPost.getRecurringTime());
-        next.setRecurringEndDate(publishedPost.getRecurringEndDate());
-        next.setMaxRetries(publishedPost.getMaxRetries());
-
-        next.setParentRecurringId(
-                publishedPost.getParentRecurringId() != null
-                        ? publishedPost.getParentRecurringId()
-                        : publishedPost.getId()
-        );
+        UUID parentId = publishedPost.getParentRecurringId() != null
+                ? publishedPost.getParentRecurringId()
+                : publishedPost.getId();
+        Post next = recurringPostMapper.toNextOccurrence(publishedPost, nextAt, parentId);
 
         Post saved = postRepository.save(next);
         postMediaSyncService.copyMedia(publishedPost, saved, publishedPost.getOwner().getId());
@@ -90,9 +79,9 @@ public class RecurringPostService {
         ZoneId zone = ZoneId.systemDefault();
         LocalDateTime afterLdt = afterInstant.atZone(zone).toLocalDateTime();
         LocalDate startDate = afterLdt.toLocalDate();
-        LocalDateTime reference = afterLdt.plusMinutes(1);
+        LocalDateTime reference = afterLdt.plusMinutes(REFERENCE_TIME_BUFFER_MINUTES);
         LocalDate checkDate = reference.toLocalDate();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < RECURRENCE_LOOKAHEAD_DAYS; i++) {
             LocalDate candidate = checkDate.plusDays(i);
             if (days.contains(candidate.getDayOfWeek())) {
                 LocalDateTime candidateDt = LocalDateTime.of(candidate, time);
@@ -106,7 +95,7 @@ public class RecurringPostService {
     }
 
     public Instant calculateFirstOccurrence(String recurringDays, String recurringTime) {
-        return calculateNextOccurrence(recurringDays, recurringTime, Instant.now().minusSeconds(60));
+        return calculateNextOccurrence(recurringDays, recurringTime, Instant.now().minusSeconds(FIRST_OCCURRENCE_LOOKBACK_SECONDS));
     }
 
     private Set<DayOfWeek> parseDays(String recurringDays) {

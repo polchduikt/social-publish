@@ -1,10 +1,13 @@
 package com.socialpublish.dashboard.controller;
 
 import com.socialpublish.auth.dto.CurrentUserView;
+import com.socialpublish.auth.service.AuthenticatedUserService;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.dashboard.dto.DashboardView;
 import com.socialpublish.dashboard.service.DashboardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +18,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class HomeController {
 
     private final DashboardService dashboardService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @GetMapping("/")
-    public String landing(@CurrentUser CurrentUserView currentUser, Model model) {
-        if (currentUser != null) {
-            model.addAttribute("user", currentUser);
+    public String landing(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            authenticatedUserService.resolveCurrentUser(authentication).ifPresent(user -> {
+                model.addAttribute("user", user);
+            });
         }
         return "pages/public/landing";
     }

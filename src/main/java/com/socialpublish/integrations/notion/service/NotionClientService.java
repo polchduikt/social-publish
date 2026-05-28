@@ -14,11 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NotionClientService {
 
+    private static final int MAX_NOTION_TITLE_LENGTH = 100;
+    private static final int TRUNCATION_SUFFIX_LENGTH = 3;
+
     private final RestClient restClient;
 
     public void createDatabaseEntry(String token, String databaseId, String content, List<String> imageUrls) {
         Map<String, Object> titleProperty = Map.of(
-            "title", List.of(Map.of("text", Map.of("content", truncate(content, 100))))
+            "title", List.of(Map.of("text", Map.of("content", truncate(content, MAX_NOTION_TITLE_LENGTH))))
         );
 
         List<Map<String, Object>> children = new ArrayList<>();
@@ -59,6 +62,6 @@ public class NotionClientService {
     private String truncate(String s, int n) {
         if (s == null) return "Untitled Post";
         if (s.length() <= n) return s;
-        return s.substring(0, n - 3) + "...";
+        return s.substring(0, n - TRUNCATION_SUFFIX_LENGTH) + "...";
     }
 }

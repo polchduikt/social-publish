@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications", indexes = {
+    @Index(name = "idx_notifications_user_created", columnList = "user_id, created_at DESC"),
+    @Index(name = "idx_notifications_user_read", columnList = "user_id, is_read")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -63,5 +67,18 @@ public class Notification {
         this.message = message;
         this.type = type;
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Notification notification = (Notification) o;
+        return id != null && id.equals(notification.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

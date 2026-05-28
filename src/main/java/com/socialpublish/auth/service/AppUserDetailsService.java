@@ -19,6 +19,8 @@ public class AppUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByEmailIgnoreCase(username)
+                .or(() -> userRepository.findByGoogleEmailIgnoreCase(username))
+                .filter(user -> user.isPasswordLoginEnabled() && user.getPassword() != null)
                 .map(AppUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }

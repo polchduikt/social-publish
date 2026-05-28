@@ -14,13 +14,19 @@ import java.util.Map;
 @Component
 public class DashboardActivityBuilder {
 
+    private static final int ACTIVITY_DAYS = 7;
+    private static final int PUBLISHED_WEIGHT = 10;
+    private static final int SCHEDULED_WEIGHT = 4;
+    private static final int FAILED_PENALTY_WEIGHT = 6;
+    private static final double PERCENTAGE_MULTIPLIER = 100.0;
+
     public List<DashboardActivityDayView> build(List<Post> posts) {
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDate today = LocalDate.now(zoneId);
-        LocalDate startDate = today.minusDays(6);
+        LocalDate startDate = today.minusDays(ACTIVITY_DAYS - 1);
 
         Map<LocalDate, DailyActivityAccumulator> perDay = new LinkedHashMap<>();
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < ACTIVITY_DAYS; i++) {
             perDay.put(startDate.plusDays(i), new DailyActivityAccumulator());
         }
 
@@ -77,7 +83,7 @@ public class DashboardActivityBuilder {
 
     private int toPercent(long value, long max) {
         if (max <= 0 || value <= 0) return 0;
-        return (int) Math.round((value * 100.0) / max);
+        return (int) Math.round((value * PERCENTAGE_MULTIPLIER) / max);
     }
 
     private String toDayKey(DayOfWeek dayOfWeek) {
@@ -102,7 +108,7 @@ public class DashboardActivityBuilder {
         }
 
         private long engagementScore() {
-            long raw = (published * 10) + (scheduled * 4) - (failed * 6);
+            long raw = (published * PUBLISHED_WEIGHT) + (scheduled * SCHEDULED_WEIGHT) - (failed * FAILED_PENALTY_WEIGHT);
             return Math.max(raw, 0);
         }
     }

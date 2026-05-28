@@ -2,7 +2,6 @@ package com.socialpublish.integrations.linkedin.repository;
 
 import com.socialpublish.integrations.linkedin.entity.LinkedInSettingsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
 import java.util.UUID;
 

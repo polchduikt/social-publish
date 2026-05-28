@@ -30,6 +30,7 @@ Social Publish provides a full content lifecycle through a unified web interface
 | AI | Groq API (LLaMA 3.3 70B) |
 | Containerization | Docker & Docker Compose |
 | Build Tool | Maven |
+| Testing | JUnit 5, Mockito, H2 Database, Testcontainers |
 
 ## Architecture
 
@@ -204,6 +205,26 @@ docker compose up postgres redis rabbitmq
 # 3. Run the application
 ./mvnw spring-boot:run
 ```
+
+## Testing
+
+The project includes a robust and comprehensive test suite consisting of both unit and integration tests.
+
+### Running Tests
+
+To run the entire test suite locally:
+
+```bash
+./mvnw test
+```
+
+### Test Suite Architecture
+
+- **Unit Tests** — Verify isolated business logic, DTO mapping, and state machine transitions using JUnit 5 and Mockito.
+- **Integration Tests** — Cover complete service flows, asynchronous event dispatching, and persistence layers (e.g., AuthService, PostService, DashboardService, PublishingService, etc.).
+- **In-Memory H2 Database** — By default, integration tests use a lightweight, extremely fast in-memory H2 database under the `test` profile, requiring zero local setup.
+- **Test Isolation** — Databases and resources are automatically cleared in the correct order in `@BeforeEach` hooks to guarantee side-effect-free, repeatable execution.
+- **Optional PostgreSQL Testcontainers** — You can optionally run integration tests against a real PostgreSQL container. Simply uncomment the Docker `PostgreSQLContainer` setup template in `AbstractIntegrationTest.java` (requires local Docker daemon to be running).
 
 ## Project Structure
 

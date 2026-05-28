@@ -4,7 +4,6 @@ import com.socialpublish.auth.dto.CurrentUserView;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.HtmxSupport;
 import com.socialpublish.common.web.ValidationUtils;
-import com.socialpublish.integrations.discord.dto.DiscordSettingsRequest;
 import com.socialpublish.integrations.discord.dto.DiscordSettingsListRequest;
 import com.socialpublish.integrations.discord.service.DiscordService;
 import jakarta.servlet.http.HttpServletRequest;

@@ -2,11 +2,14 @@ package com.socialpublish.auth.controller;
 
 import com.socialpublish.auth.dto.ChangePasswordRequest;
 import com.socialpublish.auth.dto.CurrentUserView;
+import com.socialpublish.auth.dto.SetPasswordRequest;
 import com.socialpublish.auth.dto.UpdateProfileRequest;
 import com.socialpublish.auth.exception.SettingsOperationException;
+import com.socialpublish.auth.security.OAuth2UserSyncService;
 import com.socialpublish.auth.service.SettingsService;
 import com.socialpublish.common.web.CurrentUser;
 import com.socialpublish.common.web.ValidationUtils;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -69,6 +72,51 @@ public class SettingsController {
             settingsService.changePassword(currentUser.id(), request);
             return "redirect:" + UriComponentsBuilder.fromPath("/settings")
                     .queryParam("message", "Password changed successfully")
+                    .build().toUriString();
+        } catch (SettingsOperationException ex) {
+            return "redirect:" + UriComponentsBuilder.fromPath("/settings")
+                    .queryParam("error", ex.getMessage())
+                    .build().toUriString();
+        }
+    }
+
+    @PostMapping("/settings/set-password")
+    public String setPassword(
+            @CurrentUser CurrentUserView currentUser,
+            @Valid SetPasswordRequest request,
+            BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "redirect:" + UriComponentsBuilder.fromPath("/settings")
+                    .queryParam("error", ValidationUtils.firstFieldError(bindingResult))
+                    .build().toUriString();
+        }
+
+        try {
+            settingsService.setPassword(currentUser.id(), request);
+            return "redirect:" + UriComponentsBuilder.fromPath("/settings")
+                    .queryParam("message", "Password set successfully. You can now log in with email and password.")
+                    .build().toUriString();
+        } catch (SettingsOperationException ex) {
+            return "redirect:" + UriComponentsBuilder.fromPath("/settings")
+                    .queryParam("error", ex.getMessage())
+                    .build().toUriString();
+        }
+    }
+
+    @GetMapping("/settings/link-google")
+    public String linkGoogle(@CurrentUser CurrentUserView currentUser, HttpSession session) {
+        session.setAttribute(OAuth2UserSyncService.LINK_GOOGLE_USER_ID, currentUser.id());
+        session.setAttribute("LINK_GOOGLE_REDIRECT", true);
+        return "redirect:/oauth2/authorization/google";
+    }
+
+    @PostMapping("/settings/unlink-google")
+    public String unlinkGoogle(@CurrentUser CurrentUserView currentUser) {
+        try {
+            settingsService.unlinkGoogle(currentUser.id());
+            return "redirect:" + UriComponentsBuilder.fromPath("/settings")
+                    .queryParam("message", "Google account unlinked successfully")
                     .build().toUriString();
         } catch (SettingsOperationException ex) {
             return "redirect:" + UriComponentsBuilder.fromPath("/settings")

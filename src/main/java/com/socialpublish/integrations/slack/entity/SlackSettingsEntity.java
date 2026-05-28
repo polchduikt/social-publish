@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,7 +22,9 @@ import java.util.UUID;
 import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 
 @Entity
-@Table(name = "slack_settings")
+@Table(name = "slack_settings", indexes = {
+    @Index(name = "idx_slack_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
@@ -51,6 +54,19 @@ public class SlackSettingsEntity implements BaseIntegrationSettings {
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SlackSettingsEntity that = (SlackSettingsEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
 
 

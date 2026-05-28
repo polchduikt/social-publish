@@ -6,6 +6,7 @@ import com.socialpublish.posts.entity.Post;
 import com.socialpublish.posts.entity.PostStatus;
 import com.socialpublish.posts.repository.PostRepository;
 import com.socialpublish.posts.service.PostStatusMachine;
+import com.socialpublish.publishing.config.PublishingProperties;
 import com.socialpublish.publishing.entity.Platform;
 import com.socialpublish.publishing.event.PostScheduledEvent;
 import com.socialpublish.integrations.exception.IntegrationException;
@@ -22,10 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +53,8 @@ public class PublishingService {
     private final RecurringPostService recurringPostService;
     private final EmailService emailService;
     private final CacheManager cacheManager;
+    private final PublishingProperties publishingProperties;
+    private final PublishingTransactionHelper transactionHelper;
 
     @Transactional
     public void startScheduledPublish(UUID postId) {
@@ -75,41 +80,105 @@ public class PublishingService {
         log.info("Post {} transitioned to PUBLISHING and event published (scheduled=true)", postId);
     }
 
+    @Transactional
+    public void handleMissedPost(UUID postId) {
+        Post post = postRepository.findWithMediaAndOwnerById(postId).orElse(null);
+        if (post == null) {
+            log.warn("Post {} not found, skipping missed post handler", postId);
+            return;
+        }
+        Hibernate.initialize(post.getOwner());
+        Hibernate.initialize(post.getMedia());
+
+        UUID userId = post.getOwner().getId();
+        Duration delay = Duration.between(post.getScheduledAt(), Instant.now());
+        long delayMinutes = delay.toMinutes();
+        long delayHours = delay.toHours();
+        long remainingMinutes = delayMinutes % 60;
+
+        int silentThreshold = publishingProperties.getGracePeriodSilentMinutes();
+        int maxThreshold = publishingProperties.getGracePeriodMaxMinutes();
+
+        if (delayMinutes <= silentThreshold) {
+            log.info("Post {} is {}min late (within silent grace period), auto-publishing", postId, delayMinutes);
+            startScheduledPublish(postId);
+
+        } else if (delayMinutes <= maxThreshold) {
+            log.info("Post {} is {}min late (within warning grace period), auto-publishing with notification", postId, delayMinutes);
+            startScheduledPublish(postId);
+
+            String delayText = delayHours > 0
+                    ? delayHours + "h " + remainingMinutes + "min"
+                    : delayMinutes + "min";
+
+            notificationService.sendPostUpdate(userId,
+                    new PostNotification(postId, post.getTitle(), "PUBLISHING",
+                            "Published with " + delayText + " delay (server recovery)",
+                            "warning", Instant.now()));
+
+        } else {
+            String overdueText = delayHours + "h " + remainingMinutes + "min";
+            log.warn("Post {} is {} overdue (exceeds max grace period), marking as FAILED", postId, overdueText);
+
+            statusMachine.transition(post, PostStatus.FAILED);
+            post.setFailedReason("Missed schedule window (" + overdueText + " overdue)");
+            postRepository.save(post);
+
+            notificationService.sendPostUpdate(userId,
+                    new PostNotification(postId, post.getTitle(), "FAILED",
+                            "Missed schedule window (" + overdueText + " overdue). Reschedule or publish manually.",
+                            "error", Instant.now()));
+
+            sendResultEmail(post, false, "Missed schedule window (" + overdueText + " overdue)");
+            evictDashboardCache(userId);
+        }
+    }
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPostScheduled(PostScheduledEvent event) {
         publishingProducer.sendPublishRequest(event.postId(), event.scheduled());
         log.info("Post {} sent to RabbitMQ after commit (scheduled={})", event.postId(), event.scheduled());
     }
 
-    @Transactional
     public void attemptPublish(UUID postId, int attempt, boolean scheduled) {
-        Post post = postRepository.findById(postId).orElse(null);
+        Post post = transactionHelper.preparePublishing(postId);
         if (post == null) {
-            log.warn("Post {} not found, skipping publish", postId);
-            return;
-        }
-
-        if (post.getStatus() != PostStatus.PUBLISHING && post.getStatus() != PostStatus.RETRYING) {
-            log.info("Post {} is {}, skipping publish", postId, post.getStatus());
             return;
         }
 
         UUID userId = post.getOwner().getId();
 
-        if (post.getStatus() == PostStatus.RETRYING) {
-            statusMachine.transition(post, PostStatus.PUBLISHING);
-            notificationService.sendPostUpdate(userId,
-                    new PostNotification(postId, post.getTitle(), "PUBLISHING", "Publishing...", "info", Instant.now()));
-        }
+        notificationService.sendPostUpdate(userId,
+                new PostNotification(postId, post.getTitle(), "PUBLISHING", "Publishing...", "info", Instant.now()));
 
         try {
             doPublish(post);
-            markPublished(post, scheduled);
-            notificationService.sendPostUpdate(userId,
-                    new PostNotification(postId, post.getTitle(), "PUBLISHED", "Published", "success", Instant.now()));
+            Post updatedPost = transactionHelper.markPublished(postId);
+            if (updatedPost != null) {
+                notificationService.sendPostUpdate(userId,
+                        new PostNotification(postId, updatedPost.getTitle(), "PUBLISHED", "Published", "success", Instant.now()));
+                if (scheduled) {
+                    sendResultEmail(updatedPost, true, null);
+                }
+            }
         } catch (Exception ex) {
             log.error("Publishing failed for post {}: {}", postId, ex.getMessage());
-            handleFailure(post, ex.getMessage(), attempt, scheduled);
+            PublishingTransactionHelper.FailureResult result = transactionHelper.handleFailure(postId, ex.getMessage(), attempt);
+            if (result != null) {
+                Post updatedPost = result.post();
+                if (result.isRetry()) {
+                    publishingProducer.sendRetryRequest(postId, attempt + 1, scheduled);
+                    notificationService.sendPostUpdate(userId,
+                            new PostNotification(postId, updatedPost.getTitle(), "RETRYING",
+                                    "Retrying... (" + attempt + "/" + updatedPost.getMaxRetries() + ")", "warning", Instant.now()));
+                } else {
+                    notificationService.sendPostUpdate(userId,
+                            new PostNotification(postId, updatedPost.getTitle(), "FAILED", "Failed - " + ex.getMessage(), "error", Instant.now()));
+                    if (scheduled) {
+                        sendResultEmail(updatedPost, false, ex.getMessage());
+                    }
+                }
+            }
         }
 
         evictDashboardCache(userId);
@@ -194,54 +263,7 @@ public class PublishingService {
         };
     }
 
-    private void markPublished(Post post, boolean scheduled) {
-        statusMachine.transition(post, PostStatus.PUBLISHED);
-        post.setPublishedAt(Instant.now());
-        post.setFailedReason(null);
-        postRepository.save(post);
-        log.info("Post {} published successfully", post.getId());
 
-        if (scheduled) {
-            sendResultEmail(post, true, null);
-        }
-
-        if (post.isRecurring()) {
-            try {
-                recurringPostService.createNextOccurrence(post).ifPresent(nextPost ->
-                        log.info("Next recurring post {} scheduled for {}", nextPost.getId(), nextPost.getScheduledAt())
-                );
-            } catch (Exception ex) {
-                log.error("Failed to create next recurring occurrence for post {}: {}", post.getId(), ex.getMessage());
-            }
-        }
-    }
-
-    private void handleFailure(Post post, String reason, int attempt, boolean scheduled) {
-        UUID userId = post.getOwner().getId();
-
-        if (attempt < post.getMaxRetries()) {
-            statusMachine.transition(post, PostStatus.RETRYING);
-            post.setRetryCount(attempt);
-            post.setFailedReason(reason);
-            postRepository.save(post);
-            publishingProducer.sendRetryRequest(post.getId(), attempt + 1, scheduled);
-
-            notificationService.sendPostUpdate(userId,
-                    new PostNotification(post.getId(), post.getTitle(), "RETRYING", "Retrying... (" + attempt + "/" + post.getMaxRetries() + ")", "warning", Instant.now()));
-        } else {
-            statusMachine.transition(post, PostStatus.FAILED);
-            post.setRetryCount(attempt);
-            post.setFailedReason(reason);
-            postRepository.save(post);
-
-            notificationService.sendPostUpdate(userId,
-                    new PostNotification(post.getId(), post.getTitle(), "FAILED", "Failed - " + reason, "error", Instant.now()));
-
-            if (scheduled) {
-                sendResultEmail(post, false, reason);
-            }
-        }
-    }
 
     private void sendResultEmail(Post post, boolean success, String errorReason) {
         String email = post.getOwner().getEmail();

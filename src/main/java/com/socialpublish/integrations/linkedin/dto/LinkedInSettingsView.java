@@ -7,7 +7,7 @@ import java.util.UUID;
 @Builder
 public record LinkedInSettingsView(
     UUID id,
-    String accessToken,
+    String maskedAccessToken,
     String authorUrn,
     Instant expiresAt,
     boolean enabled,

@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,7 +21,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "post_templates")
+@Table(name = "post_templates", indexes = {
+    @Index(name = "idx_templates_owner", columnList = "owner_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
@@ -50,4 +53,17 @@ public class PostTemplate {
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostTemplate template = (PostTemplate) o;
+        return id != null && id.equals(template.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

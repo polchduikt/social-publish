@@ -16,36 +16,27 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import com.socialpublish.integrations.telegram.dto.TelegramSettingsListRequest;
+import com.socialpublish.integrations.mapper.IntegrationSettingsMapper;
 
 @Service
 public class TelegramService extends BaseIntegrationService<TelegramSettingsEntity, TelegramSettingsRepository> {
 
     private final TelegramClientService telegramClient;
+    private final IntegrationSettingsMapper integrationSettingsMapper;
 
-    public TelegramService(TelegramSettingsRepository settingsRepository, UserRepository userRepository, TelegramClientService telegramClient) {
+    public TelegramService(TelegramSettingsRepository settingsRepository, UserRepository userRepository, 
+                           TelegramClientService telegramClient, IntegrationSettingsMapper integrationSettingsMapper) {
         super(settingsRepository, userRepository);
         this.telegramClient = telegramClient;
+        this.integrationSettingsMapper = integrationSettingsMapper;
     }
 
     @Transactional(readOnly = true)
     public TelegramSettingsListRequest getSettingsRequest(UUID userId) {
         List<TelegramSettingsEntity> entities = settingsRepository.findAllByUserId(userId);
         TelegramSettingsListRequest request = new TelegramSettingsListRequest();
-        request.setAccounts(entities.stream().map(entity -> {
-            TelegramSettingsRequest req = new TelegramSettingsRequest();
-            req.setId(entity.getId());
-            req.setBotToken(entity.getBotToken());
-            req.setChatId(entity.getChatId());
-            req.setLabel(entity.getLabel());
-            req.setEnabled(entity.isEnabled());
-            return req;
-        }).collect(Collectors.toList()));
+        request.setAccounts(integrationSettingsMapper.toTelegramRequests(entities));
         return request;
-    }
-
-    private String maskToken(String token) {
-        if (token == null || token.length() <= 8) return token == null ? "" : token;
-        return token.substring(0, 4) + "..." + token.substring(token.length() - 4);
     }
 
     @Transactional

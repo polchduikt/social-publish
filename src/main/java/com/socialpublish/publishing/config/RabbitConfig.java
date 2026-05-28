@@ -7,7 +7,6 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,8 +19,11 @@ public class RabbitConfig {
     public static final String PUBLISH_KEY = "publish";
     public static final String RETRY_KEY = "retry";
 
-    @Value("${app.publishing.retry-delay-ms:30000}")
-    private long retryDelayMs;
+    private final PublishingProperties properties;
+
+    public RabbitConfig(PublishingProperties properties) {
+        this.properties = properties;
+    }
 
     @Bean
     public DirectExchange postExchange() {
@@ -38,7 +40,7 @@ public class RabbitConfig {
         return QueueBuilder.durable(RETRY_QUEUE)
                 .withArgument("x-dead-letter-exchange", EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PUBLISH_KEY)
-                .withArgument("x-message-ttl", retryDelayMs)
+                .withArgument("x-message-ttl", properties.getRetryDelayMs())
                 .build();
     }
 

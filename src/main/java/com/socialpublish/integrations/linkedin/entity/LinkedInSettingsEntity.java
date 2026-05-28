@@ -11,7 +11,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "linkedin_settings")
+@Table(name = "linkedin_settings", indexes = {
+    @Index(name = "idx_linkedin_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
@@ -46,4 +48,17 @@ public class LinkedInSettingsEntity {
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LinkedInSettingsEntity that = (LinkedInSettingsEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

@@ -10,8 +10,8 @@ public record NotionSettingsView(
 ) {
     public record NotionAccountView(
         UUID id,
-        String apiToken,
-        String databaseId,
+        String maskedApiToken,
+        String maskedDatabaseId,
         String label,
         boolean enabled
     ) {}

@@ -10,9 +10,9 @@ public record TelegramSettingsView(
 ) {
     public record TelegramAccountView(
             UUID id,
-            String botToken,
-            String chatId,
             String label,
-            boolean enabled
+            boolean enabled,
+            String maskedBotToken,
+            String maskedChatId
     ) {}
 }

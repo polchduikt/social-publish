@@ -8,6 +8,7 @@ import com.socialpublish.posts.dto.CreatePostTemplateRequest;
 import com.socialpublish.posts.dto.PostTemplateDto;
 import com.socialpublish.posts.entity.PostTemplate;
 import com.socialpublish.posts.repository.PostTemplateRepository;
+import com.socialpublish.posts.mapper.PostTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +23,14 @@ public class PostTemplateService {
     private final PostTemplateRepository postTemplateRepository;
     private final UserRepository userRepository;
     private final IntegrationStatusService integrationStatusService;
+    private final PostTemplateMapper postTemplateMapper;
 
     @Transactional(readOnly = true)
     public List<PostTemplateDto> getUserTemplates(UUID userId) {
         var labels = integrationStatusService.getAccountLabels(userId);
         return postTemplateRepository.findAllByOwnerIdOrderByUpdatedAtDesc(userId)
                 .stream()
-                .map(t -> toDto(t, labels))
+                .map(t -> postTemplateMapper.toDto(t, labels))
                 .collect(Collectors.toList());
     }
 
@@ -37,14 +39,11 @@ public class PostTemplateService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        PostTemplate template = new PostTemplate();
+        PostTemplate template = postTemplateMapper.toEntity(request);
         template.setOwner(user);
-        template.setTemplateName(request.templateName());
-        template.setContent(request.content());
-        template.setPlatforms(request.platforms() != null ? String.join(",", request.platforms()) : "");
 
         PostTemplate saved = postTemplateRepository.save(template);
-        return toDto(saved, integrationStatusService.getAccountLabels(userId));
+        return postTemplateMapper.toDto(saved, integrationStatusService.getAccountLabels(userId));
     }
 
     @Transactional(readOnly = true)
@@ -56,8 +55,9 @@ public class PostTemplateService {
             throw new IllegalStateException("You don't own this template");
         }
 
-        return toDto(template, integrationStatusService.getAccountLabels(userId));
+        return postTemplateMapper.toDto(template, integrationStatusService.getAccountLabels(userId));
     }
+
     @Transactional(readOnly = true)
     public PostUpsertRequest createUpsertRequest(UUID userId, UUID templateId) {
         PostTemplate template = postTemplateRepository.findById(templateId)
@@ -66,15 +66,7 @@ public class PostTemplateService {
         if (!template.getOwner().getId().equals(userId)) {
             throw new IllegalStateException("You don't own this template");
         }
-
-        PostUpsertRequest request = new PostUpsertRequest();
-        request.setContent(template.getContent());
-        if (template.getPlatforms() != null && !template.getPlatforms().isBlank()) {
-            request.setPlatforms(List.of(template.getPlatforms().split(",")));
-        } else {
-            request.setPlatforms(List.of());
-        }
-        return request;
+        return postTemplateMapper.toUpsertRequest(template);
     }
 
     @Transactional
@@ -87,23 +79,5 @@ public class PostTemplateService {
         }
 
         postTemplateRepository.delete(template);
-    }
-
-    private PostTemplateDto toDto(PostTemplate template, java.util.Map<String, String> labels) {
-        List<String> formatted = new java.util.ArrayList<>();
-        if (template.getPlatforms() != null && !template.getPlatforms().isBlank()) {
-            for (String p : template.getPlatforms().split(",")) {
-                formatted.add(labels.getOrDefault(p, p));
-            }
-        }
-
-        return new PostTemplateDto(
-                template.getId(),
-                template.getTemplateName(),
-                template.getContent(),
-                template.getPlatforms(),
-                formatted,
-                template.getUpdatedAt()
-        );
     }
 }

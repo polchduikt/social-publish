@@ -12,7 +12,9 @@ import java.util.UUID;
 import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 
 @Entity
-@Table(name = "notion_settings")
+@Table(name = "notion_settings", indexes = {
+    @Index(name = "idx_notion_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
@@ -45,4 +47,17 @@ public class NotionSettingsEntity implements BaseIntegrationSettings {
     @LastModifiedDate
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NotionSettingsEntity that = (NotionSettingsEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

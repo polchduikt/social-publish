@@ -1,5 +1,6 @@
 package com.socialpublish.integrations.slack.dto;
 
+import com.socialpublish.common.validation.WebhookUrl;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ public class SlackSettingsRequest {
     private UUID id;
 
     @NotBlank(message = "Webhook URL is required")
+    @WebhookUrl
     private String webhookUrl;
 
     private String label;

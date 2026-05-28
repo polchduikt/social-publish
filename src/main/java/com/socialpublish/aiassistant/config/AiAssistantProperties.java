@@ -12,6 +12,11 @@ import org.springframework.stereotype.Component;
 public class AiAssistantProperties {
 
     private String provider = "groq";
+
+    public String getProvider() {
+        return provider == null ? "groq" : provider;
+    }
+
     private String systemPrompt = """
             You are the built-in AI assistant for Social Publish.
             You help with:

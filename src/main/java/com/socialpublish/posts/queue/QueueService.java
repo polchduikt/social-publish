@@ -12,6 +12,7 @@ import com.socialpublish.posts.service.PostService;
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +21,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class QueueService {
 
+    private static final int MAX_QUEUE_PAGE_SIZE = 100;
+    private static final int DAYS_IN_WEEK = 7;
+    private static final int DAYS_IN_MONTH = 30;
     private static final int LOAD_MORE_STEP = 10;
-
     private final PostRepository postRepository;
     private final PostService postService;
     private final PostMapper postMapper;
@@ -37,22 +42,41 @@ public class QueueService {
     @Transactional(readOnly = true)
     public QueuePageView getQueue(UUID ownerId, QueueFilterRequest filter) {
         Specification<Post> specification = buildSpecification(ownerId, filter);
-        List<Post> filteredPosts = new ArrayList<>(postRepository.findAll(specification));
-        sortPostsInMemory(filteredPosts, filter.getSort());
+        long totalFiltered = postRepository.count(specification);
+        PageRequest pageable = PageRequest.of(0, filter.getSize());
+        List<Post> filteredPosts = postRepository.findAll(specification, pageable).getContent();
 
-        long totalFiltered = filteredPosts.size();
-        List<PostView> posts = filteredPosts.stream()
-                .limit(filter.getSize())
+        List<UUID> postIds = filteredPosts.stream().map(Post::getId).toList();
+        List<Post> postsWithMedia = postIds.isEmpty()
+                ? List.of()
+                : postRepository.findAllWithMediaByIdIn(postIds);
+
+        Map<UUID, Post> postsMap = postsWithMedia.stream()
+                .collect(Collectors.toMap(Post::getId, post -> post));
+
+        List<Post> orderedPosts = postIds.stream()
+                .map(postsMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<PostView> posts = orderedPosts.stream()
                 .map(postMapper::toView)
                 .toList();
+
         boolean hasMore = totalFiltered > posts.size();
-        int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, 100);
+        int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, MAX_QUEUE_PAGE_SIZE);
+        List<Object[]> rawStats = postRepository.countByOwnerIdGroupedByStatus(ownerId);
+        Map<PostStatus, Long> statsMap = rawStats.stream()
+                .collect(Collectors.toMap(
+                        row -> (PostStatus) row[0],
+                        row -> (Long) row[1]
+                ));
 
         QueueStatsView stats = new QueueStatsView(
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.SCHEDULED),
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.PUBLISHED),
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.FAILED),
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.DRAFT)
+                statsMap.getOrDefault(PostStatus.SCHEDULED, 0L),
+                statsMap.getOrDefault(PostStatus.PUBLISHED, 0L),
+                statsMap.getOrDefault(PostStatus.FAILED, 0L),
+                statsMap.getOrDefault(PostStatus.DRAFT, 0L)
         );
 
         Instant nextScheduledAt = postRepository
@@ -112,74 +136,132 @@ public class QueueService {
             if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
                 predicates.add(cb.equal(root.get("status"), PostStatus.valueOf(filter.getStatus())));
             }
-            
-            if (filter.hasSearch()) {
-                String token = "%" + filter.normalizedSearch().toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("title")), token),
-                        cb.like(cb.lower(root.get("content")), token)
-                ));
-            }
-            
-            if (filter.hasTag()) {
-                String tagToken = "%#" + filter.normalizedTag().toLowerCase() + "%";
-                predicates.add(cb.like(cb.lower(root.get("content")), tagToken));
-            }
-            
-            if (!filter.getPlatform().isEmpty() && !filter.getPlatform().contains(QueuePlatformFilter.ALL)) {
-                List<Predicate> platformPredicates = new ArrayList<>();
-                for (QueuePlatformFilter p : filter.getPlatform()) {
-                    String platform = p.name();
-                    Expression<String> normalizedPlatforms = cb.concat(cb.concat(",", root.get("platforms")), ",");
-                    platformPredicates.add(cb.like(normalizedPlatforms, "%," + platform + ",%"));
-                }
-                predicates.add(cb.or(platformPredicates.toArray(new Predicate[0])));
-            }
-            
-            if (!filter.getType().isEmpty() && !filter.getType().contains(QueuePostTypeFilter.ALL)) {
-                List<Predicate> typePredicates = new ArrayList<>();
-                for (QueuePostTypeFilter t : filter.getType()) {
-                    switch (t) {
-                        case IMAGE -> typePredicates.add(cb.isNotEmpty(root.get("media")));
-                        case TEXT -> typePredicates.add(cb.isEmpty(root.get("media")));
-                        case VIDEO -> {
-                            Predicate mp4 = cb.like(cb.lower(root.get("content")), "%.mp4%");
-                            Predicate mov = cb.like(cb.lower(root.get("content")), "%.mov%");
-                            Predicate webm = cb.like(cb.lower(root.get("content")), "%.webm%");
-                            typePredicates.add(cb.or(mp4, mov, webm));
-                        }
-                        case POLL -> {
-                            Predicate withQuestion = cb.like(cb.lower(root.get("content")), "%?%");
-                            Predicate withPollKeyword = cb.like(cb.lower(root.get("content")), "%poll%");
-                            typePredicates.add(cb.or(withQuestion, withPollKeyword));
-                        }
-                    }
-                }
-                predicates.add(cb.or(typePredicates.toArray(new Predicate[0])));
-            }
 
-            switch (filter.getDateRange()) {
-                case TODAY -> predicates.add(buildDateRangePredicate(
-                        cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
-                        cb,
-                        0
-                ));
-                case WEEK -> predicates.add(buildDateRangePredicate(
-                        cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
-                        cb,
-                        7
-                ));
-                case MONTH -> predicates.add(buildDateRangePredicate(
-                        cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
-                        cb,
-                        30
-                ));
-                case ALL -> {
+            buildSearchPredicate(root, cb, filter, predicates);
+            buildPlatformPredicate(root, cb, filter, predicates);
+            buildTypePredicate(root, cb, filter, predicates);
+            buildDateRangePredicate(root, cb, filter, predicates);
+
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                List<jakarta.persistence.criteria.Order> orders = new ArrayList<>();
+                switch (filter.getSort()) {
+                    case OLDEST -> orders.add(cb.asc(root.get("updatedAt")));
+                    case SCHEDULED_SOON -> {
+                        orders.add(cb.asc(cb.coalesce(root.get("scheduledAt"), root.get("updatedAt"))));
+                        orders.add(cb.asc(root.get("updatedAt")));
+                    }
+                    case FAILED_FIRST -> {
+                        orders.add(cb.desc(
+                            cb.selectCase()
+                                .when(cb.equal(root.get("status"), PostStatus.FAILED), 1)
+                                .otherwise(0)
+                        ));
+                        orders.add(cb.desc(root.get("updatedAt")));
+                    }
+                    case MOST_PLATFORMS -> {
+                        orders.add(cb.desc(cb.length(root.get("platforms"))));
+                        orders.add(cb.desc(root.get("updatedAt")));
+                    }
+                    case NEWEST -> orders.add(cb.desc(root.get("updatedAt")));
                 }
+                query.orderBy(orders);
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private void buildSearchPredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        if (filter.hasSearch()) {
+            String token = "%" + filter.normalizedSearch().toLowerCase() + "%";
+            predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("title")), token),
+                    cb.like(cb.lower(root.get("content")), token)
+            ));
+        }
+
+        if (filter.hasTag()) {
+            String tagToken = "%#" + filter.normalizedTag().toLowerCase() + "%";
+            predicates.add(cb.like(cb.lower(root.get("content")), tagToken));
+        }
+    }
+
+    private void buildPlatformPredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        if (!filter.getPlatform().isEmpty() && !filter.getPlatform().contains(QueuePlatformFilter.ALL)) {
+            List<Predicate> platformPredicates = new ArrayList<>();
+            for (QueuePlatformFilter p : filter.getPlatform()) {
+                String platform = p.name();
+                Expression<String> normalizedPlatforms = cb.concat(cb.concat(",", root.get("platforms")), ",");
+                platformPredicates.add(cb.like(normalizedPlatforms, "%," + platform + ",%"));
+            }
+            predicates.add(cb.or(platformPredicates.toArray(new Predicate[0])));
+        }
+    }
+
+    private void buildTypePredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        if (!filter.getType().isEmpty() && !filter.getType().contains(QueuePostTypeFilter.ALL)) {
+            List<Predicate> typePredicates = new ArrayList<>();
+            for (QueuePostTypeFilter t : filter.getType()) {
+                switch (t) {
+                    case IMAGE -> typePredicates.add(cb.isNotEmpty(root.get("media")));
+                    case TEXT -> typePredicates.add(cb.isEmpty(root.get("media")));
+                    case VIDEO -> {
+                        Predicate mp4 = cb.like(cb.lower(root.get("content")), "%.mp4%");
+                        Predicate mov = cb.like(cb.lower(root.get("content")), "%.mov%");
+                        Predicate webm = cb.like(cb.lower(root.get("content")), "%.webm%");
+                        typePredicates.add(cb.or(mp4, mov, webm));
+                    }
+                    case POLL -> {
+                        Predicate withQuestion = cb.like(cb.lower(root.get("content")), "%?%");
+                        Predicate withPollKeyword = cb.like(cb.lower(root.get("content")), "%poll%");
+                        typePredicates.add(cb.or(withQuestion, withPollKeyword));
+                    }
+                }
+            }
+            predicates.add(cb.or(typePredicates.toArray(new Predicate[0])));
+        }
+    }
+
+    private void buildDateRangePredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        switch (filter.getDateRange()) {
+            case TODAY -> predicates.add(buildDateRangePredicate(
+                    cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
+                    cb,
+                    0
+            ));
+            case WEEK -> predicates.add(buildDateRangePredicate(
+                    cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
+                    cb,
+                    DAYS_IN_WEEK
+            ));
+            case MONTH -> predicates.add(buildDateRangePredicate(
+                    cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
+                    cb,
+                    DAYS_IN_MONTH
+            ));
+            case ALL -> {
+            }
+        }
     }
 
     private Predicate buildDateRangePredicate(Expression<Instant> field, jakarta.persistence.criteria.CriteriaBuilder cb, int days) {
@@ -188,38 +270,5 @@ public class QueueService {
                 ? today.atStartOfDay(ZoneId.systemDefault()).toInstant()
                 : today.minusDays(days - 1L).atStartOfDay(ZoneId.systemDefault()).toInstant();
         return cb.greaterThanOrEqualTo(field, from);
-    }
-
-    private void sortPostsInMemory(List<Post> posts, QueueSortOption sortOption) {
-        Comparator<Post> newest = Comparator.comparing(Post::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
-        Comparator<Post> oldest = Comparator.comparing(Post::getUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
-        Comparator<Post> scheduledSoon = Comparator
-                .comparing(Post::getScheduledAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                .thenComparing(oldest);
-        Comparator<Post> failedFirst = Comparator
-                .comparing((Post post) -> post.getStatus() != PostStatus.FAILED)
-                .thenComparing(newest);
-        Comparator<Post> mostPlatforms = Comparator
-                .comparingInt((Post post) -> countPlatforms(post.getPlatforms()))
-                .reversed()
-                .thenComparing(newest);
-
-        switch (sortOption) {
-            case OLDEST -> posts.sort(oldest);
-            case SCHEDULED_SOON -> posts.sort(scheduledSoon);
-            case FAILED_FIRST -> posts.sort(failedFirst);
-            case MOST_PLATFORMS -> posts.sort(mostPlatforms);
-            case NEWEST -> posts.sort(newest);
-        }
-    }
-
-    private int countPlatforms(String platforms) {
-        if (platforms == null || platforms.isBlank()) {
-            return 0;
-        }
-        return (int) java.util.Arrays.stream(platforms.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .count();
     }
 }

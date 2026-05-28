@@ -15,12 +15,12 @@
                   data-i18n-clear-done=#{ai.assistant.clearDone}">
         <button id="ai-assistant-toggle" class="ai-assistant-toggle" type="button" th:attr="aria-label=#{ai.assistant.open}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="5" y="6" width="14" height="11" rx="3"></rect>
-                <circle cx="10" cy="11.5" r="1"></circle>
-                <circle cx="14" cy="11.5" r="1"></circle>
-                <path d="M10 14.5h4"></path>
-                <path d="M12 3v3"></path>
-                <path d="M8 20h8"></path>
+                <rect class="bot-head" x="5" y="6" width="14" height="11" rx="3"></rect>
+                <circle class="bot-eye bot-eye-left" cx="10" cy="11.5" r="1"></circle>
+                <circle class="bot-eye bot-eye-right" cx="14" cy="11.5" r="1"></circle>
+                <path class="bot-mouth" d="M10 14.5h4"></path>
+                <path class="bot-antenna" d="M12 3v3"></path>
+                <path class="bot-neck" d="M8 20h8"></path>
             </svg>
         </button>
 
@@ -65,5 +65,5 @@
             </form>
         </section>
     </div>
-    <script src="/js/ai-assistant.js"></script>
+    <script type="module" src="/js/ai-assistant.js"></script>
 </th:block>

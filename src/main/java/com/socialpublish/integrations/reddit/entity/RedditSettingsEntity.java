@@ -9,7 +9,9 @@ import com.socialpublish.integrations.entity.BaseIntegrationSettings;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "reddit_settings")
+@Table(name = "reddit_settings", indexes = {
+    @Index(name = "idx_reddit_user", columnList = "user_id")
+})
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
@@ -35,4 +37,17 @@ public class RedditSettingsEntity implements BaseIntegrationSettings {
     private String label;
 
     private boolean enabled = true;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RedditSettingsEntity that = (RedditSettingsEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

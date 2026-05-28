@@ -35,6 +35,6 @@ public abstract class BaseIntegrationService<E extends BaseIntegrationSettings, 
             @CacheEvict(value = "account-labels", key = "#userId")
     })
     public void disconnect(UUID userId) {
-        settingsRepository.findByUserId(userId).ifPresent(settingsRepository::delete);
+        settingsRepository.deleteAll(settingsRepository.findAllByUserId(userId));
     }
 }

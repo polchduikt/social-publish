@@ -479,29 +479,63 @@
 .btn-toggle-visibility {
     position: absolute;
     right: 8px;
-    background: none;
-    border: none;
-    padding: 6px;
+    background: transparent !important;
+    border: none !important;
+    padding: 6px !important;
     cursor: pointer;
-    color: #64748b;
+    color: #64748b !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    transition: all 0.2s;
+    border-radius: 6px !important;
+    transition: all 0.2s !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .btn-toggle-visibility:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: #1e293b;
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #1e293b !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 .dark-mode .btn-toggle-visibility:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 .btn-toggle-visibility svg {
     width: 20px;
     height: 20px;
+}
+
+@media (max-width: 480px) {
+  .integration-card {
+    padding: 12px;
+  }
+
+  .integration-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .account-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .account-row-actions {
+    flex-direction: column;
+  }
+
+  .account-row-actions button,
+  .account-row-actions .btn-link {
+    width: 100%;
+  }
 }

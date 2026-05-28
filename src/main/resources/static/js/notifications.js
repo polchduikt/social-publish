@@ -15,7 +15,6 @@
 
     var notifItems = [];
 
-    // Fetch persisted notifications from backend on page load
     fetchNotifications();
 
     var socket = new SockJS('/ws');

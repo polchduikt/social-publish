@@ -36,13 +36,15 @@
 .calendar-panel {
   margin-top: 16px;
   padding: 20px;
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
+  overflow-anchor: none;
 }
 
 .dashboard-page .dashboard-main {
   min-width: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .calendar-toolbar {
@@ -134,8 +136,9 @@
 
 #calendarRoot {
   min-height: 600px;
-  overflow: hidden;
+  overflow: visible;
   max-width: 100%;
+  overflow-anchor: none;
 }
 
 .fc {
@@ -143,19 +146,23 @@
   max-width: 100%;
 }
 
-.fc .fc-scrollgrid {
+.fc .fc-scrollgrid,
+.fc .fc-col-header,
+.fc .fc-daygrid-body,
+.fc .fc-scrollgrid-sync-table {
   border: none;
   width: 100% !important;
+  max-width: 100% !important;
 }
 
 .fc .fc-scrollgrid-section > td,
 .fc .fc-scrollgrid-section > th {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .fc table {
   table-layout: fixed;
-  width: 100%;
+  width: 100% !important;
 }
 
 .fc .fc-col-header-cell {
@@ -206,23 +213,32 @@
   padding: 0;
 }
 
-.fc .fc-event {
+.fc .fc-event,
+.fc-event-mirror {
   border: none;
-  border-radius: 6px;
+  border-radius: 6px !important;
   padding: 3px 7px;
   font-size: 12px;
   font-weight: 600;
   color: #ffffff;
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
   margin-bottom: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.fc .fc-event:hover {
-  transform: scale(1.02);
+.fc .fc-event.fc-event-not-start,
+.fc .fc-event.fc-event-not-end,
+.fc-event-mirror.fc-event-not-start,
+.fc-event-mirror.fc-event-not-end {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border-radius: 6px !important;
+}
+
+.fc .fc-event:not(.fc-event-dragging):not(.fc-event-mirror):hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
@@ -233,14 +249,15 @@
   display: block;
 }
 
-.fc .fc-event-main {
+.fc .fc-event-main,
+.fc-event-mirror .fc-event-main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .fc .fc-daygrid-event-harness {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .fc .fc-daygrid-event-dot {
@@ -744,4 +761,106 @@ html.dark-mode .fc .fc-popover-header {
 
 html.dark-mode .fc .fc-daygrid-more-link {
   color: var(--dm-accent);
+}
+
+@media (max-width: 768px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .fc .fc-toolbar .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc .fc-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  .fc .fc-col-header-cell {
+    font-size: 11px;
+  }
+
+  .fc .fc-daygrid-event {
+    font-size: 10px;
+    padding: 1px 3px;
+  }
+
+  .fc .fc-daygrid-day {
+    min-height: auto;
+  }
+
+  .fc .fc-popover {
+    width: calc(100vw - 24px);
+    max-width: none;
+  }
+
+  .calendar-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .calendar-title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .calendar-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .fc .fc-toolbar-title {
+    font-size: 16px;
+  }
+
+  .fc .fc-button-group {
+    gap: 2px;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+
+  .fc .fc-daygrid-event {
+    font-size: 9px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fc .fc-daygrid-day {
+    padding: 2px;
+  }
+
+  .fc .fc-view-harness {
+    font-size: 11px;
+  }
+}
+
+.fc-event-dragging,
+.fc-event-mirror {
+  transition: none !important;
+  opacity: 0.85;
+  z-index: 9999 !important;
+  pointer-events: none;
+  box-sizing: border-box;
+  font-family: "Inter", "Sora", sans-serif;
+}
+
+.fc-event-dragging {
+  opacity: 0.4;
 }

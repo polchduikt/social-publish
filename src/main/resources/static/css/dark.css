@@ -604,6 +604,10 @@ html.dark-mode .notif-list::-webkit-scrollbar-thumb {
   background: #334155;
 }
 
+html.dark-mode .ai-assistant-messages::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
 html.dark-mode .notif-item {
   border-bottom-color: var(--dm-border-soft);
 }
@@ -651,4 +655,23 @@ html.dark-mode .appearance-label {
 
 html.dark-mode .appearance-control {
   background: var(--dm-surface-1);
+}
+
+@media (max-width: 768px) {
+  html.dark-mode .sidebar {
+    background: #0f172a;
+    border-color: rgba(148, 163, 184, 0.15);
+  }
+
+  html.dark-mode .sidebar-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  html.dark-mode .hamburger-toggle span {
+    background: #e2e8f0;
+  }
+
+  html.dark-mode .hamburger-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
 }

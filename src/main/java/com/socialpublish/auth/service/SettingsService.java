@@ -1,11 +1,14 @@
 package com.socialpublish.auth.service;
 
 import com.socialpublish.auth.dto.ChangePasswordRequest;
+import com.socialpublish.auth.dto.SetPasswordRequest;
 import com.socialpublish.auth.dto.UpdateProfileRequest;
 import com.socialpublish.auth.entity.User;
 import com.socialpublish.auth.exception.SettingsOperationException;
 import com.socialpublish.auth.repository.UserRepository;
+import com.socialpublish.auth.event.UserDeletedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +20,7 @@ public class SettingsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void updateProfile(UUID userId, UpdateProfileRequest request) {
@@ -43,15 +47,24 @@ public class SettingsService {
     }
 
     @Transactional
+    public void setPassword(UUID userId, SetPasswordRequest request) {
+        User user = requireUser(userId);
+
+        if (user.isPasswordLoginEnabled() && user.getPassword() != null) {
+            throw new SettingsOperationException("Password already set. Use Change Password instead.");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordLoginEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void changePassword(UUID userId, ChangePasswordRequest request) {
         User user = requireUser(userId);
 
-        if (!user.isPasswordLoginEnabled()) {
-            throw new SettingsOperationException("Password change is not available for OAuth accounts");
-        }
-
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new SettingsOperationException("Passwords do not match");
+        if (!user.isPasswordLoginEnabled() || user.getPassword() == null) {
+            throw new SettingsOperationException("Set a password first before changing it");
         }
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
@@ -63,7 +76,25 @@ public class SettingsService {
     }
 
     @Transactional
+    public void unlinkGoogle(UUID userId) {
+        User user = requireUser(userId);
+
+        if (!user.isGoogleLinked()) {
+            throw new SettingsOperationException("Google account is not linked");
+        }
+
+        if (!user.isPasswordLoginEnabled() || user.getPassword() == null) {
+            throw new SettingsOperationException("Set a password before unlinking Google. Otherwise you won't be able to log in.");
+        }
+
+        user.setGoogleEmail(null);
+        user.setGoogleSub(null);
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void deleteAccount(UUID userId) {
+        eventPublisher.publishEvent(new UserDeletedEvent(userId));
         userRepository.deleteById(userId);
     }
 

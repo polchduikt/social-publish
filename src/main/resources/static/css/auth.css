@@ -230,3 +230,46 @@
 .cta-row > * {
   flex: 1;
 }
+
+@media (max-width: 768px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual {
+    display: none;
+  }
+
+  .auth-panel {
+    padding: 24px;
+    max-width: 100%;
+  }
+
+  .auth-heading {
+    font-size: 24px;
+  }
+
+  .auth-form input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 8px;
+  }
+
+  .auth-panel {
+    padding: 16px;
+  }
+
+  .auth-form button {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .auth-heading {
+    font-size: 20px;
+  }
+}
