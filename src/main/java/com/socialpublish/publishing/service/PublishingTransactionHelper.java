@@ -81,19 +81,13 @@ public class PublishingTransactionHelper {
         }
         Hibernate.initialize(post.getOwner());
         Hibernate.initialize(post.getMedia());
-
         boolean isRetry = attempt < post.getMaxRetries();
-        if (isRetry) {
-            statusMachine.transition(post, PostStatus.RETRYING);
-            post.setRetryCount(attempt);
-            post.setFailedReason(reason);
-            post = postRepository.save(post);
-        } else {
-            statusMachine.transition(post, PostStatus.FAILED);
-            post.setRetryCount(attempt);
-            post.setFailedReason(reason);
-            post = postRepository.save(post);
-        }
+        PostStatus targetStatus = isRetry ? PostStatus.RETRYING : PostStatus.FAILED;
+
+        statusMachine.transition(post, targetStatus);
+        post.setRetryCount(attempt);
+        post.setFailedReason(reason);
+        post = postRepository.save(post);
 
         return new FailureResult(post, isRetry);
     }

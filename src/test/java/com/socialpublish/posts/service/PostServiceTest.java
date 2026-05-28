@@ -14,7 +14,6 @@ import com.socialpublish.scheduling.service.PostSchedulerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,8 +36,9 @@ class PostServiceTest {
     @Mock private PostMapper postMapper;
     @Mock private RecurringPostService recurringPostService;
 
-    @InjectMocks
     private PostService postService;
+    private PostLifecyclePolicy postLifecyclePolicy;
+    private PostTitleGenerator postTitleGenerator;
 
     private UUID ownerId;
     private UUID postId;
@@ -56,6 +56,20 @@ class PostServiceTest {
         post = new Post();
         post.setId(postId);
         post.setOwner(owner);
+
+        postTitleGenerator = new PostTitleGenerator();
+        postLifecyclePolicy = new PostLifecyclePolicy(statusMachine, recurringPostService, postTitleGenerator);
+        postService = new PostService(
+                postRepository,
+                userRepository,
+                postSchedulerService,
+                publishingProducer,
+                notificationService,
+                postMediaSyncService,
+                postMapper,
+                postLifecyclePolicy,
+                postTitleGenerator
+        );
     }
 
     @Test

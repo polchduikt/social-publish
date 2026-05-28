@@ -32,7 +32,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 return;
             }
         }
-
         getRedirectStrategy().sendRedirect(request, response, "/dashboard");
     }
 }

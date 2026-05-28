@@ -65,12 +65,18 @@ public class QueueService {
 
         boolean hasMore = totalFiltered > posts.size();
         int nextSize = Math.min(filter.getSize() + LOAD_MORE_STEP, MAX_QUEUE_PAGE_SIZE);
+        List<Object[]> rawStats = postRepository.countByOwnerIdGroupedByStatus(ownerId);
+        Map<PostStatus, Long> statsMap = rawStats.stream()
+                .collect(Collectors.toMap(
+                        row -> (PostStatus) row[0],
+                        row -> (Long) row[1]
+                ));
 
         QueueStatsView stats = new QueueStatsView(
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.SCHEDULED),
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.PUBLISHED),
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.FAILED),
-                postRepository.countByOwnerIdAndStatus(ownerId, PostStatus.DRAFT)
+                statsMap.getOrDefault(PostStatus.SCHEDULED, 0L),
+                statsMap.getOrDefault(PostStatus.PUBLISHED, 0L),
+                statsMap.getOrDefault(PostStatus.FAILED, 0L),
+                statsMap.getOrDefault(PostStatus.DRAFT, 0L)
         );
 
         Instant nextScheduledAt = postRepository
@@ -130,71 +136,11 @@ public class QueueService {
             if (filter.getStatus() != null && !filter.getStatus().isBlank()) {
                 predicates.add(cb.equal(root.get("status"), PostStatus.valueOf(filter.getStatus())));
             }
-            
-            if (filter.hasSearch()) {
-                String token = "%" + filter.normalizedSearch().toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("title")), token),
-                        cb.like(cb.lower(root.get("content")), token)
-                ));
-            }
-            
-            if (filter.hasTag()) {
-                String tagToken = "%#" + filter.normalizedTag().toLowerCase() + "%";
-                predicates.add(cb.like(cb.lower(root.get("content")), tagToken));
-            }
-            
-            if (!filter.getPlatform().isEmpty() && !filter.getPlatform().contains(QueuePlatformFilter.ALL)) {
-                List<Predicate> platformPredicates = new ArrayList<>();
-                for (QueuePlatformFilter p : filter.getPlatform()) {
-                    String platform = p.name();
-                    Expression<String> normalizedPlatforms = cb.concat(cb.concat(",", root.get("platforms")), ",");
-                    platformPredicates.add(cb.like(normalizedPlatforms, "%," + platform + ",%"));
-                }
-                predicates.add(cb.or(platformPredicates.toArray(new Predicate[0])));
-            }
-            
-            if (!filter.getType().isEmpty() && !filter.getType().contains(QueuePostTypeFilter.ALL)) {
-                List<Predicate> typePredicates = new ArrayList<>();
-                for (QueuePostTypeFilter t : filter.getType()) {
-                    switch (t) {
-                        case IMAGE -> typePredicates.add(cb.isNotEmpty(root.get("media")));
-                        case TEXT -> typePredicates.add(cb.isEmpty(root.get("media")));
-                        case VIDEO -> {
-                            Predicate mp4 = cb.like(cb.lower(root.get("content")), "%.mp4%");
-                            Predicate mov = cb.like(cb.lower(root.get("content")), "%.mov%");
-                            Predicate webm = cb.like(cb.lower(root.get("content")), "%.webm%");
-                            typePredicates.add(cb.or(mp4, mov, webm));
-                        }
-                        case POLL -> {
-                            Predicate withQuestion = cb.like(cb.lower(root.get("content")), "%?%");
-                            Predicate withPollKeyword = cb.like(cb.lower(root.get("content")), "%poll%");
-                            typePredicates.add(cb.or(withQuestion, withPollKeyword));
-                        }
-                    }
-                }
-                predicates.add(cb.or(typePredicates.toArray(new Predicate[0])));
-            }
 
-            switch (filter.getDateRange()) {
-                case TODAY -> predicates.add(buildDateRangePredicate(
-                        cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
-                        cb,
-                        0
-                ));
-                case WEEK -> predicates.add(buildDateRangePredicate(
-                        cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
-                        cb,
-                        DAYS_IN_WEEK
-                ));
-                case MONTH -> predicates.add(buildDateRangePredicate(
-                        cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
-                        cb,
-                        DAYS_IN_MONTH
-                ));
-                case ALL -> {
-                }
-            }
+            buildSearchPredicate(root, cb, filter, predicates);
+            buildPlatformPredicate(root, cb, filter, predicates);
+            buildTypePredicate(root, cb, filter, predicates);
+            buildDateRangePredicate(root, cb, filter, predicates);
 
             if (query.getResultType() != Long.class && query.getResultType() != long.class) {
                 List<jakarta.persistence.criteria.Order> orders = new ArrayList<>();
@@ -225,6 +171,99 @@ public class QueueService {
         };
     }
 
+    private void buildSearchPredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        if (filter.hasSearch()) {
+            String token = "%" + filter.normalizedSearch().toLowerCase() + "%";
+            predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("title")), token),
+                    cb.like(cb.lower(root.get("content")), token)
+            ));
+        }
+
+        if (filter.hasTag()) {
+            String tagToken = "%#" + filter.normalizedTag().toLowerCase() + "%";
+            predicates.add(cb.like(cb.lower(root.get("content")), tagToken));
+        }
+    }
+
+    private void buildPlatformPredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        if (!filter.getPlatform().isEmpty() && !filter.getPlatform().contains(QueuePlatformFilter.ALL)) {
+            List<Predicate> platformPredicates = new ArrayList<>();
+            for (QueuePlatformFilter p : filter.getPlatform()) {
+                String platform = p.name();
+                Expression<String> normalizedPlatforms = cb.concat(cb.concat(",", root.get("platforms")), ",");
+                platformPredicates.add(cb.like(normalizedPlatforms, "%," + platform + ",%"));
+            }
+            predicates.add(cb.or(platformPredicates.toArray(new Predicate[0])));
+        }
+    }
+
+    private void buildTypePredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        if (!filter.getType().isEmpty() && !filter.getType().contains(QueuePostTypeFilter.ALL)) {
+            List<Predicate> typePredicates = new ArrayList<>();
+            for (QueuePostTypeFilter t : filter.getType()) {
+                switch (t) {
+                    case IMAGE -> typePredicates.add(cb.isNotEmpty(root.get("media")));
+                    case TEXT -> typePredicates.add(cb.isEmpty(root.get("media")));
+                    case VIDEO -> {
+                        Predicate mp4 = cb.like(cb.lower(root.get("content")), "%.mp4%");
+                        Predicate mov = cb.like(cb.lower(root.get("content")), "%.mov%");
+                        Predicate webm = cb.like(cb.lower(root.get("content")), "%.webm%");
+                        typePredicates.add(cb.or(mp4, mov, webm));
+                    }
+                    case POLL -> {
+                        Predicate withQuestion = cb.like(cb.lower(root.get("content")), "%?%");
+                        Predicate withPollKeyword = cb.like(cb.lower(root.get("content")), "%poll%");
+                        typePredicates.add(cb.or(withQuestion, withPollKeyword));
+                    }
+                }
+            }
+            predicates.add(cb.or(typePredicates.toArray(new Predicate[0])));
+        }
+    }
+
+    private void buildDateRangePredicate(
+            jakarta.persistence.criteria.Root<Post> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            QueueFilterRequest filter,
+            List<Predicate> predicates
+    ) {
+        switch (filter.getDateRange()) {
+            case TODAY -> predicates.add(buildDateRangePredicate(
+                    cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
+                    cb,
+                    0
+            ));
+            case WEEK -> predicates.add(buildDateRangePredicate(
+                    cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
+                    cb,
+                    DAYS_IN_WEEK
+            ));
+            case MONTH -> predicates.add(buildDateRangePredicate(
+                    cb.coalesce(root.<Instant>get("scheduledAt"), root.<Instant>get("updatedAt")),
+                    cb,
+                    DAYS_IN_MONTH
+            ));
+            case ALL -> {
+            }
+        }
+    }
+
     private Predicate buildDateRangePredicate(Expression<Instant> field, jakarta.persistence.criteria.CriteriaBuilder cb, int days) {
         LocalDate today = LocalDate.now();
         Instant from = days == 0
@@ -232,5 +271,4 @@ public class QueueService {
                 : today.minusDays(days - 1L).atStartOfDay(ZoneId.systemDefault()).toInstant();
         return cb.greaterThanOrEqualTo(field, from);
     }
-
 }

@@ -21,7 +21,7 @@ public class TelegramClientService {
 
     private static final String API_BASE = "https://api.telegram.org/bot";
     private final RestClient restClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public void sendMessage(String botToken, String chatId, String text, boolean silent, String inlineButtonsJson) {
         String url = API_BASE + botToken + "/sendMessage";

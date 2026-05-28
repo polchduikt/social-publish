@@ -3,7 +3,6 @@ package com.socialpublish.common.validation;
 import com.socialpublish.common.model.PlatformType;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;

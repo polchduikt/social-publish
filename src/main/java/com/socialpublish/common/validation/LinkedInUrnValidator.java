@@ -2,7 +2,6 @@ package com.socialpublish.common.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.util.regex.Pattern;
 
 public class LinkedInUrnValidator implements ConstraintValidator<LinkedInUrn, String> {

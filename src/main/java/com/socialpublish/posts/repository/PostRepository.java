@@ -5,6 +5,8 @@ import com.socialpublish.posts.entity.PostStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -45,4 +47,12 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     List<Post> findByOwnerIdAndUpdatedAtAfter(UUID ownerId, Instant after);
 
     List<Post> findByStatusAndScheduledAtBefore(PostStatus status, Instant before);
+
+    @EntityGraph(attributePaths = {"owner"})
+    List<Post> findByUpdatedAtAfter(Instant after);
+
+    void deleteAllByOwnerId(UUID ownerId);
+
+    @Query("SELECT p.status, COUNT(p) FROM Post p WHERE p.owner.id = :ownerId GROUP BY p.status")
+    List<Object[]> countByOwnerIdGroupedByStatus(@Param("ownerId") UUID ownerId);
 }

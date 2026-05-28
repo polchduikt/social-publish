@@ -3,7 +3,6 @@ package com.socialpublish.common.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.BeanWrapperImpl;
-
 import java.util.Objects;
 
 public class FieldsMatchValidator implements ConstraintValidator<FieldsMatch, Object> {
@@ -22,7 +21,6 @@ public class FieldsMatchValidator implements ConstraintValidator<FieldsMatch, Ob
         if (value == null) {
             return true;
         }
-
         BeanWrapperImpl beanWrapper = new BeanWrapperImpl(value);
         Object first = beanWrapper.getPropertyValue(firstFieldName);
         Object second = beanWrapper.getPropertyValue(secondFieldName);

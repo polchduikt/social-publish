@@ -96,7 +96,6 @@ public class OAuth2UserSyncService {
                 );
             }
         }
-
         user.setGoogleEmail(googleEmail);
         user.setGoogleSub(sub);
         userRepository.save(user);

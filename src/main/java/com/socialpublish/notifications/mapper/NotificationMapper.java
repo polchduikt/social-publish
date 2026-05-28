@@ -7,7 +7,6 @@ import com.socialpublish.posts.entity.PostStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

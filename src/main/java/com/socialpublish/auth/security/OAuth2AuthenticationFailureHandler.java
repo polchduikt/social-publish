@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 
 @Component
@@ -23,7 +22,6 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
             getRedirectStrategy().sendRedirect(request, response, "/login?oauth2Error=email_not_verified");
             return;
         }
-
         getRedirectStrategy().sendRedirect(request, response, "/login?oauth2Error=true");
     }
 }

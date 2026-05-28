@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface PostTemplateRepository extends JpaRepository<PostTemplate, UUID> {
     List<PostTemplate> findAllByOwnerIdOrderByUpdatedAtDesc(UUID ownerId);
+
+    void deleteAllByOwnerId(UUID ownerId);
 }

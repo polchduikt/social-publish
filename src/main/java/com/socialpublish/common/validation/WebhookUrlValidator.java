@@ -2,7 +2,6 @@ package com.socialpublish.common.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.net.URI;
 import java.util.Locale;
 
@@ -16,7 +15,6 @@ public class WebhookUrlValidator implements ConstraintValidator<WebhookUrl, Stri
 
         String normalized = value.trim();
         if (normalized.contains("...")) {
-            // masked secret placeholder accepted to preserve existing value
             return true;
         }
 

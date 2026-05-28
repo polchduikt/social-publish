@@ -32,7 +32,6 @@ public class AuthService {
                 || userRepository.existsByGoogleEmailIgnoreCase(normalizedEmail)) {
             throw new UserAlreadyExistsException("User with this email already exists");
         }
-
         User user = new User();
         user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
