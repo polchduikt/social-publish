@@ -1,76 +1,105 @@
-# Social Publish
+# Social Publish — Multi-Platform Social Media Management Automation
 
-Social Publish is a professional, scalable multi-platform social media management and automation platform. It allows users to create, schedule, and analyze content across **6 social platforms** simultaneously, leveraging AI capabilities and flexible queue management tools.
+[![Tests: Passing](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)](docs/screenshots/dashboard.jpg)
+[![Architecture: Docs](https://img.shields.io/badge/Architecture-Docs-blueviolet.svg)](docs/ARCHITECTURE.md)
+[![API Surface](https://img.shields.io/badge/API_Surface-Docs-6BA539.svg)](docs/API_SURFACE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-### Overview
+[![Java 21](https://img.shields.io/badge/Java-21-orange.svg?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot 4.0.6](https://img.shields.io/badge/Spring%20Boot-4.0.6-brightgreen.svg?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791.svg?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis 7](https://img.shields.io/badge/Redis-7-DC382D.svg?logo=redis&logoColor=white)](https://redis.io/)
+[![RabbitMQ 3](https://img.shields.io/badge/RabbitMQ-3-FF6600.svg?logo=rabbitmq&logoColor=white)](https://www.rabbitmq.com/)
+[![Quartz Scheduler](https://img.shields.io/badge/Quartz_Scheduler-JDBC_Store-3C873A.svg)](https://www.quartz-scheduler.org/)
 
-Social Publish provides a full content lifecycle through a unified web interface:
+[![Thymeleaf](https://img.shields.io/badge/Thymeleaf-SSR-005F0F.svg?logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
+[![WebSockets](https://img.shields.io/badge/WebSockets-STOMP-010101.svg?logo=socketdotio&logoColor=white)](https://docs.spring.io/spring-framework/reference/web/websocket.html)
+[![Groq AI](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036.svg)](https://groq.com/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media_CDN-3448C5.svg?logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Testcontainers](https://img.shields.io/badge/Testcontainers-Integration_Tests-0B1C28.svg)](https://testcontainers.com/)
 
-- **Multi-platform Publishing:** Post to Telegram, Discord, Slack, LinkedIn, Notion, and Reddit from one place.
-- **Smart Scheduling:** Complex publication scenarios (one-time, recurring) via an integrated calendar.
-- **AI Integration:** Content generation and improvement via a built-in AI assistant (Groq / LLaMA).
-- **Visual Control:** Adaptive previews that show exactly how posts will look on each platform.
-- **Media Management:** Optimized storage for photos and videos with cloud content delivery.
-- **Real-time Notifications:** WebSocket-powered in-app and email notifications on publishing events.
+[![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot_API-26A5E4.svg?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
+[![Discord API](https://img.shields.io/badge/Discord-Webhooks-5865F2.svg?logo=discord&logoColor=white)](https://discord.com/developers/docs/resources/webhook)
+[![Slack API](https://img.shields.io/badge/Slack-Webhooks-4A154B.svg?logo=slack&logoColor=white)](https://api.slack.com/)
+[![LinkedIn API](https://img.shields.io/badge/LinkedIn-OAuth2_API-0A66C2.svg?logo=linkedin&logoColor=white)](https://developer.linkedin.com/)
+[![Notion API](https://img.shields.io/badge/Notion-Integration_API-000000.svg?logo=notion&logoColor=white)](https://developers.notion.com/)
+[![Reddit API](https://img.shields.io/badge/Reddit-OAuth2_API-FF4500.svg?logo=reddit&logoColor=white)](https://www.reddit.com/dev/api/)
+
+---
+
+## Overview
+
+**Social Publish** is an enterprise-grade multi-platform social media management and automation SaaS platform. It allows users to create, preview, schedule, and publish content across **6 major social platforms** (Telegram, Discord, Slack, LinkedIn, Notion, Reddit) simultaneously from a unified web interface. 
+
+The platform combines an asynchronous event-driven publishing pipeline, persistent clustered job scheduling, high-throughput Redis caching, an integrated **Groq LLaMA 3.3 70B** AI assistant, real-time WebSocket notifications, and multi-channel media management powered by Cloudinary.
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.jpg" alt="Social Publish Platform Overview" width="100%" />
+</p>
+
+---
 
 ## Tech Stack
 
-| Layer | Technology |
-|:---|:---|
-| Language | Java 21 |
-| Framework | Spring Boot 4.0 (Web, Security, Validation, Mail, Session, WebSocket) |
-| Database | PostgreSQL 17 |
-| Caching & Sessions | Redis 7 |
-| Messaging | RabbitMQ 3 (async publishing queue) |
-| Scheduling | Quartz Scheduler (JDBC job store) |
-| Frontend | Thymeleaf, Vanilla JS, CSS3 (Dark/Light modes) |
-| Object Mapping | MapStruct |
-| Cloud Storage | Cloudinary (media hosting & CDN) |
-| Authentication | Spring Security (Google OAuth2 + local password login) |
-| AI | Groq API (LLaMA 3.3 70B) |
-| Containerization | Docker & Docker Compose |
-| Build Tool | Maven |
-| Testing | JUnit 5, Mockito, H2 Database, Testcontainers |
+### Backend — `src/main/java/com/socialpublish/`
+- **Java 21** with **Spring Boot 4.0.6** (Spring Framework 7.x)
+- **Spring Security & Google OAuth2 SSO**: Hybrid auth supporting Google Social Login and BCrypt-hashed local credentials.
+- **Spring Data JPA & Hibernate**: Relational persistence with PostgreSQL 17, optimized queries, and transaction management.
+- **PostgreSQL 17**: Core relational data storage and Quartz JDBC job store schema.
+- **Redis 7 & Spring Session Redis**: Distributed HTTP session clustering and multi-level data caching (dashboard stats, integration statuses, account labels).
+- **RabbitMQ 3 (AMQP)**: Asynchronous event-driven publishing queue with retry backoff, exponential delay routing, and failure isolation.
+- **Quartz Scheduler (JDBC Job Store)**: Clustered, restart-resilient cron and one-time post scheduling backed by PostgreSQL.
+- **Groq API & LLaMA 3.3 70B Versatile**: Ultra-fast AI conversational assistant for post drafting, tone adaptation, translation, and hashtag extraction.
+- **Spring WebSockets & STOMP over SockJS**: Real-time push notifications for instant publishing feedback and background task updates.
+- **Spring Mail & Thymeleaf Mailers**: Automated HTML email notifications for critical publishing results and weekly summaries.
+- **Cloudinary SDK**: Media processing pipeline for universal photo and video uploads with automatic optimization and CDN delivery.
+- **MapStruct 1.6.3**: Compile-time type-safe DTO and Entity transformations.
+- **Testcontainers & JUnit 5**: Hermetic PostgreSQL container testing and comprehensive integration test suite.
 
-## Architecture
+### Frontend & UI — `src/main/resources/`
+- **Thymeleaf 3 Server-Side Rendering (SSR)**: Dynamic server-rendered web UI with modular layouts and reusable UI fragments.
+- **Modern Modular JavaScript (ES6+)**: Feature-isolated client controllers (`ai-assistant`, `draft-store`, `calendar`, `accounts`, `landing`).
+- **CSS3 Design System & Theme Engine**: Native Dark/Light mode switching, responsive custom properties, and toast system.
+- **FullCalendar Integration**: Interactive drag-and-drop editorial calendar for visual scheduling and immediate rescheduling.
+- **Pixel-Accurate Live Previews**: Real-time multi-platform post simulators mimicking native platform interfaces (Telegram bubbles, Discord embeds, Slack blocks, LinkedIn cards, Notion pages, Reddit posts).
+- **LocalStorage Draft Autosave**: Persistent local client draft recovery preventing data loss across navigation or tab closing.
+- **STOMP / SockJS Client**: Real-time toast notifications, badge counters, and live post queue status sync.
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                         Browser (UI)                           │
-│         Thymeleaf SSR + Vanilla JS + CSS3 + WebSocket          │
-└──────────────────────────┬─────────────────────────────────────┘
-                           │ HTTP / WS
-┌──────────────────────────▼─────────────────────────────────────┐
-│                    Spring Boot Application                     │
-│                                                                │
-│  ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌──────────────────┐  │
-│  │   Auth   │ │  Posts   │ │ Scheduling│ │   Integrations   │  │
-│  │ (OAuth2, │ │ (CRUD,   │ │ (Quartz,  │ │ (Telegram,       │  │
-│  │  Local)  │ │ Templates│ │ Calendar) │ │  Discord, Slack, │  │
-│  └──────────┘ └──────────┘ └───────────┘ │  LinkedIn, Notion│  │
-│  ┌──────────┐ ┌──────────┐ ┌───────────┐ │  Reddit)         │  │
-│  │Dashboard │ │   AI     │ │Notifica-  │ └──────────────────┘  │
-│  │(Analytics│ │ Assistant│ │tions (WS  │ ┌──────────────────┐  │
-│  │ & Stats) │ │ (Groq)   │ │ + Email)  │ │   Publishing     │  │
-│  └──────────┘ └──────────┘ └───────────┘ │ (Async via MQ)   │  │
-│                                          └──────────────────┘  │
-└─────┬────────────┬─────────────┬─────────────┬─────────────────┘
-      │            │             │             │
- ┌────▼───┐  ┌─────▼────┐  ┌─────▼────┐  ┌─────▼────┐
- │  Post- │  │  Redis   │  │ RabbitMQ │  │Cloudinary│
- │ greSQL │  │ (Cache + │  │  (Async  │  │  (Media  │
- │  (DB)  │  │ Sessions)│  │  Queue)  │  │   CDN)   │
- └────────┘  └──────────┘  └──────────┘  └──────────┘
-```
+### Containerization & Deployment
+- **Docker Multi-Stage Build**: Optimized Eclipse Temurin 21 Alpine runtime image.
+- **Docker Compose Orchestration**: Unified multi-container stack (`app`, `postgres`, `redis`, `rabbitmq`) with integrated health checks and volume persistence.
 
-### Key Design Decisions
+---
 
-- **Async Publishing:** RabbitMQ decouples user actions from social media API calls, ensuring instant response times.
-- **Redis Caching:** Dashboard stats, integration statuses, and account labels are cached in Redis with automatic eviction on data changes.
-- **HTTP Session Clustering:** User sessions are stored in Redis, allowing zero-downtime restarts and horizontal scaling.
-- **Quartz JDBC Store:** Scheduled posts survive application restarts and support clustering.
-- **Modular Integrations:** Each social platform is an independent module with its own entity, repository, service, and controller.
-- **Draft Autosave:** Posts are auto-saved to localStorage and synced to the server to prevent data loss.
+## Core Features
+
+- **Multi-Platform Post Composer**: Create a single post targeting multiple networks (Telegram, Discord, Slack, LinkedIn, Notion, Reddit) with platform-specific options in a unified flow.
+- **AI Content Assistant & Refiner**: Built-in Groq-powered chatbot (LLaMA 3.3 70B) for writing posts from scratch, tone adaptation (*Professional, Casual, Viral, Educational*), language translation, and hashtag extraction.
+- **Pixel-Accurate Live Previews**: Realistic adaptive post rendering for each platform (Telegram chat bubble, Discord embed card, Slack block kit, LinkedIn feed post, Notion database page, Reddit submission).
+- **Intelligent Scheduling & Interactive Calendar**: One-time and recurring (*daily, weekly, monthly*) scheduling with FullCalendar drag-and-drop rescheduling backed by persistent Quartz JDBC clustering.
+- **Asynchronous Queue & Failure Recovery**: RabbitMQ message pipeline decoupling user actions from social API latency, equipped with automatic 3x retries and grace-period tracking.
+- **Unified Integrations Hub**: Multi-account support for Telegram, Discord, Slack, and Notion; full OAuth2 authorization code flows for LinkedIn and Reddit with test-send verification.
+- **Real-Time & Email Notifications**: STOMP WebSocket toast notifications for instant status feedback plus SMTP HTML email alerts on publishing outcomes.
+- **Dashboard & Performance Analytics**: 14-day publishing success/failure trendlines, platform share distribution, queue status counters, and recent activity monitoring with Redis caching.
+- **Reusable Post Templates**: Save frequent messaging patterns, formatting rules, and hashtags with one-click composer loading.
+- **Media Upload & Optimization**: Cloudinary CDN pipeline for photos and videos with drag-and-drop reordering (up to 10 MB per file, 50 MB total).
+- **Dual Authentication & Security**: Google OAuth2 social login, traditional email/password registration, password management, and user preferences.
+
+---
+
+## System Architecture & Patterns
+
+The platform follows an asynchronous, event-driven monolith pattern decoupling user interactions from external API network latencies:
+
+- **Asynchronous Event Pipeline**: Instant queue dispatching via RabbitMQ with worker pool consumers and automatic retry logic.
+- **Quartz JDBC Clustering**: Persistent database-backed task store surviving container restarts with multi-node safety.
+- **Clustered Session & Redis Caching**: Seamless horizontal scaling with session storage and sub-millisecond query cache layers.
+- **Modular Platform Adapters**: Strict domain boundaries for Telegram, Discord, Slack, LinkedIn, Notion, and Reddit integrations.
+
+Detailed architecture diagrams, sequence workflows, and design decisions: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**
+
+---
 
 ## Screenshots
 
@@ -90,202 +119,133 @@ Social Publish provides a full content lifecycle through a unified web interface
 | :---: | :---: |
 | ![Platform Configuration](docs/screenshots/configuration.jpg) | ![User Settings](docs/screenshots/settings.jpg) |
 
-## Features
+---
 
-### Post Creator & AI
-- **Multi-platform Composer** — Create a single post for all platforms at once with per-platform targeting.
-- **AI Assistant** — Built-in chatbot (Groq / LLaMA 3.3 70B) for writing, rewriting, translating, and improving posts.
-- **Rich Previews** — Realistic post rendering for each platform (Telegram bubbles, Discord embeds, Slack blocks, LinkedIn cards, Notion pages, Reddit posts).
-- **Advanced Settings** — Platform-specific options: Telegram polls, inline buttons, silent notifications; Discord embeds; etc.
-- **Post Templates** — Save and reuse post templates across platforms with multi-platform tag support.
+## UI Routes & API Surface
 
-### Scheduling & Calendar
-- **One-time & Recurring** — Schedule posts for a specific date/time or with repetition (daily, weekly, monthly).
-- **Interactive Calendar** — Visual calendar (FullCalendar) with drag-and-drop rescheduling.
-- **Content Queue** — Filterable queue by status (draft, scheduled, published, failed), platform, and content type with bulk actions.
+Social Publish provides a full suite of server-rendered Thymeleaf pages and JSON REST APIs for scheduling, template management, Groq AI completions, and WebSocket notifications.
 
-### Media Management
-- **Universal Uploader** — Photo and video uploads via drag-and-drop or file picker (up to 10 MB per file, 50 MB total).
-- **Cloudinary CDN** — Automatic scaling, optimization, and delivery of images and videos.
-- **Media Ordering** — Reorder media files within a post before publishing.
+Complete UI routes catalog and REST API endpoint specification: **[docs/API_SURFACE.md](docs/API_SURFACE.md)**
 
-### Integrations & Accounts
-- **6 Platforms** — Telegram, Discord, Slack, LinkedIn, Notion, Reddit.
-- **Multi-account Support** — Connect multiple accounts per platform (Telegram, Discord, Slack, Notion).
-- **OAuth2 Flows** — LinkedIn and Reddit use full OAuth2 authorization code flows.
-- **Test Publishing** — Send test posts from the integration settings page to verify connectivity.
-- **Token Management** — Secure storage of access tokens, refresh tokens, and automatic session refresh.
+---
 
-### Notifications
-- **Real-time WebSocket** — Instant in-app notifications on successful/failed publishing.
-- **Email Alerts** — SMTP email notifications for critical publishing events.
-- **Notification Center** — Mark as read, delete, and manage notification history.
+## Testing & Quality
 
-### User Management
-- **Dual Authentication** — Google OAuth2 login and traditional email/password registration.
-- **Profile Settings** — Update display name, email, password.
-- **AI Preferences** — Configure AI model, temperature, and max tokens per user.
-- **Account Deletion** — Full account deletion with data cleanup.
-- **Dark/Light Theme** — Responsive design with full dark mode support.
+The platform includes a comprehensive automated test suite covering unit logic, state machines, DTO mappings, and full service integration flows:
 
-### Dashboard & Analytics
-- **Publishing Timeline** — 14-day chart of publishing success/failure rates.
-- **Platform Distribution** — Breakdown of posts by platform.
-- **Status Counters** — Real-time counts of drafts, scheduled, published, and failed posts.
-- **Recent Activity** — Quick view of latest posts and their statuses.
+- **Unit Tests**: Verification of isolated business logic, DTO mapping, and post status state machine transitions using **JUnit 5** and **Mockito**.
+- **Integration Tests**: End-to-end verification of service flows, authentication resolution, asynchronous event dispatching, and persistence layers.
+- **Hermetic In-Memory Testing**: By default, tests execute against an in-memory H2 database under the `test` profile for rapid feedback without external service dependencies.
+- **PostgreSQL Testcontainers**: Support for true containerized PostgreSQL test runs matching production database behavior.
 
-## UI Routes
+To run the test suite locally:
 
-| Route | Page | Description |
-|:---|:---|:---|
-| `/` | Landing Page | Public landing page with feature overview |
-| `/login` | Login | Email/password or Google OAuth2 login |
-| `/register` | Registration | New account registration |
-| `/dashboard` | Dashboard | Analytics, charts, recent activity, platform stats |
-| `/posts/new` | Post Creator | Multi-platform post composer with AI assistant |
-| `/posts/{id}/edit` | Post Editor | Edit existing drafts or scheduled posts |
-| `/queue` | Content Queue | Filterable post queue with bulk actions |
-| `/calendar` | Content Calendar | Interactive calendar with drag-and-drop |
-| `/templates` | Post Templates | Saved reusable post templates |
-| `/accounts` | Integrations Hub | Overview of all connected platforms |
-| `/accounts/telegram` | Telegram Config | Bot token, chat ID, multi-account management |
-| `/accounts/discord` | Discord Config | Webhook URL, multi-account management |
-| `/accounts/slack` | Slack Config | Webhook URL, multi-account management |
-| `/accounts/notion` | Notion Config | API token, database ID, multi-account management |
-| `/accounts/linkedin` | LinkedIn Config | OAuth2 connect/disconnect |
-| `/accounts/reddit` | Reddit Config | OAuth2 connect/disconnect, subreddit settings |
-| `/settings` | User Settings | Profile, password, AI preferences, account deletion |
+```bash
+./mvnw clean test
+```
 
-## REST API Endpoints
+---
 
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` | `/api/calendar/events` | Fetch calendar events for a date range |
-| `DELETE` | `/api/calendar/events/{id}` | Delete a scheduled event |
-| `GET` | `/api/templates` | List all user templates |
-| `POST` | `/api/templates` | Create a new template |
-| `DELETE` | `/api/templates/{id}` | Delete a template |
-| `POST` | `/api/ai-assistant/chat` | Send a message to the AI assistant |
-| `GET` | `/api/notifications` | Fetch user notifications |
-| `POST` | `/api/notifications/read` | Mark notifications as read |
-| `DELETE` | `/api/notifications` | Clear all notifications |
+## Repository Structure
 
-## Getting Started
+```
+social-publish/
+├── .mvn/                            # Maven wrapper configuration
+├── docs/
+│   ├── ARCHITECTURE.md              # Detailed architecture, sequence diagrams & patterns
+│   ├── API_SURFACE.md               # UI routes catalog & REST/WebSocket API specification
+│   └── screenshots/                 # Application screenshots & UI previews
+├── src/
+│   ├── main/
+│   │   ├── java/com/socialpublish/
+│   │   │   ├── aiassistant/         # Groq AI Assistant (LLaMA 3.3 70B client & prompt builder)
+│   │   │   ├── auth/                # Security, OAuth2 user sync, login, registration, settings
+│   │   │   ├── common/              # Global configs, Redis cache, exception handling, validators
+│   │   │   ├── dashboard/           # Analytics, statistics builders, timeline views
+│   │   │   ├── integrations/        # Multi-platform adapters (Telegram, Discord, Slack, etc.)
+│   │   │   ├── mail/                # SMTP email delivery & HTML templates
+│   │   │   ├── media/               # Media upload handler & Cloudinary SDK integration
+│   │   │   ├── notifications/       # WebSocket STOMP notification dispatching
+│   │   │   ├── posts/               # Post management, editor, templates, status state machine
+│   │   │   ├── publishing/          # RabbitMQ message listeners & platform publishers
+│   │   │   └── scheduling/          # Quartz JDBC job store & scheduled post triggers
+│   │   └── resources/
+│   │       ├── static/              # CSS stylesheets, modular JavaScript files, assets
+│   │       ├── templates/           # Thymeleaf HTML views & layout fragments
+│   │       ├── application.properties
+│   │       └── application-security.properties
+│   └── test/                        # JUnit 5 & Testcontainers integration tests
+├── Dockerfile                       # Multi-stage production Java 21 container build
+├── compose.yaml                     # Multi-container stack (App, PostgreSQL, Redis, RabbitMQ)
+├── pom.xml                          # Maven project definition & dependencies
+└── README.md
+```
+
+---
+
+## Running Locally
 
 ### Prerequisites
-- **Docker** & **Docker Compose** (recommended)
-- OR: Java 21+, Maven 3.9+, PostgreSQL 17+, Redis 7+, RabbitMQ 3+
+- **Docker & Docker Compose** (Recommended)
+- *OR* Java 21+, Maven 3.9+, PostgreSQL 17+, Redis 7+, RabbitMQ 3+
 
-### Quick Start with Docker
+---
+
+### Option 1: Hybrid Development (Recommended)
+
+Run infrastructure dependencies in Docker and execute the Spring Boot application locally with live reload:
+
+```bash
+# 1. Start infrastructure services
+docker compose -f compose.yaml up -d postgres redis rabbitmq
+
+# 2. Configure local secrets (if needed)
+# Edit src/main/resources/application-security.properties or pass via environment
+
+# 3. Start the application
+./mvnw spring-boot:run
+```
+
+---
+
+### Option 2: Full Docker Stack
+
+Run the entire application along with all dependencies in isolated containers:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/polchduikt/social-publish.git
 cd social-publish
 
-# 2. Create environment file from template
-cp .env.example .env
-# Edit .env with your actual API keys and secrets
-
-# 3. Start all services
-docker compose up --build
+# 2. Start all services
+docker compose -f compose.yaml up -d --build
 ```
 
-The application will be available at **http://localhost:8080**
+---
 
-### Local Development (without Docker)
+### Available Local Endpoints:
+- **Application Web UI**: [http://localhost:8080](http://localhost:8080)
+- **RabbitMQ Management Console**: [http://localhost:15672](http://localhost:15672) *(guest / guest)*
+- **PostgreSQL Database**: `localhost:5432` *(db: socialpublish, user: postgres, pass: admin)*
+- **Redis Cache & Sessions**: `localhost:6379`
 
-```bash
-# 1. Start infrastructure services
-docker compose up postgres redis rabbitmq
+---
 
-# 2. Create local secrets file
-# Edit src/main/resources/application-security.properties
+## Documentation Index
 
-# 3. Run the application
-./mvnw spring-boot:run
-```
+All architectural choices, setup guides, and project specifications are documented in the `docs/` directory:
 
-## Testing
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Detailed backend architecture, sequence diagrams & design decisions.
+- [docs/API_SURFACE.md](docs/API_SURFACE.md) — Complete UI route catalog, REST API endpoints & WebSocket topics.
 
-The project includes a robust and comprehensive test suite consisting of both unit and integration tests.
+---
 
-### Running Tests
+## Status
 
-To run the entire test suite locally:
+Social Publish is actively maintained, continuously tested, and regularly updated with new social platform integrations and automation features.
 
-```bash
-./mvnw test
-```
-
-### Test Suite Architecture
-
-- **Unit Tests** — Verify isolated business logic, DTO mapping, and state machine transitions using JUnit 5 and Mockito.
-- **Integration Tests** — Cover complete service flows, asynchronous event dispatching, and persistence layers (e.g., AuthService, PostService, DashboardService, PublishingService, etc.).
-- **In-Memory H2 Database** — By default, integration tests use a lightweight, extremely fast in-memory H2 database under the `test` profile, requiring zero local setup.
-- **Test Isolation** — Databases and resources are automatically cleared in the correct order in `@BeforeEach` hooks to guarantee side-effect-free, repeatable execution.
-- **Optional PostgreSQL Testcontainers** — You can optionally run integration tests against a real PostgreSQL container. Simply uncomment the Docker `PostgreSQLContainer` setup template in `AbstractIntegrationTest.java` (requires local Docker daemon to be running).
-
-## Project Structure
-
-```
-src/main/java/com/socialpublish/
-├── aiassistant/          # AI chatbot (Groq / LLaMA integration)
-│   ├── controller/       # REST API for AI chat
-│   ├── provider/         # LLM provider abstraction
-│   └── service/          # AI conversation logic
-├── auth/                 # Authentication & user management
-│   ├── controller/       # Login, register, settings pages
-│   ├── entity/           # User entity, roles, providers
-│   ├── security/         # Spring Security config, OAuth2 handlers
-│   └── service/          # User CRUD, authentication resolution
-├── common/               # Shared infrastructure
-│   ├── config/           # Redis cache, WebSocket, web config
-│   └── web/              # CurrentUser resolver, global model attributes
-├── dashboard/            # Dashboard analytics
-│   ├── controller/       # Landing page, dashboard page
-│   ├── dto/              # Dashboard view models
-│   └── service/          # Stats aggregation (cached)
-├── integrations/         # Social platform modules
-│   ├── controller/       # Accounts hub page
-│   ├── service/          # Integration status aggregation (cached)
-│   ├── telegram/         # Telegram Bot API integration
-│   ├── discord/          # Discord Webhook integration
-│   ├── slack/            # Slack Webhook integration
-│   ├── notion/           # Notion API integration
-│   ├── linkedin/         # LinkedIn OAuth2 + API integration
-│   └── reddit/           # Reddit OAuth2 + API integration
-├── mail/                 # Email service (SMTP)
-├── media/                # Media upload & Cloudinary integration
-├── notifications/        # In-app + email notifications (WebSocket)
-│   ├── controller/       # Notifications REST API
-│   ├── websocket/        # WebSocket message broker
-│   └── service/          # Notification dispatch
-├── posts/                # Post management core
-│   ├── controller/       # Post CRUD, queue, calendar, templates
-│   ├── dto/              # Post views, calendar events
-│   ├── entity/           # Post, PostMedia, PostTemplate entities
-│   └── service/          # Post logic, template management
-├── publishing/           # Async publishing engine
-│   ├── config/           # RabbitMQ queue configuration
-│   ├── listener/         # MQ message consumers
-│   └── service/          # Platform-specific publishers + retry logic
-└── scheduling/           # Quartz job scheduling
-    ├── config/            # Quartz JDBC configuration
-    └── jobs/              # PublishPostJob implementation
-```
-
-## Docker Services
-
-| Service | Image | Port | Purpose |
-|:---|:---|:---:|:---|
-| `app` | Custom (Dockerfile) | 8080 | Spring Boot application |
-| `postgres` | `postgres:17-alpine` | 5432 | Primary database |
-| `redis` | `redis:7-alpine` | 6379 | Cache + HTTP sessions |
-| `rabbitmq` | `rabbitmq:3-management-alpine` | 5672, 15672 | Async message queue |
-
-All services include health checks, persistent volumes, and automatic restart policies.
+---
 
 ## License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the [MIT License](LICENSE).
